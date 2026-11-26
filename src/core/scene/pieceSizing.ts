@@ -5,7 +5,7 @@
  * objeto (lista para restar al moverla); la positiva se apoya sobre su cara superior, centrada en planta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { PrimitiveParams, PrimitiveType, SceneObject } from '../../types/kura';

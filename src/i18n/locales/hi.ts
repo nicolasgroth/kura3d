@@ -4,7 +4,7 @@
  * Tipado estrictamente con `Record<TranslationKey, string>` para garantizar paridad 1:1 en compilación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { TranslationKey } from '../translations';
@@ -815,7 +815,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.mcpTokenRotateFailed': 'सर्वर ने बदलाव की पुष्टि नहीं की; मौजूदा टोकन बना रहेगा।',
   'dialog.settings.aiPrivacyExternal': 'ध्यान दें: {provider} और API कुंजी सेट होने पर, आपके चैट संदेश {provider} की बाहरी सेवा पर भेजे जाएंगे।',
   'dialog.settings.aiPrivacyLocal': 'पूर्ण गोपनीयता: बिना बाहरी API कुंजी के (या लोकल Ollama के साथ), सभी कार्य आपके डिवाइस पर ही रहते हैं।',
-  'dialog.settings.aboutAuthor': 'लेखक: Nicolás Groth (ngroth@gmail.com) — ISGROTH (Innovación y Soluciones GROTH) के लिए निर्मित। MIT लाइसेंस।',
+  'dialog.settings.aboutAuthor': 'लेखक: Nicolás Groth (ngroth@gmail.com) — ISGROTH (Innovación y Soluciones GROTH) के लिए निर्मित। AGPL-3.0-or-later लाइसेंस।',
   'dialog.settings.aboutStack': 'वॉटरटाइट Manifold WASM ज्यामिति कर्नेल, React Three Fiber, Three.js, Tauri v2 और रीयल-टाइम MCP ब्रिज।',
   'app.studioVersion': '{name} Studio v{version}',
   'app.emblemAlt': '{name} प्रतीक',
@@ -867,7 +867,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'status.triangles': '{count} त्रि.',
   'status.shortcuts': 'Ctrl+K · Ctrl/⌘+Shift+Enter ज़ेन · M/R/S · H · F',
   'status.shortcutsBtn': 'शॉर्टकट (?)',
-  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · MIT',
+  'status.copyright': '© 2026 Nicolás Groth · ISGROTH · AGPL-3.0',
 
   // Mensajes de notificación / errores
   'toast.created': 'निर्मित: {name}',

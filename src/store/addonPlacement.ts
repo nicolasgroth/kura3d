@@ -4,7 +4,7 @@
  * colocación sin cambiar la selección que había y dejar un solo aviso por panel que reemplaza al anterior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ToastMessage } from './storeTypes';

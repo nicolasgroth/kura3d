@@ -7,7 +7,7 @@
  * real (ahuecado y núcleos de molde) y de la medición de espesor mínimo de pared.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Malla mínima (posiciones planas xyz e índices de triángulos). */

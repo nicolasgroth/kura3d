@@ -6,7 +6,7 @@
  * recupera validando los códigos de aviso. Sin React ni motor en ejecución: solo datos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ENGINE_WARNING_CODES, type EngineWarning } from '../../engine/engineErrors';

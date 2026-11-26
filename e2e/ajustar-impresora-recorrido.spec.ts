@@ -4,7 +4,7 @@
  * cada alternativa (escalar, girar, girar y escalar, dividir), vista previa, aplicar y deshacer en un paso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';

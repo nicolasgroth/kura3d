@@ -6,7 +6,7 @@
  * fecha de modificación guardadas (solo eso, nunca sus notas), van en una línea bajo el nombre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { History, Trash2, X } from 'lucide-react';

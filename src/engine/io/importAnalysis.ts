@@ -6,7 +6,7 @@
  * Las estadísticas son invariantes a la traslación con que luego se apoya la pieza en la cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, SceneObject } from '../../types/kura';

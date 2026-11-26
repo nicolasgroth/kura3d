@@ -6,7 +6,7 @@
  * Funciones puras sobre una vista de la escena: no tocan el store.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { DEFAULT_KEPT_HALF_PLACEMENT, KEPT_HALF_PLACEMENTS } from '../scene/keptHalf';

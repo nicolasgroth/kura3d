@@ -7,7 +7,7 @@
  * sin regex, recorrido iterativo (sin recursión) y lineal en nodos, con topes al selector.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Lo que se usa de un nodo de xmldom. */

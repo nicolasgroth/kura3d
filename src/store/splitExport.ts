@@ -5,7 +5,7 @@
  * pieza en su placa, placas una al lado de otra) para un 3MF, sin mover la escena real.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { zipSync } from 'fflate';

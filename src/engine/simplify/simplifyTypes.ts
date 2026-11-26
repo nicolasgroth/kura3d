@@ -5,7 +5,7 @@
  * nombre, justificadas con la medición del 25-nov-2026 (`docs/diseno/FORMAS_SIMPLES.md`, «Medición»).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Modo de Simplificar. */

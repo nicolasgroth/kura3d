@@ -5,7 +5,7 @@
  * siguiente nivel que falta medir. Sube y baja de nivel según cambie el espacio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Tolerancia en píxeles para redondeos de subpíxel. */

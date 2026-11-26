@@ -6,7 +6,7 @@
  * existe, el botón queda deshabilitado con el motivo a la vista. Escape o clic fuera lo cierra.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useRef, useState } from 'react';

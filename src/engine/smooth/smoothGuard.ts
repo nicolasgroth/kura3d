@@ -7,7 +7,7 @@
  * Aquí viven la máscara de amortiguación, el grafo con esos pesos y la cobertura de intensidad del informe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SmoothGraph } from './smoothGraph';

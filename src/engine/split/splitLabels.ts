@@ -8,7 +8,7 @@
  * lado positivo el texto va reflejado para leerse de frente a su cara. Queda dentro de la unión.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';

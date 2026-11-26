@@ -5,7 +5,7 @@
  * visor y de las camas. La tira solo existe con dos placas o más; con menos, la interfaz es la de siempre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { resolveActivePlate } from '../../core/scene/plates';

@@ -4,7 +4,7 @@
  * (`activateRailTool`) y el panel derecho según la herramienta (`panelContextOf`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

@@ -5,7 +5,7 @@
  * y petición de renombrar (F2).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SimplifyRequest } from '../engine/simplify';

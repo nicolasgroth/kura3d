@@ -14,7 +14,7 @@
  *   exportación por placa). La placa por defecto es la primera de la lista.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { TRANSFORM_LIMITS } from '../../engine/operationLimits';

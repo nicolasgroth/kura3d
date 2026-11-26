@@ -3,7 +3,7 @@
  * @description Entrada «Paso de cable» de la paleta de comandos: abre el panel (si no hay pieza sólida, avisa).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

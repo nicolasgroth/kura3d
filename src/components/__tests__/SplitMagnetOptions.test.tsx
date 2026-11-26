@@ -5,7 +5,7 @@
  * pasa a cantidad fija, recuerda la polaridad y avisa si el imán elegido es cuadrado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fireEvent, render, screen } from '@testing-library/react';

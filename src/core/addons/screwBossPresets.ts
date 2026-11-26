@@ -7,7 +7,7 @@
  * También el tipo de preajuste de usuario y el texto del resumen.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { defaultOuterDiameter, sanitizeScrewBossParams, type ScrewBossParams, type ScrewBossType } from './screwBoss';

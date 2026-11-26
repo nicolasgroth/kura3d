@@ -4,7 +4,7 @@
  * `<proyecto>_<código>.<ext>` (y su `.mtl` al lado) y disposición de impresión para el 3MF.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { unzipSync } from 'fflate';

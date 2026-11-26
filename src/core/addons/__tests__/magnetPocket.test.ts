@@ -4,7 +4,7 @@
  * caras horizontales, verticales e inclinadas, normal de mundo con rotación y escala, saneo y pared mínima por rayos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

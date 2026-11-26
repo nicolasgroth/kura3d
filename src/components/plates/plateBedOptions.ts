@@ -6,7 +6,7 @@
  * borrado) aparece como opción propia con sus medidas: nunca se pierde al abrir el selector.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { plateBedFromProfile, samePlateBed } from '../../core/scene/plateBedChange';

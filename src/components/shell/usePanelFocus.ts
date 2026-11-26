@@ -5,7 +5,7 @@
  * foco al primer control del cuerpo (o a un respaldo) si la propia sección no lo tomó ya.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useCallback, useEffect, useLayoutEffect, useRef, type RefObject } from 'react';

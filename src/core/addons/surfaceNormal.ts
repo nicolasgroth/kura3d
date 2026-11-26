@@ -13,7 +13,7 @@
  * (`centroidGrid.ts`), así el costo no crece con el tamaño de la malla.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

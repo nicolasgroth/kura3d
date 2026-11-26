@@ -6,7 +6,7 @@
  * fallo del almacenamiento (la lista no cambia y se informa). También los preajustes incluidos de imán.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

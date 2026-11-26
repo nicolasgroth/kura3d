@@ -4,7 +4,7 @@
  * IA Local (Ollama) e IA Externa (Gemini / OpenAI / Anthropic) en toda la interfaz de Kurra Studio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t } from '../i18n';

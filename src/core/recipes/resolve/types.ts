@@ -5,7 +5,7 @@
  * `$deferred` nunca chocan con un argumento real (sus nombres no pueden empezar con `$`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ObjectRole } from '../../../types/kura';

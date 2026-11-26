@@ -4,7 +4,7 @@
  * (store, puente MCP en la UI) y el servidor MCP; sin dependencias de interfaz ni de Node.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Nombres de comandos aceptados por el Command Bus de Kurra Studio. */

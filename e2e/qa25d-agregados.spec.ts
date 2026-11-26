@@ -6,7 +6,7 @@
  * de la cima queda casi vertical respecto de la superficie; M5 aparece para tornillo directo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir as abrirBase, aPixel, cajaMundo } from './qa12-helpers';

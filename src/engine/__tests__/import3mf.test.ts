@@ -5,7 +5,7 @@
  * (6 cuerpos / 3 colores), piezas negativas, espejado, ciclos y archivos corruptos o sobredimensionados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strToU8, zipSync } from 'fflate';

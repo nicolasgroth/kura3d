@@ -4,7 +4,7 @@
  * ventanas de más de 900 px, para no encoger el visor 3D. Por debajo de 900 px es una hoja inferior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 @media (min-width: 901px) {

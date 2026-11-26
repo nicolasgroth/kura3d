@@ -5,7 +5,7 @@
  * arreglo pasa a "para pegar" el mínimo de uniones y las piezas quedan cerradas).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';

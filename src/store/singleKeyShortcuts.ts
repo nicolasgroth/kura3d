@@ -5,7 +5,7 @@
  * enfocado, el caracter de la tecla no debe llegar (keypress/input) a ese campo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const SINGLE_KEY_SHORTCUTS: ReadonlySet<string> = new Set([

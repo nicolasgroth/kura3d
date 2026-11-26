@@ -6,7 +6,7 @@
  * `e2e/ux8-menu-pintura.spec.ts` en el navegador.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen } from '@testing-library/react';

@@ -5,7 +5,7 @@
  * control bajo el cursor o el foco (zona propia en el centro) y atajos rápidos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useMemo } from 'react';

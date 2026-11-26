@@ -4,7 +4,7 @@
  * quedar apoyada; si estaba elevada a propósito conserva la altura de su base.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

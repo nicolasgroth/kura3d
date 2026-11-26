@@ -10,7 +10,7 @@
  * lectores de la cama usa solo las medidas, que equivale a trabajar sobre la placa del origen.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ScenePlate } from '../../types/plates';

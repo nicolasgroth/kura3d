@@ -5,7 +5,7 @@
  * de geometría nuevos, así mover o pintar un objeto no reescribe sus mallas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { captureProject, isProjectDirty, type KuraStoreState, useKuraStore } from '../store/useKuraStore';

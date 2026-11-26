@@ -5,7 +5,7 @@
  * marcador `<REPO_PATH>` visible (un cliente MCP no puede resolver una ruta relativa).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { McpConfig } from '../types/kura';

@@ -5,7 +5,7 @@
  * oculta no se muestra la alarma «Fuera de volumen» (el volumen no se ve); sigue calculándose y reaparece al volver.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

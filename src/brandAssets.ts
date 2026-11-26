@@ -6,7 +6,7 @@
  * `index.html` no puede importar esta constante: allí la ruta del favicon queda escrita con un comentario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 const base = import.meta.env.BASE_URL ?? '/';

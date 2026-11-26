@@ -5,7 +5,7 @@
  * explícito y sin dejar geometría descomunal en la escena. Las brechas marcadas con `it.fails` ya están cerradas (rangos de `operationLimits`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

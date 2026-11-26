@@ -5,7 +5,7 @@
  * una vez con sus 6 idiomas; `SUAVIZAR_UI_<IDIOMA>` se mezcla en cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 type Row = { es: string; en: string; de: string; fr: string; hi: string; zh: string };

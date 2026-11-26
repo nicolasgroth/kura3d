@@ -12,7 +12,7 @@
  * Medidas imprimibles con boquilla de 0,4 mm: punto de 1 mm de diámetro, paso de 1,6 mm.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, ManifoldToplevel } from 'manifold-3d';

@@ -4,7 +4,7 @@
  * (placas a crear y pose de impresión de cada pieza) e informe. Datos serializables: viajan al Worker y vuelven.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Vec3 } from '../../types/kura';

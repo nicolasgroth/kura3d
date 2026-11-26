@@ -5,7 +5,7 @@
  * prueba contra `node_modules/<paquete>/package.json`; no se escriben de memoria.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { homepage, repository } from '../../package.json';

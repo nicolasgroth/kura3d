@@ -6,7 +6,7 @@
  * (por defecto http://127.0.0.1:5206).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { agregarForma } from './agregar-helpers';

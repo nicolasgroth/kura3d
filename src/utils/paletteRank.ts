@@ -4,7 +4,7 @@
  * palabra completa en el título > subcadena en el título > palabras clave > nombre de sección.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export interface RankableItem {

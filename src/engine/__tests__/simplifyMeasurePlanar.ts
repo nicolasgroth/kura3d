@@ -6,7 +6,7 @@
  * (aristas de contorno − 2 + 2 × agujeros). Solo medición: no es código de la app.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

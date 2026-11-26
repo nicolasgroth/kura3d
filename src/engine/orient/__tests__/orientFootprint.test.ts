@@ -5,7 +5,7 @@
  * `alignFootprint` se conserva el comportamiento anterior. También el casco 2D y el ángulo mínimo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

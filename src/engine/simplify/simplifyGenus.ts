@@ -5,7 +5,7 @@
  * se cierra y se parte en dos da −1 en vez de 0. Para decir «se perdió un agujero» hace falta Σ gᵢ.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold } from 'manifold-3d';

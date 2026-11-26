@@ -5,7 +5,7 @@
  * la marca crea un segundo store y los specs leerían un estado ajeno; aquí se importa la URL exacta que cargó la página.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import type { Page } from '@playwright/test';
 

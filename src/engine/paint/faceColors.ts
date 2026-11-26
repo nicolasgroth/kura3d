@@ -5,7 +5,7 @@
  * (`Uint16Array` de índices + `string[]`) para consumidores que quieran evitar un string por cara.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

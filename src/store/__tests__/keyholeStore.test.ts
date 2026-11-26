@@ -8,7 +8,7 @@
  * medidas, duplicar y borrar con ella, metadatos en el .kura y saneo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

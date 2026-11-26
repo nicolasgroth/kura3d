@@ -4,7 +4,7 @@
  * dos estados de la barra lateral izquierda (Escena visible u oculta). Se leen y cambian en el store al ejecutarse.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

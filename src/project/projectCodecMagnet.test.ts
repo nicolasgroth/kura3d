@@ -4,7 +4,7 @@
  * medidas fuera de rango se rechaza; el rectangular (con ancho y giro) se carga y sin ancho válido se rechaza. También: la paleta encuentra el alojamiento por «imán» o «iman» en inglés.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';

@@ -5,7 +5,7 @@
  * búsqueda que muestra los ancestros, arrastre simulado y grupo «Organizar» del menú contextual.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { createEvent, fireEvent, render, screen, within } from '@testing-library/react';

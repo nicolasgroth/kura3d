@@ -6,7 +6,7 @@
  * respuestas guardadas hostiles se explica o se sanea antes de usarse.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

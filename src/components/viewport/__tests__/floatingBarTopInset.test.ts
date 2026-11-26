@@ -3,7 +3,7 @@
  * @description El inset superior de la barra flotante se mide una vez y solo se remide al invalidarlo el observador.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it, vi } from 'vitest';

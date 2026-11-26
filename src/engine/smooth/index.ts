@@ -4,7 +4,7 @@
  * bordes, y detección de daño).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export { smoothMesh, signedVolume, trianglesWithColor, type SmoothReport, type SmoothResult } from './smoothMesh';

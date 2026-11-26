@@ -6,7 +6,7 @@
  * aristas de 3+ triángulos y sin soldar, y 8 en el inspector). Conteo O(n) por cubetas (CSR).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { CLOSURE_WELD_MM, weldGrid } from './meshTopology';

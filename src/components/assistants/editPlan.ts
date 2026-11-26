@@ -7,7 +7,7 @@
  * formulario). Puro y sin React.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AnswerValue } from '../../core/recipes/resolve/types';

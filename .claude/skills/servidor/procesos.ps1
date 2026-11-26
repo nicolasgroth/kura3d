@@ -4,7 +4,7 @@
 #   (un `until ...; do sleep; done` que quedó esperando un archivo que nunca llegó). No toca los conectores MCP de la app de Claude.
 # @author Nicolás Groth <ngroth@gmail.com>
 # @organization ISGROTH — Innovación y Soluciones GROTH
-# @license MIT
+# @license AGPL-3.0-or-later
 #
 # Uso:
 #   powershell -NoProfile -File .claude/skills/servidor/procesos.ps1            # solo lista

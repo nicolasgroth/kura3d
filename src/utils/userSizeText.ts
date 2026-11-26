@@ -4,7 +4,7 @@
  * (Z = altura). Todo aviso que muestre medidas de una pieza debe pasar por aquí.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { LanguageCode, Vec3 } from '../types/kura';

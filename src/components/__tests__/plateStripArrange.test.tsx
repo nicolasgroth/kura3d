@@ -5,7 +5,7 @@
  * contiene lo que se ve: WCAG 2.5.3) y abre el panel «Repartir en placas…». Falla si un cambio de la tira lo quita.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';

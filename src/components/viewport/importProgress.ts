@@ -5,7 +5,7 @@
  * piezas (`import:parts:7/19` → "7 de 19 piezas", barra determinada) cuando el motor lo informe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t } from '../../i18n';

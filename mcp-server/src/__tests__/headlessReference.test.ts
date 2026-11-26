@@ -4,7 +4,7 @@
  * en el estado, la exportación STL/3MF la omite y booleanas / ahuecado la rechazan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { mkdtemp, readFile, rm } from 'node:fs/promises';

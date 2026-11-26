@@ -6,7 +6,7 @@
  * metros (cubo de 10 mm en x = 20 mm queda entre 0,015 y 0,025 m).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

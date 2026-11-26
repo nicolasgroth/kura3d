@@ -6,7 +6,7 @@
  * de 5 %) y petición del panel Simplificar. La lógica pura vive en `core/scene`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { plateFrameFor } from '../../core/scene/plateFrame';

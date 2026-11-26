@@ -3,7 +3,7 @@
  * @description Motivos de Orientar: los porcentajes salen en valor absoluto (sin signo doble) en los 6 idiomas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

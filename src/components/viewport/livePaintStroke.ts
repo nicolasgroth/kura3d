@@ -6,7 +6,7 @@
  * guarda la malla final con UN paso de historial (delta). Hay a lo sumo un trazo activo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isNegative } from '../../core/scene/objectRole';

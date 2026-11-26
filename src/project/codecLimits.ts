@@ -5,7 +5,7 @@
  * geometría por malla y total.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { FILE_HISTORY_MAX_STEPS } from './historyBudget';

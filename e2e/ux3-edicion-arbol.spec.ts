@@ -5,7 +5,7 @@
  * Mayús+clic agrega un rango y Ctrl+clic alterna un elemento. El menú «Organizar» explica cada opción.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, crear, seleccion, SHOTS } from './ux3-edicion-helpers';

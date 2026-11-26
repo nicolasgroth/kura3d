@@ -5,7 +5,7 @@
  * avisos de dividir y reparar en lenguaje claro.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 type Row = { es: string; en: string; de: string; fr: string; hi: string; zh: string };

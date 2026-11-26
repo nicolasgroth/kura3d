@@ -5,7 +5,7 @@
  * que el alojamiento de imán (`MAGNET_RANGES`); por defecto el imán de fábrica (Ø5 × 2, holgura +0,2 / +0,2).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { MAGNET_DEFAULTS, MAGNET_RANGES } from '../core/addons/magnetPocket';

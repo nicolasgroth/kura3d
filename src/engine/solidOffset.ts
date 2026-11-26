@@ -13,7 +13,7 @@
  * principal; el level-set tarda una fracción y su error está acotado por la grilla.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';

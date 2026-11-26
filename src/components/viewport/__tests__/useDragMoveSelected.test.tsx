@@ -5,7 +5,7 @@
  * (OrbitControls) vuelva a quedar activa al soltar. Cámara y lienzo simulados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { renderHook } from '@testing-library/react';

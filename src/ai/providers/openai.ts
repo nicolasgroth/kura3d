@@ -4,7 +4,7 @@
  * compatible (DeepSeek, Qwen/DashScope, OpenRouter, LM Studio, Ollama `/v1`, personalizado).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ProviderAdapter, ToolCall } from '../providerLoop';

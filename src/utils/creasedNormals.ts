@@ -8,7 +8,7 @@
  * traslación) y sembrarse luego en la caché sobre la malla ya colocada (`primeCreasedMesh`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { OPERATION_DEFAULTS } from '../engine/operationLimits';

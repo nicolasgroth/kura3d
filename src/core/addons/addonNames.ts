@@ -6,7 +6,7 @@
  * de la app y el MCP sin interfaz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t } from '../../i18n';

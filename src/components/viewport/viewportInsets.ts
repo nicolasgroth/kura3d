@@ -5,7 +5,7 @@
  * área libre real. Cada elemento cuenta como franja del borde por el que menos área libre quita. Cualquier elemento puede sumarse con `data-viewport-occluder`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ViewInsets } from '../../core/scene/cameraFraming';

@@ -7,7 +7,7 @@
  * duplicar y borrar con la pieza, metadatos en el .kura y no colocar si el poste es más ancho que la cara.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

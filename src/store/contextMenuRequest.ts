@@ -4,7 +4,7 @@
  * Escena: clic derecho, Mayús+F10 o tecla Menú). `RowContextMenuHost` la atiende junto a la fila, con las mismas acciones del menú del objeto o las del menú de grupo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { create } from 'zustand';

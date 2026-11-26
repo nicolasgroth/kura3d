@@ -5,7 +5,7 @@
  * su cama propia si lo trae (P7, otra impresora). La usan el store, el bus y el MCP sin interfaz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fitBedOf } from '../operations/fitOperations';

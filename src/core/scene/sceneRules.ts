@@ -5,7 +5,7 @@
  * envolvente, alineación, estructuras). Funciones puras sobre listas de `SceneObject`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AlignMode, SceneObject } from '../../types/kura';

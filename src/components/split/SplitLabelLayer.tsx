@@ -6,7 +6,7 @@
  * con `layoutLabels` y se mueven con el DOM directamente (sin renderizar React por fotograma).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useMemo, useRef } from 'react';

@@ -5,7 +5,7 @@
  * `SceneObject.plateRef`. Sin placas (todo proyecto anterior) hay una placa implícita en el origen.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Cama propia de una placa (otra impresora); ausente = la cama del proyecto. */

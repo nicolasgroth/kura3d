@@ -5,7 +5,7 @@
  * y el deshacer se prueban en `store/__tests__/assistantsRun.test.ts`), error tipado, indicador de progreso y teclado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';

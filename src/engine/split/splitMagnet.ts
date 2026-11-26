@@ -8,7 +8,7 @@
  * cuadrados y rectangulares (`splitMagnetBlock`) se orientan por la sección y se comprueban con su huella real.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';

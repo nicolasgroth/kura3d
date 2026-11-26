@@ -5,7 +5,7 @@
  * confinamiento de exportaciones, límite de tamaño de mensaje y validación de datos con esquema.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { mkdtemp, readFile, rm, stat, symlink, mkdir } from 'node:fs/promises';

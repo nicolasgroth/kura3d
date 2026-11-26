@@ -4,7 +4,7 @@
  * defecto) o un archivo por objeto en un ZIP con los nombres del árbol.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useId } from 'react';

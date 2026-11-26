@@ -5,7 +5,7 @@
  * controles del HUD se reubiquen). Al abrirse, el encuadre solo se mueve si el objeto seleccionado queda tapado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useLayoutEffect } from 'react';

@@ -4,7 +4,7 @@
  * "Preparar para imprimir" (`layoutSplitParts`) en tubo recto, tubería en L y en T.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ManifoldToplevel } from 'manifold-3d';

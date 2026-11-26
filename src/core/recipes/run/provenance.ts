@@ -5,7 +5,7 @@
  * guardan (se nombran en `omitted`). La copia de la receta en el `.kura` es del lote RCP-03.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { RECIPE_PROVENANCE_LIMITS, type RecipeAnswerValue, type RecipeProvenance } from '../../../types/recipeProvenance';

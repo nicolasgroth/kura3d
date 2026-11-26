@@ -7,7 +7,7 @@
  * grupos y selección definitivos. Cancelar a mitad devuelve la escena a como estaba.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject } from '../types/kura';

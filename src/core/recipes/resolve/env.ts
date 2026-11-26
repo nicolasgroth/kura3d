@@ -4,7 +4,7 @@
  * tablas y el contador compartido. Lee solo rutas declaradas; los mapas no tienen prototipo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { RecipeError } from '../errors';

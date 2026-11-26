@@ -5,7 +5,7 @@
  * muere o se pasa de tiempo el error es "no hay memoria suficiente" y el siguiente archivo usa un Worker nuevo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

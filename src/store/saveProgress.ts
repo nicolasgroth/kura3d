@@ -5,7 +5,7 @@
  * escribe el archivo. No toma `busyOperation` (guardar no bloquea más que hoy) y solo retira su propio avance.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { BusyProgress, KuraStoreState } from './storeTypes';

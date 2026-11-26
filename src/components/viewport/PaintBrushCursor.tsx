@@ -5,7 +5,7 @@
  * guarda en un objeto mutable (no en el store) para no re-renderizar React a la frecuencia del puntero.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useMemo, useRef } from 'react';

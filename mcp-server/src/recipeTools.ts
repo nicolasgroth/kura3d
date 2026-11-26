@@ -6,7 +6,7 @@
  * el Command Bus; sin interfaz, por el mismo ejecutor compartido de `src/core/recipes` sobre el motor headless.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

@@ -7,7 +7,7 @@
  * Zen, grupos, deshacer, grupos, selección, flechas y por último las teclas sueltas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { TransformMode } from '../types/kura';

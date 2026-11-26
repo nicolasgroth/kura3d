@@ -4,7 +4,7 @@
  * accesible es el nombre íntegro; los nombres cortos no se parten.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render } from '@testing-library/react';

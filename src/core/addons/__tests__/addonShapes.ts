@@ -4,7 +4,7 @@
  * y = 0 y centrada en X y Z, y la caja desplazada a un origen dado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../../types/kura';

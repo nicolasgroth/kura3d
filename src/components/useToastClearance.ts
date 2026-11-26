@@ -5,7 +5,7 @@
  * avisos apilados no las tapen. Sin avisos en la zona del visor la variable no existe (vale 0 en el CSS).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, type RefObject } from 'react';

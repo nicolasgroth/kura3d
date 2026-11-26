@@ -4,7 +4,7 @@
  * `ungroup`, `combine_objects` y `separate_bodies`, y la jerarquía de grupos para `get_scene_state`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { descendantObjectIds, MAX_GROUP_NAME } from '../scene/groups';

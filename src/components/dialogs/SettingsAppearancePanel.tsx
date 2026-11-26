@@ -3,7 +3,7 @@
  * @description Pestaña Apariencia de Ajustes: esquema claro/oscuro/sistema y temas WCAG con vista previa en vivo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

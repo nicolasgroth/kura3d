@@ -5,7 +5,7 @@
  * extensiones inesperadas y enlaces simbólicos/junctions que escapen de la raíz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { lstat, mkdir, realpath } from 'node:fs/promises';

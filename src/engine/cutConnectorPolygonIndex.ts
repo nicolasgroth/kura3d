@@ -8,7 +8,7 @@
  * conservadora) o no cruzan la horizontal del punto (paridad independiente del orden).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export type Vec2 = [number, number];

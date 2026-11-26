@@ -5,7 +5,7 @@
  * mientras haya alguno marcado (nada se acota en silencio).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useCallback, useMemo, useState } from 'react';

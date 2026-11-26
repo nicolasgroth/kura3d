@@ -4,7 +4,7 @@
  * compartidos por la barra del visor y el inspector.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

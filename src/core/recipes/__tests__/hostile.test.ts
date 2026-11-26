@@ -6,7 +6,7 @@
  * accesores, y costo lineal medido por conteo de trabajo (no por reloj).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { afterEach, describe, expect, it } from 'vitest';

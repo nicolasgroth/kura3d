@@ -5,7 +5,7 @@
  * copias derivadas con id nuevo. Ninguna operación modifica un objeto existente: siempre devuelve copias.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isEngineError, type EngineWarning } from '../../../../engine/engineErrors';

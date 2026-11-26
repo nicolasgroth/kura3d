@@ -4,7 +4,7 @@
  * traba el montaje), avisos y sugerencias junto a cada unión, resaltado al enfocar y "Validar armado".
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen, within } from '@testing-library/react';

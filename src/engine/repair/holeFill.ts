@@ -6,7 +6,7 @@
  * siempre la de menor área; para bucles enormes cae a un abanico desde el centroide.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ShapeUtils, Vector2 } from 'three';

@@ -6,7 +6,7 @@
  * en tiempo de ejecución desde `mcp-server/node_modules`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { build } from 'esbuild';

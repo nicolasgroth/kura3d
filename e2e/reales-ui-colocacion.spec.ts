@@ -7,7 +7,7 @@
  * Ejecuta con `KURA_URL=http://127.0.0.1:5234/ npm run test:e2e -- reales-ui-colocacion`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, cajas, importarStl, solapes, stlCubes } from './ux-escena-helpers';

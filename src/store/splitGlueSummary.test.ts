@@ -4,7 +4,7 @@
  * corte por plano que habla en diámetro (como el campo del diálogo) y dice qué se hizo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

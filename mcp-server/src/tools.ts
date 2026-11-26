@@ -5,7 +5,7 @@
  * y Headless Standalone (motor en memoria con exportación STL/3MF directa a disco).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { writeFile } from 'node:fs/promises';
@@ -1313,7 +1313,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
     'kura://info/about',
     {
       title: 'Kurra Studio MCP information',
-      description: 'Authorship metadata, MIT license and WebSocket bridge connection status.',
+      description: 'Authorship metadata, AGPL-3.0-or-later license and WebSocket bridge connection status.',
       mimeType: 'application/json',
     },
     async (uri) => ({
@@ -1327,7 +1327,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
               version: '0.5.0',
               author: 'Nicolás Groth <ngroth@gmail.com>',
               organization: 'ISGROTH — Innovación y Soluciones GROTH',
-              license: 'MIT',
+              license: 'AGPL-3.0-or-later',
               port: ctx.bridge.getPort(),
               bridgePort: ctx.bridge.getPort(),
               bridgeListening: ctx.bridge.isListening(),

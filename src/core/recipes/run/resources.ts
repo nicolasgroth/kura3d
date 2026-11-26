@@ -6,7 +6,7 @@
  * versión solo un SVG tiene una operación que lo use: los demás tipos son error tipado, no se leen.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { RecipeError } from '../errors';

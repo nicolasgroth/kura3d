@@ -5,7 +5,7 @@
  * la transformación al empezar el arrastre con la actual. Funciones puras.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

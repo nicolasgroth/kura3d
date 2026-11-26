@@ -4,7 +4,7 @@
  * del proyecto (por cantidad de caras, sin tope pequeño) y lectura tolerante de lo guardado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

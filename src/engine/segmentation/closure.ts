@@ -3,7 +3,7 @@
  * @description Compactado de un subconjunto de triángulos en un sólido cerrado (soldado, tapas en abanico al centroide, orientación saliente) y saneado opcional con Manifold.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold } from 'manifold-3d';

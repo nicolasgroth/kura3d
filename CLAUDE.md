@@ -1,14 +1,14 @@
 # Kurra Studio — guía para agentes
 
-Estudio de modelado 3D para impresión (web + escritorio). Autor: Nicolás Groth (ISGROTH). Licencia MIT, código abierto.
+Estudio de modelado 3D para impresión (web + escritorio). Autor: Nicolás Groth (ISGROTH). Licencia AGPL-3.0-or-later, código abierto.
 
 ## Reglas de producto
 
 - El nombre es **Kurra Studio** (forma corta: Kurra), sin "Pro", "Ultra" ni versiones de marketing. En código TS/TSX usa `BRAND` de `src/brand.ts` (`BRAND.name` o `BRAND.shortName`); no escribas el literal.
 - Foco: **modelado y preparación geométrica** para imprimir. Fuera de alcance: laminado, G-code, boquillas, parámetros de slicer, control de impresoras. Estimaciones de material son un extra posterior.
 - Algoritmos antes que IA: los problemas del producto (validar armado, ubicar conectores, dividir, reparar mallas) se resuelven con geometría, reglas y algoritmos conocidos. La IA es un asistente opcional encima, nunca el mecanismo del que depende una función.
-- Dependencias: solo código abierto con licencia permisiva (MIT, Apache-2.0, BSD, ISC, MPL-2.0). GPL/AGPL prohibidas; LGPL solo con aprobación explícita del usuario. Antes de escribir algo complejo, busca una librería abierta que lo resuelva.
-- Todo archivo de código lleva cabecera `@file / @description / @author Nicolás Groth <ngroth@gmail.com> / @organization ISGROTH — Innovación y Soluciones GROTH / @license MIT` (en Rust, el estilo `// Autor:` de `src-tauri/src/lib.rs`).
+- Dependencias: solo código abierto con licencia compatible con AGPL-3.0 (MIT, Apache-2.0, BSD, ISC, MPL-2.0, LGPL, GPL-3.0, AGPL-3.0). Licencias incompatibles o no libres, prohibidas. Al tomar código GPL/AGPL de otro proyecto, conservar sus avisos de autoría y anotarlo en THIRD_PARTY_NOTICES.md. Antes de escribir algo complejo, busca una librería abierta que lo resuelva.
+- Todo archivo de código lleva cabecera `@file / @description / @author Nicolás Groth <ngroth@gmail.com> / @organization ISGROTH — Innovación y Soluciones GROTH / @license AGPL-3.0-or-later` (en Rust, el estilo `// Autor:` de `src-tauri/src/lib.rs`).
 - Textos de interfaz: siempre por i18n, con paridad en los 6 idiomas (`src/i18n/`).
 - Pantalla mínima soportada: **1024 px** de ancho. El teléfono (390 px) no es requisito: lo que existe para pantallas angostas se conserva, pero no se corrige, no se prueba en QA ni se evalúa.
 - Seguridad primero: nada de secretos en archivos de proyecto, `localStorage` ni logs; el puente MCP solo en loopback con token.

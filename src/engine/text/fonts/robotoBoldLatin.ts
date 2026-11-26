@@ -4,7 +4,7 @@
  * Fuente con licencia SIL OFL 1.1 (ver src/assets/fonts y THIRD_PARTY_NOTICES.md).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const ROBOTO_BOLD_LATIN_WOFF_BASE64 =

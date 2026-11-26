@@ -6,7 +6,7 @@
  * `OPERATION_DEFAULTS`), la validación al leer y la traducción al tipo de conector del corte por plano.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { OPERATION_DEFAULTS, OPERATION_RANGES } from '../engine/operationLimits';

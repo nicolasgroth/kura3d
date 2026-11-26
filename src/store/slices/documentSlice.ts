@@ -5,7 +5,7 @@
  * recuperar avisa si hay placas que se pisan (no las mueve).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { projectBed } from '../../core/scene/activePlateBed';

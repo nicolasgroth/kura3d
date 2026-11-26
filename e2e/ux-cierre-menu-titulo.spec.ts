@@ -4,7 +4,7 @@
  * interno inicial ni sombra encima, a 1280x800 y a 390x844. Capturas en .eval-tmp/ux-cierre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, crearCubo, aPixel } from './ux-movil-helpers';

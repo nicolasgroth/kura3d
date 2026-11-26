@@ -8,7 +8,7 @@
  * acepta si el texto queda casi todo dentro del material y el punto frente a él está fuera de la pieza.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, Manifold, ManifoldToplevel, Mat4 } from 'manifold-3d';

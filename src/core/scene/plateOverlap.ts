@@ -7,7 +7,7 @@
  * quedaría reordenada sin pedirlo. Se detectan y se avisa; el usuario decide.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ScenePlate } from '../../types/plates';

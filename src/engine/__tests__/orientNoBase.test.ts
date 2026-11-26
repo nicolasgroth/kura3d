@@ -5,7 +5,7 @@
  * apoyarla en ese plano (parche de caras coplanares con contacto real), con base antes que sin base.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

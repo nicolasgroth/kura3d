@@ -7,7 +7,7 @@
  * invalida). El resultado va marcado como aproximado. Costo acotado: grilla fija y tope de cruces.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

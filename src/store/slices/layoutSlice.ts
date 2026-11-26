@@ -7,7 +7,7 @@
  * automático de imanes del store ve que ya se movieron y los respeta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { applyLayoutPatches, DEFAULT_LAYOUT, switchLayoutPatches } from '../../core/scene/layoutPoses';

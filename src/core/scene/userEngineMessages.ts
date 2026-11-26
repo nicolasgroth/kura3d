@@ -6,7 +6,7 @@
  * Lo usan el store de la app (idioma activo) y el servidor MCP sin interfaz (inglés).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import {

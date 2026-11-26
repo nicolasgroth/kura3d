@@ -6,7 +6,7 @@
  * El reloj es inyectable para probarlo sin esperar. `useWorkTimer` lo conecta al store y a los eventos del navegador.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect } from 'react';

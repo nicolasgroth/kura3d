@@ -6,7 +6,7 @@
  * La usan la verificación de Simplificar y la medición de `simplifyMeasure.perf.test.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold } from 'manifold-3d';

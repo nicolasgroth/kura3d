@@ -5,7 +5,7 @@
  * en el resto de tamaños y estados no ocupa nada. La torreta la reutiliza con sus textos y su cierre (props opcionales).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

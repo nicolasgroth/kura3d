@@ -5,7 +5,7 @@
  * de tamaño y la conversación se conserva al ir y volver. Por encima de 1240 px no hay pestañas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, crear, SHOTS } from './ux4-helpers';

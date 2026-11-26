@@ -7,7 +7,7 @@
  * (`restPose`), no la figura. Lógica pura en `core/scene/plateArrange.ts` (plan) y `core/scene/arrangeApply.ts` (aplicar).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isEngineCancelled, type EngineJob } from '../../core/operations/engineClient';

@@ -5,7 +5,7 @@
  * en `acercaDe.ts`: aquí se descubren por orden hasta que falta una. El generador aleatorio se inyecta para probarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ACERCA_ES } from '../i18n/locales/acercaDe';

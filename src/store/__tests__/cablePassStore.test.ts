@@ -7,7 +7,7 @@
  * agregado, más ancho que la cara (no se coloca), sigue a la pieza, duplicar y borrar, metadatos en el .kura y saneo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

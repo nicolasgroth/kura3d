@@ -4,7 +4,7 @@
  * que se escribe vuelve a coordenadas globales sin perder la altura. Una sola placa o el armado: globales.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

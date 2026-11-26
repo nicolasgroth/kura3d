@@ -5,7 +5,7 @@
  * por el Command Bus; sin interfaz usan las mismas respuestas de `src/core/operations/measureOperations`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

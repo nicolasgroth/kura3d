@@ -7,7 +7,7 @@
  * Ejecuta con `KURA_URL=… npx playwright test e2e/rediseno-acciones.spec.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { itemAccion } from './acciones-helpers';

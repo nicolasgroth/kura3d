@@ -6,7 +6,7 @@
  * los exportadores recibida por parámetro.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -73,7 +73,7 @@ describe('reglas del repositorio', () => {
           head.includes('@description') &&
           /@author Nicolás Groth <ngroth@gmail\.com>/.test(head) &&
           head.includes('@organization ISGROTH') &&
-          head.includes('@license MIT')
+          head.includes('@license AGPL-3.0-or-later')
         );
       })
       .map(rel);

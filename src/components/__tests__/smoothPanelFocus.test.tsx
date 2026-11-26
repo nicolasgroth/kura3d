@@ -4,7 +4,7 @@
  * cae en la primera casilla, «Intensidad», como promete `docs/guia/suavizar.md`, y no en «Volver».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, cleanup, render, screen } from '@testing-library/react';

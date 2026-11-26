@@ -3,7 +3,7 @@
  * @description Pruebas del JSON MCP copiable: ruta absoluta o marcador, variables de entorno y comando de registro.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

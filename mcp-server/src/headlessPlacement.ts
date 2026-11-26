@@ -6,7 +6,7 @@
  * se separan entre sí para que ninguna caja envolvente quede superpuesta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { findFreeSpot, footprintOf, placeInFreeSpot, sceneFootprints, type BedSize } from '../../src/core/scene/freeSpot';

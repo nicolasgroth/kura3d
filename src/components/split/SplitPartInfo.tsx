@@ -4,7 +4,7 @@
  * marcas de pareja ("Se une con A2 por la unión 3").
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

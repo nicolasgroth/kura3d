@@ -7,7 +7,7 @@
  * vértice un peso 0–1 según la zona y su anillo de atenuación.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

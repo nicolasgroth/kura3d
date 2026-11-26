@@ -7,7 +7,7 @@
  * `aria-live` discreta. En pantallas estrechas el mismo contenido va en la hoja inferior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';

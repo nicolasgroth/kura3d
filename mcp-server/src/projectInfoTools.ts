@@ -6,7 +6,7 @@
  * interfaz, por el mismo esquema y la misma limpieza, en memoria mientras corre el servidor (`headlessProjectInfo.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

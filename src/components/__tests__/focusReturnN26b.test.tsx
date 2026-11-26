@@ -5,7 +5,7 @@
  * aviso (`focusAfter`) y Simplificar al terminar la vista previa (a «Simplificar» o de vuelta a «Vista previa»).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';

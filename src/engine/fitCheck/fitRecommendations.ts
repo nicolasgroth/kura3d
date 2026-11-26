@@ -5,7 +5,7 @@
  * usuario; y el resumen general (pares revisados, cuántos chocan, cuántos justos, peor caso).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { userAxisLabel, userDirectionOfInternal, type AxisDirection, type AxisName } from '../../core/scene/displayAxes';

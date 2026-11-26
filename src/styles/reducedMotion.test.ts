@@ -4,7 +4,7 @@
  * las que mueven con `transform`, y la hoja de accesibilidad forma parte de la cascada del estudio.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

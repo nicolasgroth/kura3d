@@ -7,7 +7,7 @@
  * armado por pieza y los tarugos sueltos del grupo. Sin React ni motor: solo datos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { EngineWarning, EngineWarningCode } from '../../engine/engineErrors';

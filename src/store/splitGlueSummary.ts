@@ -5,7 +5,7 @@
  * de un aviso por unión más el resumen del motor. El detalle sigue en la sección de uniones.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { EngineWarning } from '../engine';

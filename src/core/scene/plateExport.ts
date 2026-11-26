@@ -13,7 +13,7 @@
  *   celda de la cama del proyecto, para avisarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject } from '../../types/kura';

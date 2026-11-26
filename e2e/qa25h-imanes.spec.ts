@@ -6,7 +6,7 @@
  * de «solo redondos», alojamientos iguales en las dos piezas).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { itemAccion } from './acciones-helpers';

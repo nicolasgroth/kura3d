@@ -4,7 +4,7 @@
  * (fuera de nombres escritos por el usuario) y en es/de ningún número decimal con punto ("2.5 g").
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render } from '@testing-library/react';

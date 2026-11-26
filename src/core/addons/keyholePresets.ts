@@ -6,7 +6,7 @@
  * altura de la cabeza; labio de 1,5 mm (mínimo 1,2). También el tipo de preajuste de usuario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { sanitizeKeyholeParams, type KeyholeParams } from './keyhole';

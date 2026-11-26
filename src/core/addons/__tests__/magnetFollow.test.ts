@@ -5,7 +5,7 @@
  * nueva de la pieza y los imanes bloqueados; y sale sin trabajo si no hay imanes o ninguna pieza anfitriona cambió.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

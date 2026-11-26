@@ -6,7 +6,7 @@
  * (confirmación que dice a cuál pasan) y deshacer cada paso. Se comprueba a 1024 px y a 1280 px.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';

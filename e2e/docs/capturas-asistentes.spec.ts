@@ -5,7 +5,7 @@
  * caja ya creada (ficha del inspector y formulario con «Actualizar»).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, captura, seleccionar, sinAvisos } from './helpers';

@@ -6,7 +6,7 @@
  * selección, exclusión con el ojo de cerradura, entradas en Insertar y en la paleta, y los textos en los 6 idiomas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen } from '@testing-library/react';

@@ -4,7 +4,7 @@
  * si la elegida está dentro y el resumen visible sale de una sola fuente de texto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';

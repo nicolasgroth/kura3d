@@ -4,7 +4,7 @@
  * previa en vivo en el visor y colocación con clic sobre la pieza (fija cara y U/V).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useRef, useState } from 'react';

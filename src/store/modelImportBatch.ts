@@ -6,7 +6,7 @@
  * queda sin memoria. Devuelve los modelos leídos y los fallos ya traducidos, por archivo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../engine';

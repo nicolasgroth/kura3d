@@ -5,7 +5,7 @@
  * el favicon responde como SVG; el README referencia archivos que existen y no quedan referencias a los PNG borrados.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';

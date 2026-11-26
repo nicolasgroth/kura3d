@@ -6,7 +6,7 @@
  * que la tabla cubra exactamente `RECIPE_OPS` y que cada comando exista en el bus.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { KuraCommandName } from '../../commands/commandNames';

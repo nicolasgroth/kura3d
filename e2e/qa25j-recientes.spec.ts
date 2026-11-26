@@ -4,7 +4,7 @@
  * muestra la descripción (también tras recargar la página), sin las notas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test } from '@playwright/test';
 import { abrir, cmd } from './qa25a-helpers';

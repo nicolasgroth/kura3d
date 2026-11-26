@@ -6,7 +6,7 @@
  * abre con «Sin fecha», a 1024 px nada desborda y el alemán no se corta. Evidencia en `.eval-tmp/qa25j/`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';

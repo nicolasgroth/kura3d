@@ -5,7 +5,7 @@
  * imán pendiente. Una sola fuente para el aviso emergente y las líneas del panel, en orden de gravedad.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { BOSS_MIN_WALL_MM } from '../core/addons/screwBoss';

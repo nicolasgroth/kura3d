@@ -8,7 +8,7 @@
  * cara de unión si cabe (`splitLabels.ts`) y si no en la cara exterior (`splitOutsideLabel.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, Manifold, ManifoldToplevel } from 'manifold-3d';

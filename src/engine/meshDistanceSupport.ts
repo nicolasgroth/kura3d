@@ -5,7 +5,7 @@
  * selección del n-ésimo elemento (quickselect) para partir nodos del BVH sin ordenar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Tabla de aristas `{a,b}` → normal acumulada (3 doubles), con direccionamiento abierto. */

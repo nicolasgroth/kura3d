@@ -4,7 +4,7 @@
  * usada por la interfaz y los exportadores de archivos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const BRAND = {
@@ -13,7 +13,7 @@ export const BRAND = {
   shortName: 'Kurra',
   author: 'Nicolás Groth',
   organization: 'ISGROTH — Innovación y Soluciones GROTH',
-  license: 'MIT',
+  license: 'AGPL-3.0-or-later',
   /** Versión de la app; debe coincidir con package.json (lo verifica una prueba). */
   version: '0.5.0',
 } as const;

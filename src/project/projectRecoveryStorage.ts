@@ -6,7 +6,7 @@
  * geometría una sola vez, binario, con clave por huella de contenido; ver `recoveryDraftStore.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { MAX_PROJECT_BYTES, ProjectCodecError } from './projectSchema';

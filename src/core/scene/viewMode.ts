@@ -6,7 +6,7 @@
  * y cuándo se ofrece el selector. Sin React ni store (la separación visual está en `utils/figureExplode.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject } from '../../types/kura';

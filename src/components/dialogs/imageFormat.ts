@@ -4,7 +4,7 @@
  * (SVG, GIF, texto…) se rechaza antes de intentar decodificarlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Tipo MIME según los primeros bytes, o null si no es un formato admitido. */

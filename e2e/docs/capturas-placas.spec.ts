@@ -5,7 +5,7 @@
  * del volumen de una placa. Piezas creadas en la propia app (nunca modelos de terceros).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import path from 'node:path';

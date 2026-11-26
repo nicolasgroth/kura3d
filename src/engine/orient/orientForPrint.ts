@@ -8,7 +8,7 @@
  * (gira, apoya en Y = 0 y centra o conserva X/Z). Sin IA: geometría y reglas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

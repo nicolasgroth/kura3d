@@ -5,7 +5,7 @@
  * pie es más ancho que la zona de apoyo, y un ojo de cerradura cuyo labio no retiene la cabeza. Regla única para el store de la app y el MCP sin interfaz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { MAX_POCKET_FILL } from './pocketAnalysis';

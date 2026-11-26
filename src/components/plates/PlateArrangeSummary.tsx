@@ -5,7 +5,7 @@
  * que conservaron su orientación. Cada aviso lleva icono y texto (no depende del color).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

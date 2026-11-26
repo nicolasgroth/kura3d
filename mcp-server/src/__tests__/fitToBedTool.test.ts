@@ -5,7 +5,7 @@
  * calculado a mano; una alternativa no disponible se rechaza con código estable.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

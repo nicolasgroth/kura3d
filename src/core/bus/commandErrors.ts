@@ -5,7 +5,7 @@
  * en el idioma activo solo al responder, nunca se compara por regex.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { TranslationKey } from '../../i18n';

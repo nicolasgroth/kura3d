@@ -4,7 +4,7 @@
  * cubo ahuecado cerrado, dos cavidades), unidades y cancelar. Requiere `@playwright/test` y la web en KURA_URL.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, SHOTS } from './qa12-helpers';

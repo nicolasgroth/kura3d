@@ -8,7 +8,7 @@
  * el rótulo «Malla» se desplaza a la vista con el mínimo movimiento (sin animar con movimiento reducido).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useLayoutEffect, useRef } from 'react';

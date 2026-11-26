@@ -5,7 +5,7 @@
  * `onKeyDown` y a los listeners de ventana que cada panel tenía por su cuenta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useRef, type RefObject } from 'react';

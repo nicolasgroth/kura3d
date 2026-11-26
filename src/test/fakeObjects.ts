@@ -3,7 +3,7 @@
  * @description Objetos de escena mínimos para pruebas de componentes (sin motor Manifold ni WebGL).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject } from '../types/kura';

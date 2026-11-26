@@ -6,7 +6,7 @@
  * volumen no cambia (los puntos medios caen sobre las aristas originales).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

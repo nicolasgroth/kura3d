@@ -5,7 +5,7 @@
  * silencio a 5–85 mientras la app y el servidor MCP anunciaban otros rangos).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

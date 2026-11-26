@@ -5,7 +5,7 @@
  * accesible completo con el nombre de la placa y tooltip; no depende solo del color.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

@@ -5,7 +5,7 @@
  * trae el tamaño y el máximo, y una coordenada absurda (1e30, vértice suelto) se rechaza con error tipado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

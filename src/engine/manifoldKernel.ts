@@ -4,7 +4,7 @@
  * y utilidades de conversión bidireccional entre MeshData de Kurra Studio (Y-up en mm) y Manifold.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import Module, {

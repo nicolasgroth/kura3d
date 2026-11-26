@@ -10,7 +10,7 @@
  * ancho y el paso en Y el fondo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Cama que el laminador supone para todas las placas (la del proyecto), en mm. */

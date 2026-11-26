@@ -8,7 +8,7 @@
  * se quitan aletas duplicadas y se exige que cada arista soldada tenga exactamente 2 triángulos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';

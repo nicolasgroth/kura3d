@@ -5,7 +5,7 @@
  * `npm run test:perf` (la prueba de resultado vive en importMeshFormats.test.ts).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

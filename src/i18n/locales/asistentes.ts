@@ -5,7 +5,7 @@
  * Cada clave lleva [es, en, de, fr, hi, zh]; `ASISTENTES_<IDIOMA>` se mezcla en cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 type Row = readonly [es: string, en: string, de: string, fr: string, hi: string, zh: string];

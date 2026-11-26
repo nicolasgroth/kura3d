@@ -5,7 +5,7 @@
  * propia de una referencia. `isHole` se acepta como alias obsoleto de `role`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { OBJECT_ROLES, readRoleInput, REFERENCE_OPACITY } from '../core/scene/objectRole';

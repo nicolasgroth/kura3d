@@ -4,7 +4,7 @@
  * bloqueada (o el mismo color) no queda como repetible ni renombra el paso anterior del historial.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

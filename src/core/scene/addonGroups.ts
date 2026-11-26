@@ -5,7 +5,7 @@
  * el usuario ya tenía (o al que sumó piezas) no se toca. La marca vive solo en la sesión: no se guarda en el `.kura`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ungroup, type GroupScene } from './groups';

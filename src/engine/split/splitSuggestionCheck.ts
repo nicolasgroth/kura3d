@@ -8,7 +8,7 @@
  * deslizar), la opción se quita y queda solo pegar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { AssemblyJointInput, AssemblyPartInput, AssemblyReport, AssemblySuggestion } from './assemblyTypes';

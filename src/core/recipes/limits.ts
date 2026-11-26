@@ -4,7 +4,7 @@
  * Fuente única para el esquema, el intérprete y la documentación de terceros (`docs/recetas/FORMATO.md`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 const MIB = 1024 * 1024;

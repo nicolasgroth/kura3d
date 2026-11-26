@@ -4,7 +4,7 @@
  * `src/core/recipes/examples/`, en el formato público `kura.recipe/1`). Se buscan por `id`; nunca por ruta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import caja from '../examples/caja-tapa.recipe.json';

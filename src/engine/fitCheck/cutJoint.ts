@@ -7,7 +7,7 @@
  * conjunto se movió junto, el desfase de cada pieza respecto de su posición de armado es el mismo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject, Vec3 } from '../../types/kura';

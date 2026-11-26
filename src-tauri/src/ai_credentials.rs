@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Claves API de proveedores IA guardadas en el almacén de credenciales
 // del sistema operativo (crate `keyring`). El webview solo puede guardar, borrar y
 // preguntar si existe una clave por ranura permitida: el valor nunca vuelve al

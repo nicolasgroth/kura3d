@@ -1,6 +1,6 @@
 # Avisos de terceros
 
-Kurra Studio se distribuye con licencia MIT. Incluye o empaqueta los siguientes componentes de terceros,
+Kurra Studio se distribuye con licencia AGPL-3.0-or-later (las versiones hasta el commit 5bc2699 inclusive, con licencia MIT). Las dependencias conservan sus licencias, todas compatibles con AGPL-3.0-or-later. Incluye o empaqueta los siguientes componentes de terceros,
 cada uno bajo su propia licencia. Las dependencias de npm instaladas como paquetes conservan su
 archivo de licencia en `node_modules/<paquete>/`; aquí se listan las que se copian dentro del
 repositorio o que tienen avisos que deben acompañar la distribución.

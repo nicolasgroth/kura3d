@@ -6,7 +6,7 @@
  * (corre la comprobación sobre el bloque ya transformado y la acompaña de sus medidas funcionales).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { runFitCheck, type FitCheckBody, type FitCheckHooks, type FitCheckInput, type FitCheckOptions, type FitCheckReport } from '../../engine/fitCheck';

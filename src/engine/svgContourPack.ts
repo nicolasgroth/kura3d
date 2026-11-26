@@ -6,7 +6,7 @@
  * leer una vez y extruir con Manifold en el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export type SvgContourGroups = [number, number][][][];

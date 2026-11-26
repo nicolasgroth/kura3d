@@ -8,7 +8,7 @@
  * (`assemblyPosedObjects`), sea cual sea el modo de vista: cambiar de modo no invalida el informe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isEngineCancelled, type EngineJob } from '../../core/operations/engineClient';

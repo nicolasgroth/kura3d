@@ -4,7 +4,7 @@
  * usuario) nunca deja piezas bajo la cama; con factor 0 respeta el armado exacto si ya está apoyado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

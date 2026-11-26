@@ -6,7 +6,7 @@
  * a los controles sin tocar la escena; y el informe permite detectar el ruido fuerte con aristas fijas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

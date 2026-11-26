@@ -6,7 +6,7 @@
  * cercanía al borde y a otro agregado pendiente se avisan sin bloquear.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { CABLE_MIN_GAP_MM, type CablePassParams } from '../../core/addons/cablePass';

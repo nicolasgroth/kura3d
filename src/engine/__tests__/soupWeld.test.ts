@@ -5,7 +5,7 @@
  * en sopas variadas (duplicados, degenerados, -0, coordenadas grandes, casi iguales bajo la tolerancia).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

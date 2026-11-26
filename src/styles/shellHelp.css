@@ -4,7 +4,7 @@
  * El tooltip no tapa el control (se coloca al lado), respeta `prefers-reduced-motion` y el modo de alto contraste.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 .kura-help-tooltip {

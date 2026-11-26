@@ -3,7 +3,7 @@
  * @description Distancia al cuadrado exacta de un punto a un triángulo en R³ (regiones de Voronoi, Ericson).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /**

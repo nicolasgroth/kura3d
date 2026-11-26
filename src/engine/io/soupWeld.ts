@@ -8,7 +8,7 @@
  * aparición, mismos triángulos degenerados descartados).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { quantizedHash, tableCapacity } from '../positionHash';

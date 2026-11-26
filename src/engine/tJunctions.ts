@@ -5,7 +5,7 @@
  * esos vértices intermedios. Solo mira aristas de borde (sin gemela), así el costo es pequeño.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /**

@@ -3,7 +3,7 @@
  * @description Cálculo de relación de contraste WCAG 2.x entre colores hexadecimales (pruebas de temas).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 function channel(v: number): number {

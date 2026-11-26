@@ -6,7 +6,7 @@
  * cuyas dos piezas están en la selección y corre `validateAssembly` (solo lectura, sin `autoFix`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneObject, SplitJointRecord } from '../../types/kura';

@@ -9,7 +9,7 @@
  * (a al frente, en −Z). Ejemplos: "A1", "B3", "A1b". La celda es `[i, j, k]` = índices en X, Y, Z.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CutConnectorType, MagnetPocketParams, MeshData, Vec3 } from '../../types/kura';

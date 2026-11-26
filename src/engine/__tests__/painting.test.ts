@@ -5,7 +5,7 @@
  * geometría, el atributo de color se actualiza en sitio y el historial guarda un paso por trazo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

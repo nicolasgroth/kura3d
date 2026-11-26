@@ -4,7 +4,7 @@
  * inspector de escritorio), describe la altura actual y con teclado recorre plegada, media y completa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fireEvent, render, screen } from '@testing-library/react';

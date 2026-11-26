@@ -4,7 +4,7 @@
  * frase y un esquema que explican lo que se obtiene.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';

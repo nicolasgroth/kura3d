@@ -4,7 +4,7 @@
  * pieza escalada ×100: se compara la caja del contorno con la de la malla en coordenadas de mundo y se pasa a píxeles.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir } from './qa12-helpers';

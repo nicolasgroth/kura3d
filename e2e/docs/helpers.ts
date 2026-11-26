@@ -5,7 +5,7 @@
  * bus de comandos y guarda PNG en `docs/guia/img/<guia>-<paso>.png`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { statSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';

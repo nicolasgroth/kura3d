@@ -4,7 +4,7 @@
  * botón abierto) y devuelve el foco al riel; renombrar una placa con un nombre ya usado se rechaza con aviso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir, cmd } from './qa25a-helpers';

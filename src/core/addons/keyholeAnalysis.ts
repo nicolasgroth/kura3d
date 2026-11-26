@@ -7,7 +7,7 @@
  * agrega el store (depende de la escena). Función pura, sin el motor Manifold: corre en el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';

@@ -6,7 +6,7 @@
  * «Repartir en placas» se ejecuta con sus opciones por defecto mientras no exista su diálogo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

@@ -4,7 +4,7 @@
  * regular (cilindro facetado) a lo largo de +Y. Orientadas hacia afuera (volumen con signo positivo).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, Vec3 } from '../../../types/kura';

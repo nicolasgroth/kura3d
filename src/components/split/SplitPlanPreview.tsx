@@ -6,7 +6,7 @@
  * Cada plano se arrastra a lo largo de su eje y publica la posición al panel por `splitPlaneDrag`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { occupiedPieces } from '../../core/scene/splitOccupiedPieces';

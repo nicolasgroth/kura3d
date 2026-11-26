@@ -7,7 +7,7 @@
  *    imágenes RGBA con detección automática del fondo y tamaño final exacto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { CrossSection, Manifold } from 'manifold-3d';

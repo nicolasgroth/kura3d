@@ -4,7 +4,7 @@
  * (`src/engine/io/meshBodies.ts`) para que el Worker de importación la use sin depender de `core`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export { cachedMeshBodies, countMeshBodies, MAX_BODY_COUNT_TRIANGLES } from '../../engine/io/meshBodies';

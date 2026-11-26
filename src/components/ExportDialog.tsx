@@ -7,7 +7,7 @@
  * 3MF con todas las placas o un archivo por placa en ZIP (`dialogs/PlateExportOptions`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isPrintable } from '../core/scene/objectRole';

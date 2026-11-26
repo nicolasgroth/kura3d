@@ -4,7 +4,7 @@
  * `hasRealBase` justo debajo, en y sobre el umbral, que se llama igual (`minSupportAreaMm2`) en todo el motor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

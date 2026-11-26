@@ -5,7 +5,7 @@
  * detección de curvatura facetada por ángulo diedro entre caras vecinas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { OrientableMesh } from './meshOrientation';

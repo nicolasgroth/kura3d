@@ -3,7 +3,7 @@
  * @description Pruebas de región por triángulo y contorno de región.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { describe, expect, it } from 'vitest';
 import type { DetectedStructureRegion } from '../types/kura';

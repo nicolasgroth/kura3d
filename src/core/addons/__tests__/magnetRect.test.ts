@@ -5,7 +5,7 @@
  * al «arriba» de la cara con giro opcional de 90° y pared medida con la huella real (esquinas del rectángulo).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

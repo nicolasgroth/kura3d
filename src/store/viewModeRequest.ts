@@ -5,7 +5,7 @@
  * negocio (qué se rechaza) vive en `viewModeSlice`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { nextViewMode, shouldOfferViewModes, viewModeOf, type ViewMode } from '../core/scene/viewMode';

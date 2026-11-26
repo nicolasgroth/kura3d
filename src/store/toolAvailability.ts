@@ -6,7 +6,7 @@
  * La usan la barra, los atajos de teclado y la paleta de comandos (vía `toolActivation.ts`). Función pura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isReference } from '../core/scene/objectRole';

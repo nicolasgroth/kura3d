@@ -6,7 +6,7 @@
  * la malla real queda con min Y = 0, cerrada y con el mismo volumen.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

@@ -4,7 +4,7 @@
  * de comandos (arista objetivo y suavizado desactivado), para que ambos caminos hagan lo mismo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Refinado por defecto: arista de 1,5 mm sin suavizado (el suavizado es opt-in en el inspector). */

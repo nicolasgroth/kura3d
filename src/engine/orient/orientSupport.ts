@@ -7,7 +7,7 @@
  * se desplaza una fracción irracional de celda para que ningún centro caiga sobre aristas compartidas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Marco orientado: x, h (altura), z por vértice, intercalados. */

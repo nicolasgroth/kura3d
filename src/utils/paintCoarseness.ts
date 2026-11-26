@@ -4,7 +4,7 @@
  * mucho mayor que el radio del pincel, el pincel colorea la cara entera. Función pura.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Cuántas veces mayor que el radio debe ser el triángulo típico para avisar. */

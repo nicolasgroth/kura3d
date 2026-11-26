@@ -4,7 +4,7 @@
  * del líquido transferida), progreso por fase y cancelación que rechaza y termina el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';

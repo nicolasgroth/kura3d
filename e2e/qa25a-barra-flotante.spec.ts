@@ -6,7 +6,7 @@
  * textos sin claves crudas en es/en/de.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir, clavesCrudas, cmd, EVID, idioma, pasos, seleccionar } from './qa25a-helpers';

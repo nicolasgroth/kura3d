@@ -6,7 +6,7 @@
  * Cada muestra se nombra por su color (`colorName`) y marca la elegida con `aria-pressed` y un anillo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useId, useMemo, useState } from 'react';

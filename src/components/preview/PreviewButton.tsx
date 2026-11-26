@@ -5,7 +5,7 @@
  * cierra el panel, la vista previa obsoleta se limpia.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect } from 'react';

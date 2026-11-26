@@ -5,7 +5,7 @@
  * Lo usan igual el bus de la app (`store/plateArrangeCommands.ts`) y el MCP sin interfaz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { ARRANGE_CRITERIA, ARRANGE_ORIENTS, ARRANGE_RANGES, type ArrangeOptions, type ArrangeReport } from '../scene/plateArrangeTypes';

@@ -4,7 +4,7 @@
  * lista permitida: un comando que no figure aquí nunca se ejecuta desde una respuesta de proveedor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import {

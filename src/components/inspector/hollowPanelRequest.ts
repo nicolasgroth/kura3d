@@ -5,7 +5,7 @@
  * que arranca con su valor por defecto. El panel atiende la petición si es reciente.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { create } from 'zustand';

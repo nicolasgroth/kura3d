@@ -6,7 +6,7 @@
  * Dividir no se aplica aquí: deriva a Dividir para imprimir con la misma cama.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import {

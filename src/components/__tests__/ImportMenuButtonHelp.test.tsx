@@ -4,7 +4,7 @@
  * (`data-help`): el tooltip propio también aparece al llegar con Tab, y conservan nombre accesible y `title`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render, screen } from '@testing-library/react';

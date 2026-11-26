@@ -10,7 +10,7 @@
  * resta de la cara de unión para que la ubicación mueva los centros lejos de lo ya puesto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold, ManifoldToplevel } from 'manifold-3d';

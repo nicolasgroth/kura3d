@@ -4,7 +4,7 @@
  * abiertos en el visor y mostrarlo en el panel de análisis) y las acciones de diagnosticar y reparar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type * as engine from '../engine';

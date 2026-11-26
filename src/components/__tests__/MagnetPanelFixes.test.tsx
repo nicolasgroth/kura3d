@@ -7,7 +7,7 @@
  * arrastre y contraste del texto de error en tema oscuro.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';

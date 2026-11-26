@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Confirmación nativa antes de sobrescribir un proyecto reabierto desde Recientes.
 // La webview solo obtiene permiso de escritura sobre un archivo cuando el usuario lo elige en un
 // diálogo del sistema o, para los recientes, lo acepta en un diálogo nativo la primera vez.

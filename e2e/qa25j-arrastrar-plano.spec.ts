@@ -6,7 +6,7 @@
  * reasigna la pieza. Las coordenadas de pantalla se calculan proyectando desde la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir, aPixel } from './qa12-helpers';

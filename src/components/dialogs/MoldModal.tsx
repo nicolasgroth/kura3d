@@ -3,7 +3,7 @@
  * @description Diálogo generador de moldes y contramoldes (velas, silicona, resina).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useState } from 'react';

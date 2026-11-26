@@ -7,7 +7,7 @@
  * mínimos (`svgQuery.ts`) que `parseGradients` usa sobre el documento y los gradientes.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { DOMParser as XmlDomParser } from '@xmldom/xmldom';

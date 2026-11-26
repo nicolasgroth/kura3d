@@ -5,7 +5,7 @@
  * codificadas en mensajes de error (URL, JSON, capitalización, partidas por espacios).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -5,7 +5,7 @@
  * mecanismo tolerante de `preferencesStorage`; solo guarda uno de los tres valores permitidos, nunca texto libre.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { KEPT_HALF_PLACEMENTS, type KeptHalfPlacement } from '../core/scene/keptHalf';

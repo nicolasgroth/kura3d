@@ -5,7 +5,7 @@
  * avisos repetidos y el aviso del motor dan el mismo número de uniones para pegar, sobre el mismo total.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, dividirCubo, SHOTS } from './ux4-helpers';

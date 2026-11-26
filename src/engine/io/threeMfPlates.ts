@@ -5,7 +5,7 @@
  * ítems de `<build>` para la colocación y la agrupación en escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ImportedPart, ImportedPlate } from './importTypes';

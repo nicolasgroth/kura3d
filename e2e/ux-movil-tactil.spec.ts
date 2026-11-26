@@ -6,7 +6,7 @@
  * escritorio (1280 px). Capturas en .eval-tmp/ux-movil.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir, crearCubo, rect, SHOTS } from './ux-movil-helpers';

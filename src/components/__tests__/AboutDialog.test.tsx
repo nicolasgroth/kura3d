@@ -5,7 +5,7 @@
  * tabla de bibliotecas; huevo de pascua (10 clics rápidos sí; 9 o clics lentos no; movimiento reducido).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
@@ -147,7 +147,7 @@ describe('Acerca de: diálogo', () => {
     expect(text).toContain(NAME);
     expect(text).not.toMatch(/kura3d/i);
     expect(text).toContain('Nicolás Groth');
-    expect(text).toContain('MIT');
+    expect(text).toContain('AGPL-3.0');
   });
 
   it('lista las bibliotecas con su licencia en una tabla con cabeceras', () => {

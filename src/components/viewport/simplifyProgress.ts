@@ -5,7 +5,7 @@
  * de que en modelos de más de un millón de triángulos puede tardar varios minutos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t } from '../../i18n';

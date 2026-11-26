@@ -5,7 +5,7 @@
  * punto `relativeAnchor` de otro resultado; sin él, desde el origen de la cama (centro, Z = 0). Solo traslada.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Vec3 } from '../../../../types/kura';

@@ -4,7 +4,7 @@
  * y mallas de ~2 mil vértices: debe quedar bajo 1 s y sin piezas fuera.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

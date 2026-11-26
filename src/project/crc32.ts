@@ -4,7 +4,7 @@
  * corrupción: en la imagen sin comprimir (v1 a v5) y en los bytes comprimidos del sobre v6.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 const crcTable = Uint32Array.from({ length: 256 }, (_, i) => {

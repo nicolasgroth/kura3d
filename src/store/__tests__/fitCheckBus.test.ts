@@ -5,7 +5,7 @@
  * el informe en el store y éste se invalida al mover un objeto involucrado (no al mover uno ajeno).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

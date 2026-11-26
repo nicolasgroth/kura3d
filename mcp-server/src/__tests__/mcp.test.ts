@@ -5,7 +5,7 @@
  * con exportación STL binaria/3MF válida y el intercambio bidireccional vía WebSocket Live Bridge.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { mkdtemp, readFile, rm } from 'node:fs/promises';

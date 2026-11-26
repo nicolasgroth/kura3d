@@ -7,7 +7,7 @@
  * malla o la transformación de la pieza cambian por otra vía (`invalidateOrientOnSceneChange`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isEngineCancelled, type EngineJob } from '../../core/operations/engineClient';

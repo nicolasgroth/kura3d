@@ -6,7 +6,7 @@
  * normalización (un campo vacío no se guarda). El autor lo escribe la persona: nada se rellena solo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export interface ProjectInfo {

@@ -5,7 +5,7 @@
  * agranda hasta el recomendado si cabe) y sugerencias por unión trabada (pegar o cambiar de tipo).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';

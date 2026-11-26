@@ -4,7 +4,7 @@
  * en una curva y otra por un hueco pegado o superpuesto a otro, con los textos de i18n.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen } from '@testing-library/react';

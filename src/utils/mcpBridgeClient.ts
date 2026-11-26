@@ -7,7 +7,7 @@
  * (fuente única). Expone el estado del puente y la rotación efectiva del token en el servidor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect } from 'react';

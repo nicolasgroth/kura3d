@@ -4,7 +4,7 @@
  * `core/scene/userAxesContract` para que el bus de la app y el MCP sin interfaz usen las mismas funciones.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export * from '../core/scene/userAxesContract';

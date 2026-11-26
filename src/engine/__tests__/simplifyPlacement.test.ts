@@ -5,7 +5,7 @@
  * malla sigue en el mismo sistema local (no se recentra en XZ ni se apoya en la cama).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Box3, Vector3 } from 'three';

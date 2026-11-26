@@ -7,7 +7,7 @@
  * También el nombre libre y la forma mínima de una pieza para el Worker.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { PlacedMesh } from '../../core/operations/magnetOperations';

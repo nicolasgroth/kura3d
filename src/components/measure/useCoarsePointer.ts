@@ -4,7 +4,7 @@
  * mencionan teclas ni clic derecho y se ofrecen botones en su lugar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useEffect, useState } from 'react';

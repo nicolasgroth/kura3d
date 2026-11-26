@@ -7,7 +7,7 @@
  * (frierenmw, 478 mil triángulos) al 50 % con aviso de agujeros finos y cancelación de la vista previa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { existsSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';

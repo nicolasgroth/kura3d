@@ -6,7 +6,7 @@
  * (no en cada clic) y la comparten el relleno por región y la subdivisión del borde del pincel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';

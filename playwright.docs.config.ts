@@ -5,7 +5,7 @@
  * español. Con `KURA_URL` usa esa web; sin ella levanta Vite en 127.0.0.1:5239.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { defineConfig, devices } from '@playwright/test';

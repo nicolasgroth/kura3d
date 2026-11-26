@@ -3,7 +3,7 @@
  * @description Frases de «El sentido»: son tres, salen según el generador, existen en los 6 idiomas con `{name}`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

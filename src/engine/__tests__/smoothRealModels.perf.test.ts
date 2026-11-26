@@ -7,7 +7,7 @@
  * no se versionan) y se omite si no existe. Solo corre con `npm run test:perf` (`KURA_MODELS=a.stl,b.stl` elige).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

@@ -7,7 +7,7 @@
  * `SceneChange`) vive en una variable del slice, no en el estado reactivo; el estado guarda solo el informe.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { CommandError } from '../../core/bus/commandErrors';

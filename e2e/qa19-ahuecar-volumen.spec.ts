@@ -3,7 +3,7 @@
  * @description QA19: ahuecar por la interfaz baja el volumen de verdad (cubo 40 mm, pared 2 -> 17.344 mm³), el STL exportado y reimportado conserva el volumen, y una pared mayor que la pieza falla con error claro dejando la pieza intacta.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';

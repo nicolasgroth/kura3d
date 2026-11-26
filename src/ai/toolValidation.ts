@@ -5,7 +5,7 @@
  * desconocidos, parámetros no declarados, tipos incorrectos, valores fuera de enumeración o de rango.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describeOperationRange, isInOperationRange, type OperationRange } from '../engine/operationLimits';

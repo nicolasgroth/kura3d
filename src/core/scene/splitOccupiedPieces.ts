@@ -5,7 +5,7 @@
  * Así los rótulos y cajas de la vista previa coinciden con las piezas que resultan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { BedSplitPlan, PlannedPiece } from '../../engine/split/splitTypes';

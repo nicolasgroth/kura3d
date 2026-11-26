@@ -5,7 +5,7 @@
  * real.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Reducción relativa bajo la cual la simplificación se informa como marginal (1 %). */

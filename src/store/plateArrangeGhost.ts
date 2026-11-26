@@ -5,7 +5,7 @@
  * y la escena; con más piezas que `GHOST_MAX_PIECES` no se dibuja nada (el resumen sigue valiendo).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { poseBounds } from '../core/scene/plateArrange';

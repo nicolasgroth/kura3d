@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Módulo principal del backend nativo de Kurra Studio sobre Tauri v2.
 // Expone los comandos de proyectos .kura (y su registro de recientes), el almacén de claves IA del sistema operativo y el
 // proxy HTTP nativo hacia proveedores IA (la CSP del webview no abre hosts remotos).

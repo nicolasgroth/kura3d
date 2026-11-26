@@ -7,7 +7,7 @@
  * ambas piezas, piezas de un cuerpo, 0 aristas sueltas, sin interferencia y volumen conservado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { Manifold } from 'manifold-3d';

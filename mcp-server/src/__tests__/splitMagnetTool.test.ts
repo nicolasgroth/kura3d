@@ -4,7 +4,7 @@
  * enfrentados, el resumen los cuenta con el texto de polaridad y los parámetros del imán se validan por rango.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

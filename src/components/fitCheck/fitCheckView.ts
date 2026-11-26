@@ -5,7 +5,7 @@
  * (volumen de choque o holgura) en el formato del idioma. Funciones puras, sin React.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t } from '../../i18n';

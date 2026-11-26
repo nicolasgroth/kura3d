@@ -7,7 +7,7 @@
  * «Volver», y que a 1024 px nada desborda. A 1024 y 1440 px, tema claro y oscuro.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';

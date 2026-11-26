@@ -5,7 +5,7 @@
  * del visor: un arrastre que empieza sobre el panel del pincel no pinta (así se explicó el "primer trazo perdido").
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { stlCubes } from './ux-escena-helpers';

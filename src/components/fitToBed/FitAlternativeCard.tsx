@@ -4,7 +4,7 @@
  * título con el factor, tamaño resultante, giro, cara apoyada si cambia, marca de sugerida y avisos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useId } from 'react';

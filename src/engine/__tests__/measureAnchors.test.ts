@@ -5,7 +5,7 @@
  * (escala de 2 → área ×4); y un ancla deja de ser válida si el objeto desaparece o su malla cambia.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

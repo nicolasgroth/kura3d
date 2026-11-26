@@ -5,7 +5,7 @@
  * cruzan, conector poco firme, pieza en L cuyo recorrido topa con otra y tiempo en rejilla 4×4×3.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

@@ -12,7 +12,7 @@
  * nada cambia. Todo en un solo resultado: el llamador lo aplica en un paso de deshacer.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { PrinterProfile, SceneObject } from '../../types/kura';

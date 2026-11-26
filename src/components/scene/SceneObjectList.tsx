@@ -10,7 +10,7 @@
  * Al agrupar, la fila activa pasa al grupo nuevo (F2 lo renombra). Los atajos se leen con el botón «?».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';

@@ -6,7 +6,7 @@
  * valores del vaso son los mismos que da el Command Bus de la app (`src/store/__tests__/measureBus.test.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

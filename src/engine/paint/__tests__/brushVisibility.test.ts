@@ -6,7 +6,7 @@
  * cámara ni de la cara inferior queda pintada. El store y el trazo diferido: paintStrokeVisibility.test.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

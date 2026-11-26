@@ -6,7 +6,7 @@
  * caracteres de control, y se borra con la lista de recientes o al desactivar el recuerdo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { cleanInfoText, isValidInfoDate, RECENT_DESCRIPTION_MAX } from '../project/projectInfo';

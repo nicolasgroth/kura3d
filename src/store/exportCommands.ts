@@ -7,7 +7,7 @@
  * STL = un ZIP con un archivo por placa). Lo que no tiene placa se excluye y se informa en `skippedUnplaced`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { projectMetaOf } from '../project/projectMeta3mf';

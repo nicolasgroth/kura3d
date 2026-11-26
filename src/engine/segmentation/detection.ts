@@ -3,7 +3,7 @@
  * @description Detección determinística de sub-estructuras: cáscaras topológicas, crecimiento de regiones por costuras cóncavas y diedros agudos, fusión de ruido, límite de regiones y absorción de regiones de grosor cero.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type {

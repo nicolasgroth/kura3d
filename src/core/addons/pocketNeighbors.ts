@@ -6,7 +6,7 @@
  * (superposición). Así un segundo imán a 0,4 mm o encima del primero se avisa antes de aplicar las restas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, Vec3 } from '../../types/kura';

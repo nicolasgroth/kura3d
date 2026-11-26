@@ -7,7 +7,7 @@
  * TrueType. Es puro (sin WASM): lo comparten la primitiva de texto y la proyección sobre superficies.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { PathCommand } from 'opentype.js';

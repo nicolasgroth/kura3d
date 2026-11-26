@@ -6,7 +6,7 @@
  * transformaciones mundiales y un material por color.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData, SceneObject } from '../../types/kura';

@@ -4,7 +4,7 @@
  * (`aria-describedby`), para que un lector de pantalla no lea el párrafo completo como nombre del botón.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen } from '@testing-library/react';

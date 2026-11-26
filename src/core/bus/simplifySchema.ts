@@ -5,7 +5,7 @@
  * que devuelven el Command Bus de la app y el MCP sin interfaz (misma respuesta en los dos).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR } from '../../engine/operationLimits';

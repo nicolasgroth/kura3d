@@ -5,7 +5,7 @@
  * pose que el fantasma, no recibe clics y no toca la escena. La leyenda con texto está en el panel.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useMemo } from 'react';

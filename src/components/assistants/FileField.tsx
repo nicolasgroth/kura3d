@@ -6,7 +6,7 @@
  * respuesta y el archivo anteriores. El tipo se decide por el contenido (`sniffFileKind`), no por la extensión.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useRef, useState } from 'react';

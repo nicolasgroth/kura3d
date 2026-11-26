@@ -5,7 +5,7 @@
  * clic sin arrastre coloca el hueco; un arrastre (orbitar) no coloca y la pieza no se selecciona ni se mueve.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { placeMagnetAt, setMagnetHover, useMagnetPanel } from '../../store/magnetPanel';

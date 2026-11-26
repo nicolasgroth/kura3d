@@ -4,7 +4,7 @@
  * (y `p.<objeto>.<min|max|size|center>.<x|y|z>`), `d.<derivado>`, `s.<paso anterior>.<caja>.<eje>`, `bed.<w|d|h>`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { issue, type RecipeIssue } from '../errors';

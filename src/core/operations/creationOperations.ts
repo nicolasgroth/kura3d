@@ -6,7 +6,7 @@
  * store la corra en el Worker del motor y luego construya el objeto con la colocación de la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as engine from '../../engine';

@@ -4,7 +4,7 @@
  * `role="status"` con el nombre traducido, y Cancelar (botón o Escape en el visor) cancela.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, fireEvent, render, screen } from '@testing-library/react';

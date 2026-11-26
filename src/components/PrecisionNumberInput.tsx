@@ -7,7 +7,7 @@
  * - Botones compactos ▲/▼ con soporte de Shift (×10) y Alt/Ctrl (×0.1) + rueda del ratón al enfocar.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';

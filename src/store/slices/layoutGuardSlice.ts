@@ -6,7 +6,7 @@
  * comportan igual, además de los controles que ya salen deshabilitados con el motivo (`plateToolBlockReason`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { plateToolBlockReason } from '../../core/scene/viewMode';

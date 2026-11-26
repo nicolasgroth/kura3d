@@ -4,7 +4,7 @@
  * que la app (`runFitToBed`) y la misma forma de respuesta en ejes del usuario que el bus.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { fitBedOf, runFitToBed, type SceneChange } from '../../src/core/operations/index';

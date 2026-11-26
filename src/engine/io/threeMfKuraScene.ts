@@ -7,7 +7,7 @@
  * otro programa editó el archivo) devuelve null y el 3MF se lee de la forma normal.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import * as THREE from 'three';

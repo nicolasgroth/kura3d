@@ -3,7 +3,7 @@
  * @description Esquema, tipos y validadores del documento de proyecto .kura y sus errores.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { BRAND } from '../brand';

@@ -5,7 +5,7 @@
  * cara curva, Escape sin restos, textos sin claves crudas en es/en/de y sin el nombre antiguo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir as abrirBase, aPixel } from './qa12-helpers';

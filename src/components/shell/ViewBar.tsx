@@ -6,7 +6,7 @@
  * rótulos ocultos (preferencia global) muestra solo iconos. Reemplaza a las tarjetas flotantes del visor.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';

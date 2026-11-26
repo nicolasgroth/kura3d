@@ -5,7 +5,7 @@
  * ni i18n: los nombres llegan por `ResultNaming` y la construcción por `ObjectBuildPolicy`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { computeMeshStats, computeWorldStats, EngineError, type EngineWarning } from '../../engine';

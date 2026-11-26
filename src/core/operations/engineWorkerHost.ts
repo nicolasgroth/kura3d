@@ -5,7 +5,7 @@
  * `engine.worker.ts` lo conecta a `self`; las pruebas lo usan con un Worker simulado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { initManifoldEngine } from '../../engine/manifoldKernel';

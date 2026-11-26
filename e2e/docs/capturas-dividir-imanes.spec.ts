@@ -5,7 +5,7 @@
  * `npm run docs:capturas -- -g imanes`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { itemAccion } from '../acciones-helpers';

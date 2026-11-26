@@ -5,7 +5,7 @@
  * directo (engrosado sin booleanas) debe quedar bajo 5 s.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { expect, it, vi } from 'vitest';

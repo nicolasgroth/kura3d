@@ -5,7 +5,7 @@
  * devuelve el ítem para comprobarlo o elegirlo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, type Locator, type Page } from '@playwright/test';
 

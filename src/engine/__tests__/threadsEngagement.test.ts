@@ -6,7 +6,7 @@
  * altura de cabeza k de ISO 4017 y rango de diámetros único M3–M20 en motor y límites.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

@@ -19,7 +19,7 @@
  * hasta `EXACT_FIX_MAX_PARTS` piezas, solo pegar usa además el óptimo exacto (`assemblyOrderExact.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { alternativeType, jointDirections, restricts } from './assemblyConnectors';

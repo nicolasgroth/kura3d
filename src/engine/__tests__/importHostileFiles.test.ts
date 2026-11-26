@@ -6,7 +6,7 @@
  * (< 3 s) vive en `importHostileTiming.perf.test.ts` (`npm run test:perf`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { zipSync } from 'fflate';

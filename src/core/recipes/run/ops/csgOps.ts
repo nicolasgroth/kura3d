@@ -5,7 +5,7 @@
  * validan con los mismos lectores del bus (`parseBoolean`, `parseHull`, `parseCombine`) sobre la escena de trabajo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { booleanOperation, convexHull } from '../../../operations/csgOperations';

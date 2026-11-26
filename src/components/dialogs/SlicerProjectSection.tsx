@@ -6,7 +6,7 @@
  * con él, el 3MF exportado abre con sus placas, nombres y colores. Errores claros si el archivo no trae perfil.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useId, useState } from 'react';

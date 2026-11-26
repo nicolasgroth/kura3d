@@ -5,7 +5,7 @@
  * en el historial. Funciones puras salvo la lectura y escritura del almacenamiento.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { readStorage, writeStorage } from './preferencesStorage';

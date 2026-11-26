@@ -3,7 +3,7 @@
  * @description `renameProject` aplica en el store el mismo límite (`PROJECT_NAME_MAX`) y el mismo saneado que el campo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';

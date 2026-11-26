@@ -5,7 +5,7 @@
  * color) que no pueden esperar al WASM de Manifold para avisar de piezas abiertas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../types/kura';

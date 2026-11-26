@@ -4,7 +4,7 @@
  * usuario para imanes (clave de almacenamiento y saneo). Las holguras de los incluidos son las por defecto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { MAGNET_DEFAULTS, magnetFootprint, sanitizeMagnetParams, type MagnetParams } from './magnetPocket';

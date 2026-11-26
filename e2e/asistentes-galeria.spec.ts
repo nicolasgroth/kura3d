@@ -6,7 +6,7 @@
  * la galería conservando el filtro. Pensado para 1440 y 1024 px, tema claro y oscuro, consola sin errores.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './qa12-helpers';

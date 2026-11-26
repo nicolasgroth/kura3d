@@ -4,7 +4,7 @@
  * cancelable ganan al panel; con la cadena libre el Esc vuelve (dentro del panel y con el foco en el cuerpo).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useRef } from 'react';

@@ -8,7 +8,7 @@
  * entra en el historial ni en el `.kura`, ni cambia la geometría. Independientes del modo sin distracciones.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { readSessionStorage as readSession, readStorage, writeSessionStorage as writeSession, writeStorage } from '../preferencesStorage';

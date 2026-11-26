@@ -4,7 +4,7 @@
  * otro y pulsar F4 repite «Apoyar en la cama» (no Agrupar) y el aviso dice qué se repitió.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import { abrir, crear, SHOTS } from './ux3-edicion-helpers';

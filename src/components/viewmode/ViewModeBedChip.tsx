@@ -4,7 +4,7 @@
  * cama ni se evalúa «Fuera de volumen» (eso ocurre en Imprimir) y, al pulsarlo, vuelve a Imprimir.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React from 'react';

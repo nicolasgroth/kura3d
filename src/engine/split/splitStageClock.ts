@@ -4,7 +4,7 @@
  * perfilar sin herramientas externas. La ejecución los devuelve en `BedSplitResult.stageMs`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 /** Cronómetro de etapas: `lap(nombre)` suma el tiempo desde la marca anterior a esa etapa. */

@@ -8,7 +8,7 @@
  * operación devuelve el fallo para que la interfaz lo diga.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { create, type StoreApi, type UseBoundStore } from 'zustand';

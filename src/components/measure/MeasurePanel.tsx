@@ -8,7 +8,7 @@
  * punto en curso. Todo operable con teclado.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useMemo, useState } from 'react';

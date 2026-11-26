@@ -6,7 +6,7 @@
  * motor compartido y dan la misma respuesta. Rangos de `SMOOTH_RANGES`, `ORIENT_RANGES` y `OPERATION_RANGES`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';

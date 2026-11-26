@@ -4,7 +4,7 @@
  * de pintura y el inspector para que un lector de pantalla no anuncie códigos hexadecimales.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { t, type TranslationKey } from '../i18n';

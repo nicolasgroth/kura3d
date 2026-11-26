@@ -4,7 +4,7 @@
  * antes/después sale multiplicado por |sx·sy·sz| y el porcentaje de cambio no cambia. Motor real.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

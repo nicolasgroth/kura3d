@@ -5,7 +5,7 @@
  * Se guardan en preferencias locales; elegir una la deja como cama activa del proyecto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useId, useState } from 'react';

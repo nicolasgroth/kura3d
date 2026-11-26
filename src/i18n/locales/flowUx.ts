@@ -5,7 +5,7 @@
  * imprimibilidad y ahuecado desde el menú contextual, en los 6 idiomas. Se mezclan en cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export const FLOWUX_ES = {

@@ -6,7 +6,7 @@
  * un algoritmo cuadrático tarde minutos; el tope de la prueba (holgado, 10 s) solo atrapa ese caso.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strToU8, zipSync } from 'fflate';

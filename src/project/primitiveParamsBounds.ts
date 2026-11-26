@@ -6,7 +6,7 @@
  * sus parámetros editables quedan dentro de lo que la interfaz y el motor aceptan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { EDGE_SCOPES_BY_TYPE, PRIMITIVE_PARAM_RANGES, primitiveRangeFor, type PrimitiveRangeKey } from '../engine/primitiveLimits';

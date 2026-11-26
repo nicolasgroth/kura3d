@@ -8,7 +8,7 @@
  * agrupan por cuadro. La matemática vive en `core/scene/dragMovePlane`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { useCallback, useEffect, useRef } from 'react';

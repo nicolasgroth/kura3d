@@ -5,7 +5,7 @@
  * Solo corre con `npm run test:perf`: depende de la carga de la máquina.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { zipSync } from 'fflate';

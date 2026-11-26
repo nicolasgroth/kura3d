@@ -5,7 +5,7 @@
  * botones "Preparar para imprimir" y "Volver a armar" (un paso de deshacer cada uno).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useRef, useState } from 'react';

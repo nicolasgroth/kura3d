@@ -5,7 +5,7 @@
  * sin clave). El historial es un `role="log"` con `aria-live`, y cada solicitud se puede detener.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useRef, useState } from 'react';

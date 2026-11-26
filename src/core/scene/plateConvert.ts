@@ -18,7 +18,7 @@
  *   que falta sale en `skipped`. null si no se convirtió ningún grupo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { SceneGroup, SceneObject } from '../../types/kura';

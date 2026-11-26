@@ -5,7 +5,7 @@
  * Studio y OrcaSlicer), zip64 y defectos a pedido (cabecera local que no calza, sin directorio central).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 export function crc32(data: Uint8Array): number {

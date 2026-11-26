@@ -6,7 +6,7 @@
  * unidades, diccionario i18n bilingüe (ES/EN), formatos STL/OBJ/3MF y el asistente IA local.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { unzipSync, strFromU8 } from 'fflate';

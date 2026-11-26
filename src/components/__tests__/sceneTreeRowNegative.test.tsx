@@ -5,7 +5,7 @@
  * jsdom no calcula el diseño: se comprueba el DOM y las reglas CSS que lo garantizan.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { render } from '@testing-library/react';

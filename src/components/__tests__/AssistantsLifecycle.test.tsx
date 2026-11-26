@@ -5,7 +5,7 @@
  * de un archivo, foco al volver a la lista, y exclusión mutua con el panel de Texto 3D.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { act, render, screen, waitFor, within } from '@testing-library/react';

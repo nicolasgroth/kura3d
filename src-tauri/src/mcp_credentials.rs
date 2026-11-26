@@ -1,6 +1,6 @@
 // Autor: Nicolás Groth <ngroth@gmail.com>
 // Organización: ISGROTH — Innovación y Soluciones GROTH
-// Licencia: MIT
+// Licencia: AGPL-3.0-or-later
 // Descripción: Token del puente MCP local guardado en el almacén de credenciales del
 // sistema operativo (crate `keyring`), en una ranura propia `mcp-bridge` separada de
 // las claves IA. A diferencia de esas claves, el webview sí necesita leer el token:

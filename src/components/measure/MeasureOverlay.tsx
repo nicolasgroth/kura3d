@@ -5,7 +5,7 @@
  * de la capacidad. Se dibuja encima de las piezas (sin prueba de profundidad) y no toca la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useMemo } from 'react';

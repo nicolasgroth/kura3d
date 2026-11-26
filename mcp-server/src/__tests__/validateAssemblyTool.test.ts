@@ -5,7 +5,7 @@
  * escena, se anuncia como solo lectura y tipa los errores con códigos estables.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';

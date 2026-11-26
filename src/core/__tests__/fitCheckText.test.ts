@@ -4,7 +4,7 @@
  * y paridad de las claves `fitCheck.*` en los 6 idiomas con los mismos marcadores.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { describe, expect, it } from 'vitest';

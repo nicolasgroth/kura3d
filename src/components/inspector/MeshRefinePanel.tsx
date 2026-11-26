@@ -3,7 +3,7 @@
  * @description Panel Simplificar / Refinar malla del inspector (Simplificar con modos e informe en `SimplifySection`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useRef } from 'react';

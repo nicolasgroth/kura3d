@@ -6,7 +6,7 @@
  * fino), que también guarda delta si la topología no cambia e instantánea si se subdividió.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { isReference } from '../../core/scene/objectRole';

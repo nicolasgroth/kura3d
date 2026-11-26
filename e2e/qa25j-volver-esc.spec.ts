@@ -5,7 +5,7 @@
  * Corregidos tras la QA: Esc con el foco en el visor o en el botón del riel cierra el panel, y Cortar muestra un solo «Volver».
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { expect, test, type Page } from '@playwright/test';
 import { abrir, cmd } from './qa25a-helpers';

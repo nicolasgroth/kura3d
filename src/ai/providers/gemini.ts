@@ -5,7 +5,7 @@
  * La clave viaja solo en la cabecera `x-goog-api-key` (la pone el transporte), nunca en la URL.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ProviderAdapter, ToolCall } from '../providerLoop';

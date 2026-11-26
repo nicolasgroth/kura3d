@@ -7,7 +7,7 @@
  * ancho de cama, el marco de siempre desde el origen del mundo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { explodedTransforms } from '../../engine/split/splitLayout';

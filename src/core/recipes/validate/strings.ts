@@ -4,7 +4,7 @@
  * `strings.en`; cada idioma tiene un tope de claves. Los demás idiomas caen a `en` y luego a `es`.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { issue, joinPath, type RecipeIssue } from '../errors';

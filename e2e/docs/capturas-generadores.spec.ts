@@ -4,7 +4,7 @@
  * para imprimir (video WebM de Playwright, sin dependencias nuevas).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect } from '@playwright/test';
 import path from 'node:path';

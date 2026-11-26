@@ -6,7 +6,7 @@
  * paneles y responden con la misma forma que el MCP sin interfaz.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { EngineWarning } from '../engine/engineErrors';

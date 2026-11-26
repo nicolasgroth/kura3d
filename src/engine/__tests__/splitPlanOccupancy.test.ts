@@ -5,7 +5,7 @@
  * 9 y 12), marcadas como exactas, y la división real da lo mismo. El resumen de la interfaz las usa.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { ManifoldToplevel } from 'manifold-3d';

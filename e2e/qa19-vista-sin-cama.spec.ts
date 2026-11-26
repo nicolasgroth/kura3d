@@ -4,7 +4,7 @@
  * en campos de texto ni al renombrar; no altera el STL exportado ni se guarda en el estado del proyecto.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';

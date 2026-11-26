@@ -6,7 +6,7 @@
  * subtipos de pieza y colores de filamento; las placas se leen en `threeMfPlates.ts`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import { strFromU8 } from 'fflate';

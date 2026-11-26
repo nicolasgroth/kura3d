@@ -8,7 +8,7 @@
  * redondeo no se parte, se descarta entera. Solo medición: no es código de la app.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
- * @license MIT
+ * @license AGPL-3.0-or-later
  */
 
 import type { MeshData } from '../../types/kura';
