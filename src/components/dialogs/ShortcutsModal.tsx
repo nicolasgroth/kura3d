@@ -35,6 +35,7 @@ export const ShortcutsModal: React.FC<{ open: boolean; onClose: () => void }> = 
         { keys: ['Ctrl'], label: t(language, 'dialog.shortcuts.ctrlSnap') },
         { keys: ['Alt', 'Drag'], label: t(language, 'dialog.shortcuts.altClone') },
         { keys: ['↑', '↓', '←', '→'], label: t(language, 'dialog.shortcuts.nudgeXY') },
+        { keys: ['Drag', 'Alt', 'Shift'], label: t(language, 'uxEscena.drag.planeHelp') },
         { keys: ['PgUp', 'PgDn'], label: t(language, 'dialog.shortcuts.nudgeHeight') },
       ],
     },

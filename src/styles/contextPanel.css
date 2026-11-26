@@ -91,11 +91,6 @@
   gap: 8px;
 }
 
-.kura-ctx-panel .kura-ctx-header .kura-ctx-back {
-  width: auto;
-  flex-shrink: 0;
-}
-
 .kura-ctx-panel .kura-ctx-target {
   margin: 0;
   padding: 6px 12px;

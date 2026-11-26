@@ -28,12 +28,11 @@ export const PanelHeader: React.FC<{
   const language = useKuraStore((s) => s.language);
   const label = t(language, 'panel.action.back');
   return (
-    <div className={className ? `kura-panel-header kura-panel-head ${className}` : 'kura-panel-header kura-panel-head'}>
+    <div className={className ? `kura-panel-header ${className}` : 'kura-panel-header'}>
       <button
         type="button"
-        className="kura-btn kura-btn-sm kura-panel-back kura-ctx-back"
+        className="kura-btn kura-btn-sm kura-panel-back"
         data-testid="panel-back"
-        aria-label={label}
         onClick={onBack}
         {...helpAttrs('panel.back', language)}
       >

@@ -25,6 +25,7 @@ const signed = (value: number, decimals: number, lang: string) => {
 
 export const GizmoDragReadout: React.FC = () => {
   const start = useGizmoDragStore((s) => s.start);
+  const plane = useGizmoDragStore((s) => s.plane);
   const language = useKuraStore((s) => s.language);
   const unit = useKuraStore((s) => s.unitSystem);
   const current = useKuraStore((s) => (start ? s.objects.find((o) => o.id === start.id) ?? null : null));
@@ -60,7 +61,7 @@ export const GizmoDragReadout: React.FC = () => {
 
   return (
     <div className="kura-drag-readout" style={style} role="status" aria-live="off" aria-label={t(language, 'uxEscena.drag.label')} data-testid="gizmo-drag-readout">
-      {text}
+      {plane ? `${text} · ${t(language, 'uxEscena.drag.plane', { plane })}` : text}
     </div>
   );
 };
