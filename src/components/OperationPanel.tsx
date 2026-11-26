@@ -3,7 +3,7 @@
  * @description Contenedor común no modal (encabezado «Volver» + título; el pie lleva solo la acción del panel) de los paneles de operación (corte, molde, proyección,
  * rosca, imagen/litofanía). En escritorio ocupa el lugar del inspector (`#kura-op-slot` del área de
  * trabajo, ver operationPanel.css); en pantallas angostas se superpone (hoja inferior en móvil < 768 px), no tiene fondo ni bloquea el visor (se puede orbitar), lleva el foco al
- * abrir, lo devuelve al cerrar y Escape lo cierra con el foco dentro del panel.
+ * abrir, lo devuelve al cerrar y Escape lo cierra (cadena de prioridad en `store/escapeChain`).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -12,9 +12,9 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { panelClosed, panelOpened } from '../store/leftSidebarAutoFold';
-import { useKuraStore } from '../store/useKuraStore';
 import { PanelHeader } from './shell/PanelHeader';
-import { keyboardFocusInViewport } from './viewport/cutPlaneDrag';
+import { usePanelEscape } from './shell/usePanelEscape';
+import { usePanelFocusReturn, usePanelInitialFocus } from './shell/usePanelFocus';
 import '../styles/operationPanel.css';
 
 const FOCUSABLE = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -39,7 +39,6 @@ export const OperationPanel: React.FC<{
   initialFocus?: string;
 }> = ({ open, onClose, title, children, footer, className, initialFocus }) => {
   const panelRef = useRef<HTMLElement | null>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const [insets, setInsets] = useState(dockInsets);
 
@@ -51,22 +50,9 @@ export const OperationPanel: React.FC<{
     return () => window.removeEventListener('resize', update);
   }, [open]);
 
-  // Foco: entra al abrir y vuelve a donde estaba al cerrar.
-  useEffect(() => {
-    if (!open) return;
-    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const panel = panelRef.current;
-    // Se busca dentro del cuerpo: con `.kura-op-panel-body ${FOCUSABLE}` el prefijo solo afectaba a la
-    // primera alternativa de la lista y `button` encontraba antes la X de cerrar del encabezado.
-    const body = panel?.querySelector<HTMLElement>('.kura-op-panel-body');
-    const wanted = initialFocus ? body?.querySelector<HTMLElement>(initialFocus) : null;
-    const first = wanted ?? body?.querySelector<HTMLElement>(FOCUSABLE) ?? panel;
-    first?.focus({ preventScroll: true });
-    return () => {
-      const back = returnFocusRef.current;
-      if (back && back.isConnected) back.focus({ preventScroll: true });
-    };
-  }, [open, initialFocus]);
+  // Foco: se recuerda el origen al abrir, entra al primer control (o al indicado) y vuelve al origen al cerrar.
+  usePanelFocusReturn(panelRef, { active: open, restoreOnClose: true });
+  usePanelInitialFocus(panelRef, { active: open, key: initialFocus, bodySelector: '.kura-op-panel-body', preferred: initialFocus, focusable: FOCUSABLE, fallbackSelector: 'root' });
 
   // Con la ventana angosta, la lista de escena se pliega mientras el panel está abierto y se restaura al cerrarlo.
   useEffect(() => {
@@ -75,28 +61,10 @@ export const OperationPanel: React.FC<{
     return panelClosed;
   }, [open]);
 
-  // Escape con el foco en el visor también cierra el panel (salvo que haya algo que cancelar).
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || !keyboardFocusInViewport(e.target)) return;
-      if (useKuraStore.getState().busyProgress?.cancellable) return;
-      e.preventDefault();
-      onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  // Esc: un solo dueño (cadena de prioridad en `store/escapeChain`), con el foco en el panel o en el visor.
+  usePanelEscape(panelRef, onClose, { level: 'panel', outside: 'viewport', enabled: open });
 
   if (!open || typeof document === 'undefined') return null;
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' && !e.defaultPrevented) {
-      e.preventDefault();
-      e.stopPropagation();
-      onClose();
-    }
-  };
 
   return createPortal(
     <section
@@ -107,7 +75,6 @@ export const OperationPanel: React.FC<{
       tabIndex={-1}
       className={className ? `kura-op-panel ${className}` : 'kura-op-panel'}
       style={{ '--op-panel-top': `${insets.top}px`, '--op-panel-bottom': `${insets.bottom}px` } as React.CSSProperties}
-      onKeyDown={onKeyDown}
     >
       <PanelHeader onBack={onClose} title={title} className="kura-op-panel-header" titleId={titleId} />
       <div className="kura-op-panel-body">{children}</div>
