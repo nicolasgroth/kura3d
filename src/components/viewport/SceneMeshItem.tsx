@@ -7,6 +7,7 @@
  */
 
 import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';
+import { bodyPointerPlan } from './bodyPointerPlan';
 import { markContextMenuHandled } from './contextMenu/handledEvents';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { type ThreeEvent, useFrame } from '@react-three/fiber';
@@ -268,21 +269,15 @@ export const SceneMeshItem: React.FC<{
         }
       };
 
-      // Objeto ya seleccionado: arrastrarlo lo mueve; sin arrastre, el clic conserva su efecto. El manipulador
-      // (si ya tomó el gesto) tiene prioridad sobre el cuerpo.
-      if (
-        isSelected &&
-        !additive &&
-        activeTool === 'select' &&
-        transformMode === 'translate' &&
-        !useGizmoDragStore.getState().start
-      ) {
+      // Objeto ya seleccionado: arrastrarlo lo mueve; sin arrastre, el clic conserva su efecto (con Mayús/Ctrl, alternar
+      // la selección: ya no al apretar, o un arrastre con Mayús, que restringe a un eje, lo deseleccionaría antes de moverlo).
+      // Pieza no seleccionada: un arrastre que orbita la cámara no debe cambiar la selección; solo un clic sin movimiento.
+      const plan = bodyPointerPlan({ isSelected, additive, activeTool, transformMode, gizmoStarted: Boolean(useGizmoDragStore.getState().start) });
+      if (plan === 'drag') {
         onStartMoveDrag(e, pickAndInspect);
         return;
       }
-      // Pieza no seleccionada (con otra selección, o sin ninguna): un arrastre que orbita la cámara no debe
-      // seleccionar ni cambiar la selección; solo un clic sin movimiento.
-      if (!isSelected && !additive && activeTool === 'select') {
+      if (plan === 'clickOnly') {
         onStartMoveDrag(e, pickAndInspect, { moveEnabled: false });
         return;
       }

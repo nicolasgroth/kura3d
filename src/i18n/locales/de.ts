@@ -15,6 +15,7 @@ import { MENU_IDEAS_DE } from './menuIdeas';
 import { GROUPS_DE } from './groups';
 import { PLATES_VIEW_DE } from './placasVista';
 import { VIEW_MODE_DE } from './vistaModos';
+import { USAB_N26B_DE } from './usabN26b';
 import { PLATES_EXPORT_DE } from './placasExportar';
 import { PLATES_BED_DE } from './placasCama';
 import { PLATES_ARRANGE_DE } from './placasRepartir';
@@ -87,6 +88,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...GROUPS_DE,
   ...PLATES_VIEW_DE,
   ...VIEW_MODE_DE,
+  ...USAB_N26B_DE,
   ...PLATES_EXPORT_DE,
   ...PLATES_BED_DE,
   ...PLATES_ARRANGE_DE,
@@ -330,7 +332,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'Auf die Modelloberfläche klicken, um eine Kugel zu subtrahieren',
   'viewport.cut.hint': 'Öffnen Sie den Ebenenschnitt-Dialog für automatische Verbinder',
   'viewport.cut.openDialog': 'Ebenenschnitt konfigurieren',
-  'viewport.protip.select': 'Tipp: Gewähltes Objekt ziehen verschiebt es · Alt+Ziehen klont · Shift proportional skalieren · Strg 15°-Raster · ↑↓←→ bewegt',
+  'viewport.protip.select': 'Tipp: Gewähltes Objekt ziehen verschiebt es (Shift beschränkt auf eine Achse, Alt verschiebt vertikal) · Alt beim Greifen des Manipulators klont · Shift proportional skalieren · Strg rastet ein · ↑↓←→ bewegt',
   'viewport.protip.paint': 'Tipp: Klicken/Ziehen bemalt 3MF-Flächen · P kehrt zur Auswahl zurück',
   'viewport.protip.erase': 'Tipp: Auf Modell klicken zum Schnitzen · Radius oben anpassen',
   'viewport.protip.cut': 'Tipp: Achse & Verbinder konfigurieren · X schaltet Röntgen um',

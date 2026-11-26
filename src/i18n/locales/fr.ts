@@ -15,6 +15,7 @@ import { MENU_IDEAS_FR } from './menuIdeas';
 import { GROUPS_FR } from './groups';
 import { PLATES_VIEW_FR } from './placasVista';
 import { VIEW_MODE_FR } from './vistaModos';
+import { USAB_N26B_FR } from './usabN26b';
 import { PLATES_EXPORT_FR } from './placasExportar';
 import { PLATES_BED_FR } from './placasCama';
 import { PLATES_ARRANGE_FR } from './placasRepartir';
@@ -87,6 +88,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...GROUPS_FR,
   ...PLATES_VIEW_FR,
   ...VIEW_MODE_FR,
+  ...USAB_N26B_FR,
   ...PLATES_EXPORT_FR,
   ...PLATES_BED_FR,
   ...PLATES_ARRANGE_FR,
@@ -330,7 +332,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'Cliquez sur la surface du modèle pour soustraire une sphère',
   'viewport.cut.hint': 'Ouvrez la fenêtre Coupe par Plan pour diviser avec connecteurs automatiques',
   'viewport.cut.openDialog': 'Configurer la Coupe par Plan',
-  'viewport.protip.select': 'Astuce : glisser un objet sélectionné le déplace · Alt+glisser clone · Shift échelle prop. · Ctrl pas 15° · ↑↓←→ déplace',
+  'viewport.protip.select': 'Astuce : glisser un objet sélectionné le déplace (Maj le limite à un axe, Alt le déplace à la verticale) · Alt en saisissant le manipulateur clone · Maj échelle prop. · Ctrl accroche · ↑↓←→ déplace',
   'viewport.protip.paint': 'Astuce : Cliquez ou glissez pour peindre en 3MF · P revient à Sélection',
   'viewport.protip.erase': 'Astuce : Cliquez sur le modèle pour sculpter · Réglez le rayon ci-dessus',
   'viewport.protip.cut': 'Astuce : Configurez l’axe et les connecteurs · X active Rayons X',

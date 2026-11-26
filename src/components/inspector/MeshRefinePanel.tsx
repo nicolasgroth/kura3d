@@ -44,12 +44,12 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
     <div className="kura-form-field" ref={rootRef}>
       <label>{t(language, 'inspector.pro.meshTitle')}</label>
       <div role="group" aria-labelledby={`${uid}-simplify`} className="kura-mesh-group">
-        <h4 id={`${uid}-simplify`} className="kura-mesh-group-title">{t(language, 'simplify.section.simplify')}</h4>
+        <h3 id={`${uid}-simplify`} className="kura-mesh-group-title">{t(language, 'simplify.section.simplify')}</h3>
         <SimplifySection primary={primary} toleranceMm={simplifyTolMm} setToleranceMm={setSimplifyTolMm} invalid={invalid} />
       </div>
 
       <div role="group" aria-labelledby={`${uid}-refine`} className="kura-mesh-group">
-        <h4 id={`${uid}-refine`} className="kura-mesh-group-title">{t(language, 'simplify.section.refine')}</h4>
+        <h3 id={`${uid}-refine`} className="kura-mesh-group-title">{t(language, 'simplify.section.refine')}</h3>
       <div className="kura-field-row">
         <span className="kura-field-label">{t(language, 'inspector.pro.refineEdge')}</span>
         <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -89,7 +89,7 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
       </div>
 
       <div role="group" aria-labelledby={`${uid}-hull`} className="kura-mesh-group">
-        <h4 id={`${uid}-hull`} className="kura-mesh-group-title">{t(language, 'simplify.section.hull')}</h4>
+        <h3 id={`${uid}-hull`} className="kura-mesh-group-title">{t(language, 'simplify.section.hull')}</h3>
       <button
         type="button"
         className="kura-btn kura-btn-sm"

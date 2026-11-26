@@ -54,6 +54,7 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
     plates: [],
     activePlateId: null,
     plateSolo: false,
+    lastMoveToPlateFits: true,
 
     createPlate: (options = {}) => {
       if (rejectWhileLocked()) return null;
@@ -163,6 +164,7 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       // Sin piezas que mover no se crea la placa vacía: «Placa nueva» solo existe para recibir piezas.
       if (!result) return 0;
       commit(result.scene, result.created ? { activePlateId: result.created } : followSelection(result.scene.objects));
+      set({ lastMoveToPlateFits: result.fits });
       if (result.created) get().requestCameraPreset('plates');
       return result.moved.length;
     },

@@ -152,6 +152,7 @@ export const ObjectOperations: React.FC<{ primary: SceneObject }> = ({ primary }
               keys="Shift+C"
               tip={t(language, 'split.openTip')}
               onClick={() => setActiveDialog('splitForBed')}
+              extra={{ 'data-opens': 'splitForBed' }}
             />
             <IconOp name={t(language, 'fit.open')} tip={t(language, 'fit.openTip')} icon={<Minimize2 size={ICON} aria-hidden="true" />} reason={blockedReason ?? plateReason} onClick={() => void openFitToBed([primary.id])} />
             {dialogOp('inspector.op.splitParts', <Split size={ICON} aria-hidden="true" />, () => void splitDisconnectedObject(primary.id), blockedReason)}

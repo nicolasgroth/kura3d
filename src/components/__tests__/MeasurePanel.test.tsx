@@ -83,6 +83,22 @@ describe('MeasurePanel', () => {
     expect(screen.getByTestId('measure-list').textContent).toContain('5,66 cm');
   });
 
+  it('sin puntos marcados un solo Esc sale de Medir; con puntos, el primero los limpia y el segundo sale', () => {
+    render(<MeasurePanel />);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(store().activeTool).toBe('select');
+
+    useKuraStore.setState({ activeTool: 'measure' } as never);
+    const top = faceWith(cube, [0, 1, 0]);
+    const { min, max } = corners(cube);
+    act(() => useMeasureStore.getState().pick(cube, [min[0], max[1], 0], top, { snapRadiusMm: 0, noSnap: true, additive: false }));
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useMeasureStore.getState().pending).toHaveLength(0);
+    expect(store().activeTool).toBe('measure');
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(store().activeTool).toBe('select');
+  });
+
   it('Esc cancela el punto en curso; borrar una y borrar todas', () => {
     render(<MeasurePanel />);
     const top = faceWith(cube, [0, 1, 0]);

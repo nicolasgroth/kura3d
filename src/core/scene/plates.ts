@@ -206,11 +206,22 @@ export function deletePlate(scene: PlateScene, plateId: string, reassignTo?: str
   return { objects, plates };
 }
 
-/** Renombra (recortado a `MAX_PLATE_NAME`); null si la placa no existe, el nombre queda vacío o no cambia. */
+/** ¿Otra placa (no `plateId`) ya usa este nombre, sin distinguir mayúsculas? */
+export function otherPlateNameTaken(plates: readonly ScenePlate[], plateId: string, name: string): boolean {
+  const wanted = cleanName(name).toLowerCase();
+  return wanted !== '' && plates.some((p) => p.id !== plateId && p.name.trim().toLowerCase() === wanted);
+}
+
+/**
+ * Renombra (recortado a `MAX_PLATE_NAME`); null si la placa no existe, el nombre queda vacío o no cambia. Si otra
+ * placa ya usa el nombre, el resultado se ajusta con `uniquePlateName` (la interfaz lo rechaza antes con un aviso).
+ */
 export function renamePlate(scene: PlateScene, plateId: string, name: string): PlateScene | null {
-  const clean = cleanName(name);
+  const cleaned = cleanName(name);
   const plate = findPlate(scene.plates, plateId);
-  if (!plate || !clean || clean === plate.name) return null;
+  if (!plate || !cleaned) return null;
+  const clean = uniquePlateName(scene.plates.filter((p) => p.id !== plateId), cleaned);
+  if (clean === plate.name) return null;
   return { objects: scene.objects, plates: scene.plates.map((p) => (p.id === plateId ? { ...p, name: clean } : p)) };
 }
 

@@ -1,7 +1,8 @@
 /**
  * @file src/core/scene/plateMove.ts
  * @description Mover piezas entre placas (funciones puras): reasigna `plateRef` y traslada la pieza al hueco
- * equivalente de la placa destino (misma posición relativa al origen de su placa). Con la escena en imprimir se
+ * equivalente de la placa destino (misma posición relativa al origen de su placa; si así quedaría fuera de la cama
+ * destino, se acerca hasta que su caja quede dentro). Con la escena en imprimir se
  * mueve la pose viva; en armado la figura no se toca y se traslada la pose de impresión (`restPose`). Los
  * agregados ligados (imanes, torretas) y los negativos de un grupo que se mueve entero acompañan a su pieza (y si
  * tenían placa, pasan a la destino).
@@ -23,6 +24,8 @@ export interface MoveToPlateResult {
   scene: PlateScene;
   /** Ids de las piezas que cambiaron de placa (sin los acompañantes). */
   moved: string[];
+  /** false si la pieza (o el bloque) es más grande que la cama destino: se movió, pero no cabe. */
+  fits: boolean;
 }
 
 const clean = (n: number) => (Math.abs(n) < 1e-9 ? 0 : n);
@@ -75,6 +78,15 @@ export function movePiecesToPlate(
     if (d) delta.set(id, d);
   }
 
+  // La pieza debe quedar dentro de la cama destino: si conservar el lugar relativo la dejaría fuera, se acerca.
+  const bedBox = plateBedBox(dest, projectBed);
+  const inside = fitInsideBox(movers.map((o) => {
+    const pose = printPoseOf(scene.objects, o, layout, ctx);
+    const d = delta.get(o.id)!;
+    return footprintOf(o.mesh, [pose.position[0] + d[0], pose.position[1], pose.position[2] + d[1]], pose.rotation, o.scale);
+  }), bedBox);
+  if (inside.dx !== 0 || inside.dz !== 0) for (const [id, d] of delta) delta.set(id, [d[0] + inside.dx, d[1] + inside.dz]);
+
   if (layout === 'print') {
     const moverIds = new Set(movers.map((o) => o.id));
     const others = scene.objects.filter((o) => o.plateRef === destId && !moverIds.has(o.id) && !followers.has(o.id));
@@ -107,7 +119,44 @@ export function movePiecesToPlate(
     };
     return next;
   });
-  return { scene: { objects, plates: scene.plates }, moved: movers.map((o) => o.id) };
+  return { scene: { objects, plates: scene.plates }, moved: movers.map((o) => o.id), fits: inside.fits };
+}
+
+/** Rectángulo de la cama de una placa en mundo. */
+function plateBedBox(plate: ScenePlate, projectBed: ProjectBed): { minX: number; maxX: number; minZ: number; maxZ: number } {
+  const b = plateBed(plate, projectBed);
+  return { minX: plate.origin[0] - b.widthMm / 2, maxX: plate.origin[0] + b.widthMm / 2, minZ: plate.origin[1] - b.depthMm / 2, maxZ: plate.origin[1] + b.depthMm / 2 };
+}
+
+/** Pose de impresión de la pieza: la viva en imprimir; en armado, la guardada (`restPose`) o la derivada. */
+function printPoseOf(objects: readonly SceneObject[], o: SceneObject, layout: SceneLayout, ctx: LayoutContext): { position: Vec3; rotation: Vec3 } {
+  if (layout === 'print') return { position: o.position, rotation: o.rotation };
+  const rest = o.restPose ?? layoutPoseOf(objects, o, 'assembly', 'print', ctx);
+  return { position: rest.position, rotation: rest.rotation };
+}
+
+const EPS_MM = 1e-6;
+
+/**
+ * Traslado (dx, dz) que lleva la caja del conjunto de huellas dentro de `box` con el menor desplazamiento; `fits` es
+ * false si el conjunto es más grande que la cama en algún eje (entonces se deja como está: conserva su lugar relativo y sobresale por igual).
+ */
+function fitInsideBox(
+  prints: ReadonlyArray<{ minX: number; maxX: number; minZ: number; maxZ: number } | null>, box: { minX: number; maxX: number; minZ: number; maxZ: number },
+): { dx: number; dz: number; fits: boolean } {
+  const fps = prints.filter((f): f is NonNullable<typeof f> => f !== null);
+  if (fps.length === 0) return { dx: 0, dz: 0, fits: true };
+  const lo = (key: 'minX' | 'minZ') => Math.min(...fps.map((f) => f[key]));
+  const hi = (key: 'maxX' | 'maxZ') => Math.max(...fps.map((f) => f[key]));
+  const axis = (min: number, max: number, bMin: number, bMax: number) => {
+    if (max - min > bMax - bMin + EPS_MM) return { d: 0, fits: false };
+    if (min < bMin - EPS_MM) return { d: bMin - min, fits: true };
+    if (max > bMax + EPS_MM) return { d: bMax - max, fits: true };
+    return { d: 0, fits: true };
+  };
+  const x = axis(lo('minX'), hi('maxX'), box.minX, box.maxX);
+  const z = axis(lo('minZ'), hi('maxZ'), box.minZ, box.maxZ);
+  return { dx: x.d, dz: z.d, fits: x.fits && z.fits };
 }
 
 /**

@@ -34,6 +34,24 @@
   padding-left: 16px;
 }
 
+.kura-simplify-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 8px;
+  border-left: 3px solid var(--accent-amber);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent-amber) 12%, transparent);
+  color: var(--text-primary);
+}
+
+.kura-simplify-notice > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--accent-amber);
+}
+
 .kura-simplify-report-warnings {
   border-left: 2px solid var(--text-secondary);
   padding-left: 12px;

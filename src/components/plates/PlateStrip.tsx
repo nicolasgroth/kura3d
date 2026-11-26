@@ -10,9 +10,10 @@
  * @license MIT
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2, CircleDashed, Eye, LayoutGrid, Plus, Printer, Trash2 } from 'lucide-react';
 import { PlateBedPicker } from './PlateBedPicker';
+import { otherPlateNameTaken } from '../../core/scene/plates';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { openPlateArrangePanel } from '../../store/plateArrangePanel';
@@ -36,29 +37,51 @@ const RenameField: React.FC<{ chip: PlateChip; onDone: (name: string | null) => 
   const language = useKuraStore((s) => s.language);
   const ref = useRef<HTMLInputElement | null>(null);
   const finished = useRef(false);
+  const [taken, setTaken] = useState<string | null>(null);
+  const errorId = useId();
   useEffect(() => {
     ref.current?.focus();
     ref.current?.select();
   }, []);
-  const finish = (value: string | null) => {
+  const finish = (value: string | null, fromBlur = false) => {
     if (finished.current) return;
+    if (value !== null) {
+      // Un nombre que ya usa otra placa no se acepta: se avisa junto al campo y se conserva lo escrito.
+      const clash = otherPlateNameTaken(useKuraStore.getState().plates, chip.id, value);
+      if (clash) {
+        setTaken(value.trim());
+        if (!fromBlur) ref.current?.focus();
+        return;
+      }
+    }
     finished.current = true;
     onDone(value);
   };
   return (
-    <input
-      ref={ref}
-      className="kura-plate-rename"
-      defaultValue={chip.name}
-      maxLength={80}
-      aria-label={t(language, 'plates.rename.label')}
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (e.key === 'Enter') finish(e.currentTarget.value);
-        else if (e.key === 'Escape') finish(null);
-      }}
-      onBlur={(e) => finish(e.currentTarget.value)}
-    />
+    <span className="kura-plate-rename-wrap">
+      <input
+        ref={ref}
+        className="kura-plate-rename"
+        defaultValue={chip.name}
+        maxLength={80}
+        aria-label={t(language, 'plates.rename.label')}
+        aria-invalid={taken ? true : undefined}
+        aria-describedby={taken ? errorId : undefined}
+        onChange={() => taken && setTaken(null)}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'Enter') finish(e.currentTarget.value);
+          else if (e.key === 'Escape') finish(null);
+        }}
+        onBlur={(e) => finish(e.currentTarget.value, true)}
+      />
+      {taken && (
+        <span id={errorId} className="kura-plate-rename-error" role="alert">
+          <AlertTriangle size={12} aria-hidden="true" />
+          {t(language, 'plates.rename.taken', { name: taken })}
+        </span>
+      )}
+    </span>
   );
 };
 

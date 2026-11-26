@@ -28,6 +28,8 @@ export interface PanelFocusReturnOptions {
   restoreOnClose?: boolean;
   /** `false`: no recuerda el origen; `restore` va directo a los respaldos (el riel de herramientas). */
   remember?: boolean;
+  /** Con `restoreOnClose`: si el origen ya no existe (su botón se desmontó al abrir), se enfoca la primera coincidencia visible. */
+  returnSelector?: string;
 }
 
 /**
@@ -35,7 +37,7 @@ export interface PanelFocusReturnOptions {
  * primero el recordado (si sigue visible), luego los respaldos en orden y al final el encabezado del panel.
  */
 export function usePanelFocusReturn(rootRef: RefObject<HTMLElement | null>, opts: PanelFocusReturnOptions = {}) {
-  const { active = true, key, restoreOnClose = false, remember = true } = opts;
+  const { active = true, key, restoreOnClose = false, remember = true, returnSelector } = opts;
   const returnRef = useRef<HTMLElement | null>(null);
   useLayoutEffect(() => {
     if (!active || !remember) return;
@@ -44,9 +46,21 @@ export function usePanelFocusReturn(rootRef: RefObject<HTMLElement | null>, opts
     if (!restoreOnClose) return;
     return () => {
       const back = returnRef.current;
-      if (back && back.isConnected) back.focus({ preventScroll: true });
+      if (back && back.isConnected) {
+        back.focus({ preventScroll: true });
+        return;
+      }
+      if (!returnSelector) return;
+      // El control de origen se vuelve a montar tras el cierre: se busca en los dos cuadros siguientes.
+      let tries = 0;
+      const seek = () => {
+        const el = document.querySelector<HTMLElement>(returnSelector);
+        if (isVisible(el)) el.focus({ preventScroll: true });
+        else if (++tries < 3) requestAnimationFrame(seek);
+      };
+      requestAnimationFrame(seek);
     };
-  }, [active, key, restoreOnClose, remember, rootRef]);
+  }, [active, key, restoreOnClose, remember, rootRef, returnSelector]);
   const restore = useCallback((...fallbacks: Array<() => HTMLElement | null>) => {
     const target = returnRef.current;
     requestAnimationFrame(() => {

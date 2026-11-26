@@ -20,6 +20,7 @@ import { MENU_IDEAS_EN, MENU_IDEAS_ES } from './locales/menuIdeas';
 import { GROUPS_EN, GROUPS_ES } from './locales/groups';
 import { PLATES_VIEW_EN, PLATES_VIEW_ES } from './locales/placasVista';
 import { VIEW_MODE_EN, VIEW_MODE_ES } from './locales/vistaModos';
+import { USAB_N26B_EN, USAB_N26B_ES } from './locales/usabN26b';
 import { PLATES_EXPORT_EN, PLATES_EXPORT_ES } from './locales/placasExportar';
 import { PLATES_BED_EN, PLATES_BED_ES } from './locales/placasCama';
 import { PLATES_ARRANGE_EN, PLATES_ARRANGE_ES } from './locales/placasRepartir';
@@ -94,6 +95,7 @@ export const TRANSLATIONS_ES = {
   ...GROUPS_ES,
   ...PLATES_VIEW_ES,
   ...VIEW_MODE_ES,
+  ...USAB_N26B_ES,
   ...PLATES_EXPORT_ES,
   ...PLATES_BED_ES,
   ...PLATES_ARRANGE_ES,
@@ -337,7 +339,7 @@ export const TRANSLATIONS_ES = {
   'viewport.erase.hint': 'Haz clic sobre la superficie del objeto para sustraer una esfera',
   'viewport.cut.hint': 'Usa el diálogo de Corte por Plano para dividir con encastres automáticos',
   'viewport.cut.openDialog': 'Configurar Corte por Plano',
-  'viewport.protip.select': 'Consejo: arrastrar un objeto seleccionado lo mueve · Alt+arrastrar clona · Shift escala proporcional · Ctrl ajusta a 15° · ↑↓←→ mueve',
+  'viewport.protip.select': 'Consejo: arrastrar un objeto seleccionado lo mueve (Mayús lo limita a un eje, Alt lo mueve en vertical) · Alt al tomar el manipulador clona · Mayús escala proporcional · Ctrl ajusta · ↑↓←→ mueve',
   'viewport.protip.paint': 'Consejo: haz clic o arrastra para pintar caras 3MF · P vuelve a Selección',
   'viewport.protip.erase': 'Consejo: haz clic en el modelo para tallar una esfera · Ajusta el radio arriba',
   'viewport.protip.cut': 'Consejo: configura el eje y los conectores · X activa Rayos X',
@@ -1448,6 +1450,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...GROUPS_EN,
   ...PLATES_VIEW_EN,
   ...VIEW_MODE_EN,
+  ...USAB_N26B_EN,
   ...PLATES_EXPORT_EN,
   ...PLATES_BED_EN,
   ...PLATES_ARRANGE_EN,
@@ -1683,7 +1686,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'Click on model surface to subtract a sphere',
   'viewport.cut.hint': 'Open the Plane Cut dialog to split with automatic connectors',
   'viewport.cut.openDialog': 'Configure Plane Cut',
-  'viewport.protip.select': 'Tip: dragging a selected object moves it · Alt+drag clones · Shift proportional scale · Ctrl 15° snap · ↑↓←→ nudges',
+  'viewport.protip.select': 'Tip: dragging a selected object moves it (Shift limits it to one axis, Alt moves it vertically) · Alt when grabbing the gizmo clones · Shift proportional scale · Ctrl snaps · ↑↓←→ nudges',
   'viewport.protip.paint': 'Tip: Click or drag to paint 3MF faces · P returns to Select',
   'viewport.protip.erase': 'Tip: Click model to carve sphere · Adjust radius above',
   'viewport.protip.cut': 'Tip: Configure axis & connectors · X toggles X-Ray',

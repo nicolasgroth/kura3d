@@ -15,6 +15,7 @@ import { MENU_IDEAS_HI } from './menuIdeas';
 import { GROUPS_HI } from './groups';
 import { PLATES_VIEW_HI } from './placasVista';
 import { VIEW_MODE_HI } from './vistaModos';
+import { USAB_N26B_HI } from './usabN26b';
 import { PLATES_EXPORT_HI } from './placasExportar';
 import { PLATES_BED_HI } from './placasCama';
 import { PLATES_ARRANGE_HI } from './placasRepartir';
@@ -87,6 +88,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...GROUPS_HI,
   ...PLATES_VIEW_HI,
   ...VIEW_MODE_HI,
+  ...USAB_N26B_HI,
   ...PLATES_EXPORT_HI,
   ...PLATES_BED_HI,
   ...PLATES_ARRANGE_HI,
@@ -330,7 +332,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'viewport.erase.hint': 'गोला घटाने के लिए मॉडल की सतह पर क्लिक करें',
   'viewport.cut.hint': 'स्वचालित कनेक्टर के साथ विभाजित करने के लिए समतल कट संवाद खोलें',
   'viewport.cut.openDialog': 'समतल कट कॉन्फ़िगर करें',
-  'viewport.protip.select': 'सुझाव: चुने ऑब्जेक्ट को ड्रैग करके खिसकाएं · Alt+ड्रैग क्लोन · Shift समानुपातिक स्केल · Ctrl 15° स्नैप · ↑↓←→ खिसकाएं',
+  'viewport.protip.select': 'सुझाव: चुने ऑब्जेक्ट को ड्रैग करके खिसकाएं (Shift एक अक्ष तक सीमित करता है, Alt ऊर्ध्वाधर खिसकाता है) · मैनिपुलेटर पकड़ते समय Alt क्लोन करता है · Shift समानुपातिक स्केल · Ctrl स्नैप · ↑↓←→ खिसकाएं',
   'viewport.protip.paint': 'सुझाव: 3MF सतह रंगने के लिए क्लिक/ड्रैग करें · P से चयन पर लौटें',
   'viewport.protip.erase': 'सुझाव: गोला तराशने के लिए मॉडल पर क्लिक करें · ऊपर त्रिज्या बदलें',
   'viewport.protip.cut': 'सुझाव: अक्ष और कनेक्टर सेट करें · X से एक्स-रे टॉगल करें',

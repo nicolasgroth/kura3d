@@ -11,7 +11,7 @@
 
 import type { SceneObject } from '../../types/kura';
 import type { SceneLayout, ScenePlate } from '../../types/plates';
-import { IMPLICIT_PLATE_KEY, type ArrangePlan, type ArrangeReport } from './plateArrangeTypes';
+import { IMPLICIT_PLATE_KEY, newPlatesUsed, type ArrangePlan, type ArrangeReport } from './plateArrangeTypes';
 import { nextPlateName, reconcilePlates, type PlateScene } from './plates';
 
 export interface ArrangeApplyIds {
@@ -56,6 +56,8 @@ export function reportWithPlateIds(report: ArrangeReport, keyToId: ReadonlyMap<s
   const mapKey = (k: string) => keyToId.get(k) ?? k;
   return {
     ...report,
+    // Con ids reales las claves «new:» desaparecen: el recuento de nuevas se conserva para el aviso.
+    platesUsedNew: newPlatesUsed(report),
     platesUsed: report.platesUsed.map(mapKey),
     splitGroups: report.splitGroups.map((g) => ({ ...g, plates: g.plates.map(mapKey) })),
   };

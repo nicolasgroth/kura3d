@@ -57,7 +57,10 @@ const PANEL_SELECTOR = '.kura-ctx-tool, .kura-ctx-action, .kura-op-panel';
 
 /** ¿El foco está dentro de un panel de herramienta (Esc = «Volver» de ese panel)? */
 export function escapeFallsThroughToPanel(target: EventTarget | null): boolean {
-  return target instanceof Element && target.closest(PANEL_SELECTOR) !== null;
+  if (!(target instanceof Element)) return false;
+  if (target.closest(PANEL_SELECTOR) !== null) return true;
+  // El riel de herramientas y la tarjeta de Medir también salen con Esc mientras hay una herramienta activa.
+  return target.closest('.kura-tool-rail, .kura-measure-panel') !== null && document.querySelector('.kura-ctx-tool') !== null;
 }
 
 export const HelpTooltipLayer: React.FC = () => {

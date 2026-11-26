@@ -71,6 +71,8 @@ export interface ArrangeNewPlate {
 export interface ArrangeReport {
   /** Placas que reciben piezas, en orden de llenado (ids, `implicit` o claves nuevas). */
   platesUsed: string[];
+  /** Cuántas de las usadas son nuevas; lo fija `reportWithPlateIds` al cambiar las claves por ids reales. */
+  platesUsedNew?: number;
   /** Placas que se crean (incluye la implícita si se vuelve explícita). */
   platesCreated: number;
   /** Piezas colocadas (sin contar acompañantes). */
@@ -95,6 +97,7 @@ export interface ArrangePlan {
  * Placas nuevas entre las que reciben piezas (lo que la interfaz llama «nuevas»). No cuenta la implícita que se vuelve
  * explícita (`platesCreated` sí: es lo que se agrega a la escena), así que nunca supera a `platesUsed.length`.
  */
-export function newPlatesUsed(report: Pick<ArrangeReport, 'platesUsed'>): number {
+export function newPlatesUsed(report: Pick<ArrangeReport, 'platesUsed' | 'platesUsedNew'>): number {
+  if (report.platesUsedNew !== undefined) return report.platesUsedNew;
   return report.platesUsed.filter((id) => id.startsWith(NEW_PLATE_PREFIX)).length;
 }

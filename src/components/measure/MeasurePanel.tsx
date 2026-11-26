@@ -17,7 +17,9 @@ import { t, type TranslationKey } from '../../i18n';
 import { measureObject } from '../../engine/measure';
 import { useMeasureStore, type MeasureMode } from '../../store/measureStore';
 import { resolveMeasurements, type ResolvedMeasurement } from '../../store/measureResolve';
+import { escapeBlockedBy, readEscapeContext } from '../../store/escapeChain';
 import { useKuraStore } from '../../store/useKuraStore';
+import { escapeTargetsPanel } from '../shell/usePanelEscape';
 import type { LanguageCode, UnitSystem } from '../../types/kura';
 import { formatAngle, formatArea, formatCapacity, formatLength } from '../../utils/measureUnits';
 import { OperationPanel } from '../OperationPanel';
@@ -115,13 +117,23 @@ export const MeasurePanel: React.FC = () => {
   const pendingCount = useMeasureStore((s) => s.pending.length);
   const cancelPending = useMeasureStore((s) => s.cancelPending);
 
-  // Esc cancela el punto en curso antes que cualquier otro atajo.
+  // Esc: primero cancela el punto en curso; sin puntos marcados sale de la herramienta (un solo Esc), siempre que
+  // ningún nivel superior de la cadena (diálogo, menú, grupo…) lo reclame. Así no depende de que el panel de la
+  // herramienta esté montado ni de un tooltip abierto.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && useMeasureStore.getState().cancelPending()) {
+      if (e.key !== 'Escape' || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      if (useMeasureStore.getState().cancelPending()) {
         e.stopPropagation();
         e.preventDefault();
+        return;
       }
+      if (useKuraStore.getState().activeTool !== 'measure' || !escapeTargetsPanel(null, e.target, 'tool')) return;
+      if (escapeBlockedBy(readEscapeContext(), 'tool')) return;
+      e.stopPropagation();
+      e.preventDefault();
+      useKuraStore.getState().setActiveTool('select');
+      requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-help="tool.measure"]')?.focus({ preventScroll: true }));
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);

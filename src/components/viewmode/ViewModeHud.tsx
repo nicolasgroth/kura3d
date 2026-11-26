@@ -18,6 +18,15 @@ import { useKuraStore } from '../../store/useKuraStore';
 import '../../styles/viewMode.css';
 import { explodeGroupKeyOf } from './useFigureExplode';
 
+/** «Volver a Imprimir» se desmonta al cambiar de vista: el foco pasa al radio activo de «Modo de vista». */
+export function focusActiveViewMode(tries = 0): void {
+  requestAnimationFrame(() => {
+    const radio = document.querySelector<HTMLElement>('[data-testid="viewmode-selector"] [role="radio"][aria-checked="true"]');
+    if (radio) radio.focus({ preventScroll: true });
+    else if (tries < 3) focusActiveViewMode(tries + 1);
+  });
+}
+
 export const ViewModeHud: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const layout = useKuraStore((s) => s.layout);
@@ -52,7 +61,10 @@ export const ViewModeHud: React.FC = () => {
           className="kura-btn kura-btn-sm"
           title={t(language, 'viewMode.print.tip')}
           data-testid="viewmode-back"
-          onClick={() => requestViewMode('print')}
+          onClick={() => {
+            requestViewMode('print');
+            focusActiveViewMode();
+          }}
         >
           <Printer size={13} aria-hidden="true" />
           <span>{t(language, 'viewMode.badge.back')}</span>

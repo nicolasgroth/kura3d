@@ -108,12 +108,12 @@ const SIMPLIFICAR_VP = {
     zh: '与原件对比',
   },
   'simplify.ghost.compare.help': {
-    es: 'En el visor, el fantasma celeste es la malla que quedaría. Márcalo para ocultarlo y ver solo la pieza original.',
-    en: 'In the viewport, the cyan ghost is the mesh you would get. Tick it to hide the ghost and see only the original part.',
-    de: 'Im Viewport ist der cyanfarbene Geist das entstehende Netz. Aktivieren blendet ihn aus, sodass nur das Originalteil sichtbar ist.',
-    fr: 'Dans la vue 3D, le fantôme cyan est le maillage obtenu. Coche pour le masquer et ne voir que la pièce d’origine.',
-    hi: 'व्यूपोर्ट में आसमानी भूत वह मेश है जो बनेगी। उसे छिपाकर केवल मूल पुर्ज़ा देखने के लिए इसे चुनें।',
-    zh: '在视口中，青色虚影是将得到的网格。勾选可隐藏虚影，只看原始零件。',
+    es: 'En el visor, el fantasma celeste es la malla que quedaría. Con el casillero marcado se oculta el fantasma y se ve solo la pieza original; sin marcar, se ve el fantasma.',
+    en: 'In the viewport, the cyan ghost is the mesh you would get. When ticked, the ghost is hidden and only the original part shows; when unticked, the ghost is shown.',
+    de: 'Im Viewport ist der cyanfarbene Geist das entstehende Netz. Aktiviert ist der Geist ausgeblendet und nur das Originalteil sichtbar; deaktiviert wird der Geist angezeigt.',
+    fr: 'Dans la vue 3D, le fantôme cyan est le maillage obtenu. Coché, le fantôme est masqué et seule la pièce d’origine est visible ; décoché, le fantôme s’affiche.',
+    hi: 'व्यूपोर्ट में आसमानी भूत वह मेश है जो बनेगी। चुनने पर भूत छिप जाता है और केवल मूल पुर्ज़ा दिखता है; न चुनने पर भूत दिखता है।',
+    zh: '在视口中，青色虚影是将得到的网格。勾选时隐藏虚影，只显示原始零件；取消勾选则显示虚影。',
   },
   'simplify.ghost.edges': {
     es: 'Mostrar las aristas de la simplificada',

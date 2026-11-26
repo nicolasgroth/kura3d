@@ -10,6 +10,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Ruler } from 'lucide-react';
 import { getLocalizedPrinterName, t } from '../i18n';
+import { hudBed } from '../core/scene/bedLabel';
 import { useKuraStore } from '../store/useKuraStore';
 import { MeasuresFields } from './settings/MeasuresFields';
 import '../styles/statusMeasures.css';
@@ -18,6 +19,9 @@ export const StatusBarMeasures: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
   const printerProfile = useKuraStore((s) => s.printerProfile);
+  const plates = useKuraStore((s) => s.plates);
+  const activePlateId = useKuraStore((s) => s.activePlateId);
+  const customBedDimensions = useKuraStore((s) => s.customBedDimensions);
   const request = useKuraStore((s) => s.measuresRequest);
   const openSettings = useKuraStore((s) => s.openSettings);
   const popoverId = useId();
@@ -29,7 +33,8 @@ export const StatusBarMeasures: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const handled = useRef(request?.nonce ?? 0);
 
-  const printerName = getLocalizedPrinterName(language, printerProfile);
+  // Como el rótulo del visor: la placa activa con cama propia manda sobre la impresora del proyecto.
+  const printerName = hudBed({ printerProfile, customBedDimensions, plates, activePlateId }).ownName ?? getLocalizedPrinterName(language, printerProfile);
   const label = t(language, 'status.measures.button', { unit: unitSystem, printer: printerName });
 
   // Petición externa (paleta de comandos): se abre tras cerrarse la paleta para no pelear por el foco.

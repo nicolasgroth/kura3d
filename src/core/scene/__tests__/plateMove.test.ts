@@ -40,6 +40,47 @@ function box(id: string, position: Vec3, plateRef?: string, extra: Partial<Scene
   } as unknown as SceneObject;
 }
 
+describe('mover a placa: queda dentro de la cama destino', () => {
+  const SMALL: ScenePlate[] = [
+    { id: 'p1', name: 'Placa 1', origin: [0, 0] },
+    { id: 'p2', name: 'Placa 2', origin: [250, 0], bed: { name: 'Chica', widthMm: 100, depthMm: 100, heightMm: 100 } },
+  ];
+  const fp = (o: SceneObject) => ({ minX: o.position[0] - 10, maxX: o.position[0] + 10, minZ: o.position[2] - 10, maxZ: o.position[2] + 10 });
+
+  it('con una cama destino más chica la acerca hasta que su caja queda dentro', () => {
+    const scene = { objects: [box('a', [90, 0, -80], 'p1')], plates: SMALL };
+    const res = movePiecesToPlate(scene, ['a'], 'p2', 'print', CTX, BED)!;
+    const f = fp(res.scene.objects[0]);
+    expect(res.fits).toBe(true);
+    expect(f.maxX).toBeLessThanOrEqual(250 + 50 + 1e-6);
+    expect(f.minZ).toBeGreaterThanOrEqual(-50 - 1e-6);
+    expect(res.scene.objects[0].position[1]).toBe(0);
+  });
+
+  it('una pieza que ya estaba fuera en el origen queda dentro del destino', () => {
+    const scene = { objects: [box('a', [300, 0, 0], 'p1')], plates: PLATES };
+    const res = movePiecesToPlate(scene, ['a'], 'p2', 'print', CTX, BED)!;
+    expect(fp(res.scene.objects[0]).maxX).toBeLessThanOrEqual(250 + 100 + 1e-6);
+  });
+
+  it('en armado se acerca la pose de impresión, no la figura', () => {
+    const rest = { position: [90, 0, -80] as Vec3, rotation: [0, 0, 0] as Vec3 };
+    const scene = { objects: [box('a', [5, 0, 5], 'p1', { restPose: rest })], plates: SMALL };
+    const res = movePiecesToPlate(scene, ['a'], 'p2', 'assembly', CTX, BED)!;
+    const a = res.scene.objects[0];
+    expect(a.position).toEqual([5, 0, 5]);
+    expect(a.restPose!.position[0] + 10).toBeLessThanOrEqual(300 + 1e-6);
+  });
+
+  it('si no cabe de ningún modo se mueve igual y avisa con fits = false', () => {
+    const big = box('a', [0, 0, 0], 'p1', { mesh: mesh(150) });
+    const res = movePiecesToPlate({ objects: [big], plates: SMALL }, ['a'], 'p2', 'print', CTX, BED)!;
+    expect(res.moved).toEqual(['a']);
+    expect(res.fits).toBe(false);
+    expect(res.scene.objects[0].plateRef).toBe('p2');
+  });
+});
+
 describe('mover a placa', () => {
   it('traslada la pieza al hueco equivalente (misma posición relativa al origen de su placa)', () => {
     const scene = { objects: [box('a', [30, 0, -10], 'p1'), box('b', [0, 0, 0], 'p1')], plates: PLATES };
