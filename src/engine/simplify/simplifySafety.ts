@@ -17,6 +17,8 @@ import { bodyGenus } from './simplifyGenus';
 import { throwIfAborted } from './simplifyTarget';
 import {
   SIMPLIFY_DESTRUCTIVE_LIMITS as D,
+  SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM,
+  SIMPLIFY_SAFE_MIN_REDUCTION_REL,
   SIMPLIFY_WARN_LIMITS,
   type SimplifyDestructiveReason,
   type SimplifyRunOptions,
@@ -39,7 +41,8 @@ export function destructiveDeviationMm(diagMm: number): number {
 /** Motivos por los que `m` es destructivo (vacío si no lo es). */
 export function destructiveReasons(m: SafetyMeasure, diagMm: number): SimplifyDestructiveReason[] {
   const out: SimplifyDestructiveReason[] = [];
-  if (m.genusAfter < m.genusBefore) out.push('holes_lost');
+  // Túneles más finos que lo que se imprime (desviación ≤ umbral) no cuentan como destructivos: solo se avisa.
+  if (m.genusAfter < m.genusBefore && m.maxDeviationMm > SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM) out.push('holes_lost');
   if (Math.abs(m.volumeChangePct) > D.volumePct) out.push('volume_changed');
   if (m.maxDeviationMm > destructiveDeviationMm(diagMm)) out.push('deviation_high');
   return out;
@@ -68,11 +71,19 @@ export interface SafeSearchInput {
   minTolMm: number;
   /** Tolerancia en mm de mundo que dio el resultado destructivo. */
   destructiveTolMm: number;
+  /** Reducción mínima para que la segura sirva (por defecto `SIMPLIFY_SAFE_MIN_REDUCTION_REL`). */
+  minReductionRel?: number;
+}
+
+/** true si pasar de `before` a `triangles` reduce al menos `minRel` (una versión segura que vale la pena). */
+export function isUsefulSafeReduction(triangles: number, before: number, minRel: number = SIMPLIFY_SAFE_MIN_REDUCTION_REL): boolean {
+  return before > 0 && triangles <= before * (1 - minRel);
 }
 
 /**
- * Busca la tolerancia más alta (menos triángulos) cuyo resultado no es destructivo y reduce triángulos. null si ni
- * la mínima pasa la regla. Cancelable entre llamadas.
+ * Busca la tolerancia más alta (menos triángulos: la más cercana a lo pedido) cuyo resultado no es destructivo. null
+ * si ni la mínima pasa la regla o si la mejor no reduce al menos `minReductionRel` (no hay reducción segura útil).
+ * Cancelable entre llamadas.
  */
 export function findSafeAlternative(input: SafeSearchInput, opts: SimplifyRunOptions = {}): SimplifySafeAlternative | null {
   const { original, maxScale } = input;
@@ -102,12 +113,14 @@ export function findSafeAlternative(input: SafeSearchInput, opts: SimplifyRunOpt
   let lo = input.minTolMm;
   let hi = input.destructiveTolMm;
   // `lo` > 0 también protege la media geométrica (sqrt(lo·hi)): con 0 o negativo no habría búsqueda posible.
-  if (!(lo > 0) || !(hi > lo) || !evaluate(lo)) return best;
+  const useful = (b: SimplifySafeAlternative | null): SimplifySafeAlternative | null =>
+    b && isUsefulSafeReduction(b.triangles, input.trianglesBefore, input.minReductionRel) ? b : null;
+  if (!(lo > 0) || !(hi > lo) || !evaluate(lo)) return useful(best);
   for (let i = 0; i < D.safeSearchIterations && hi / lo > 1.01; i++) {
     opts.onProgress?.(`simplify:safe:${i + 1}/${D.safeSearchIterations}`);
     const mid = Math.sqrt(lo * hi);
     if (evaluate(mid)) lo = mid;
     else hi = mid;
   }
-  return best;
+  return useful(best);
 }

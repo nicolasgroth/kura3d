@@ -15,7 +15,6 @@ import type { MeshData, SceneObject } from '../../types/kura';
 import { createColorRegistry, initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
 import { EngineError, requireOperationRange } from '../engineErrors';
 import { OPERATION_RANGES } from '../operationLimits';
-import { normalizeMeshToBed } from '../primitives';
 import { bvhOf, manifoldMesh, sampledDeviation } from './simplifyDeviation';
 import { bodyGenus } from './simplifyGenus';
 import { destructiveDeviationMm, destructiveReasons, findSafeAlternative, worldDiagonalMm } from './simplifySafety';
@@ -32,7 +31,7 @@ import {
 } from './simplifyTypes';
 
 export interface SimplifyDetailedResult {
-  /** Malla simplificada normalizada a cama, o null si no se aplica. */
+  /** Malla simplificada en el mismo sistema local que la original, o null si no se aplica. */
   mesh: MeshData | null;
   report: SimplifyReport;
 }
@@ -164,7 +163,9 @@ export async function simplifyMeshDetailed(
       ...(destructive.length > 0 && allowDestructive ? { forced: true } : {}),
       ms: 0,
     };
-    const mesh = applied ? normalizeMeshToBed(manifoldToMeshData(simplified, registry?.idToColor)) : null;
+    // Mismo sistema local que la original (sin recentrar ni apoyar en la cama): la pieza queda donde estaba en el
+    // mundo con la misma posición, giro y escala.
+    const mesh = applied ? manifoldToMeshData(simplified, registry?.idToColor) : null;
     report.ms = Math.round(now() - t0);
     return { mesh, report };
   } finally {

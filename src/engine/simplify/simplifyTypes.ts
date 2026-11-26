@@ -21,7 +21,8 @@ export type SimplifyRequest =
 
 /**
  * Por qué un resultado es destructivo (no se aplica sin `allowDestructive`):
- * - `holes_lost`: se cerró algún agujero pasante (el género bajó);
+ * - `holes_lost`: se cerró algún agujero pasante (el género bajó) y la desviación supera
+ *   `SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM` (si no, eran túneles que no se imprimen: solo se avisa);
  * - `volume_changed`: |ΔV| supera `SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct`;
  * - `deviation_high`: la desviación supera el tope relativo al tamaño de la pieza.
  */
@@ -51,6 +52,23 @@ export interface SimplifySafeAlternative {
  * - `safeSearchIterations`: llamadas a `simplify` de la bisección que busca la alternativa segura (la razón entre
  *   la tolerancia mínima y la destructiva suele ser ≤ 10⁴: 8 pasos la acotan a ~±8 %).
  */
+/**
+ * Perder agujeros pasantes (`holes_lost`) es destructivo solo si la desviación medida supera este valor (mm de
+ * mundo). Por debajo los túneles que se cerraron eran más finos que lo que una impresora FDM resuelve (boquilla de
+ * 0,4 mm: un túnel de ~0,2 mm no se imprime abierto), así que se aplica y se avisa con `genus_changed`.
+ * Caso que lo motivó: figura real de 478 mil triángulos y género 58 al 50 %: género 58 → 56 con −0,07 % de volumen
+ * y 0,11 mm de desviación quedaba bloqueada sin versión segura. Propuesta pendiente de confirmación del autor:
+ * cambiar aquí si decide otro valor.
+ */
+export const SIMPLIFY_HOLE_LOSS_MIN_DEVIATION_MM = 0.2;
+
+/**
+ * Reducción mínima (fracción de los triángulos de partida) para ofrecer una «versión segura». Bajo esto no sirve:
+ * en tinker reparado al 50 % la única segura bajaba 1,1 % (183 306 → 181 348) y ofrecerla como alternativa confunde.
+ * Sin una segura útil se dice «no hay una reducción segura para esta pieza» y queda solo «Aplicar de todos modos».
+ */
+export const SIMPLIFY_SAFE_MIN_REDUCTION_REL = 0.1;
+
 export const SIMPLIFY_DESTRUCTIVE_LIMITS = {
   volumePct: 5,
   deviationMinMm: 1,
