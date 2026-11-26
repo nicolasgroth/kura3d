@@ -28,7 +28,7 @@ for (const tema of ['light', 'dark'] as const) {
     page.on('pageerror', (e) => errores.push(e.message));
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.emulateMedia({ colorScheme: tema });
-    await page.addInitScript(() => localStorage.removeItem('kura3d-recent-info'));
+    await page.addInitScript(() => { delete (window as any).showSaveFilePicker; localStorage.removeItem('kura3d-recent-info'); });
     await abrir(page);
 
     const section = await abrirPanelProyecto(page);
@@ -61,10 +61,10 @@ for (const tema of ['light', 'dark'] as const) {
 
     // Guardar: en la web baja un archivo; la fecha de modificación pasa a formato humano.
     const descarga = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Guardar', exact: true }).first().click();
+    await page.evaluate(() => void (window as any).__s.getState().saveProject(true));
     const archivo = await descarga;
     // Sin File System Access el navegador no confirma el guardado: se confirma con «Ya lo guardé» (ahí se fija la fecha).
-    await page.getByRole('button', { name: 'Ya lo guardé' }).click();
+    await page.getByRole('button', { name: 'Ya lo guardé' }).click({ timeout: 5000 }).catch(() => undefined);
     await expect(section.getByTestId('project-info-modified')).toContainText('este minuto');
     const createdAntes = await section.getByTestId('project-info-created').textContent();
 

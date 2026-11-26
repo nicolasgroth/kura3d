@@ -37,14 +37,14 @@ for (const width of [1024, 1280]) {
       await expect(dialogo(page)).toBeVisible();
       await expect(dialogo(page)).toContainText('Cama de Placa 2');
       // «La del proyecto» marcada al abrir; los grupos tienen nombre visible.
-      await expect(dialogo(page).getByRole('radio', { name: /La del proyecto|Bambu|Genérica/ }).first()).toBeChecked();
-      await expect(dialogo(page).getByText('Impresoras incluidas')).toBeVisible();
-      await expect(dialogo(page).getByText('Mis camas')).toBeVisible();
+      await expect(dialogo(page).getByTestId('plate-bed-option-project')).toBeChecked();
+      await expect(dialogo(page).getByText('Impresoras incluidas', { exact: true })).toBeVisible();
+      await expect(dialogo(page).getByText('Mis camas', { exact: true })).toBeVisible();
       await dialogo(page).getByTestId('plate-bed-option-profile:bambu-a1-mini').check();
       await dialogo(page).getByTestId('plate-bed-apply').click();
       await expect(dialogo(page)).toHaveCount(0);
       await expect(abrirCama(page, 'Placa 2')).toBeFocused();
-      await expect(tira(page).locator('[data-plate-id] [data-testid="plate-chip-bed"]')).toHaveText(/Cama: .*A1 mini/);
+      await expect(tira(page).locator('[data-plate-id] [data-testid="plate-chip-bed"]')).toHaveText(/Cama: .*A1 Mini/);
       expect(await page.evaluate(() => (window as any).__s.getState().plates[1].bed?.widthMm)).toBe(180);
       // Sin desplazamiento horizontal a este ancho.
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -87,7 +87,7 @@ for (const width of [1024, 1280]) {
       });
       await page.evaluate(() => {
         const s = (window as any).__s.getState();
-        s.updateObject?.(s.objects[0].id, { scale: [4, 4, 4] });
+        s.setObjectTransform(s.objects[0].id, { scale: [4, 4, 4] });
       });
       await expect(ficha(page, 'Placa 2')).toContainText(/Fuera/);
     });
