@@ -1,0 +1,115 @@
+/**
+ * @file src/styles/assistantsGallery.css
+ * @description Estilos de la galería de Asistentes: búsqueda, chips de categoría, cuadrícula adaptable (1 a 3 columnas
+ * según el ancho del panel, sin desbordar a 1024 px) y miniatura SVG con cuatro sombras que salen de las variables del
+ * tema (claro y oscuro). Foco visible en cada tarjeta y chip.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-asis-gallery-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kura-asis-search {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.kura-asis-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-asis-chip {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.kura-asis-chip:hover {
+  background: var(--bg-hover);
+}
+
+/* El estado activo no depende del color: borde grueso y negrita. */
+.kura-asis-chip.is-active {
+  border: 2px solid var(--accent-cyan);
+  padding: 3px 9px;
+  font-weight: 700;
+}
+
+.kura-asis-chip:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-asis-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.kura-asis-grid > li {
+  min-width: 0;
+}
+
+.kura-asis-gcard {
+  height: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.kura-asis-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+}
+
+.kura-asis-thumb.is-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.kura-asis-thumb.is-loading {
+  opacity: 0.6;
+}
+
+.kura-thumb-s0,
+.kura-thumb-s1,
+.kura-thumb-s2,
+.kura-thumb-s3 {
+  stroke-width: 0.35;
+  stroke-linejoin: round;
+}
+
+.kura-thumb-s0 { fill: color-mix(in srgb, var(--accent-cyan) 38%, var(--bg-primary)); stroke: color-mix(in srgb, var(--accent-cyan) 38%, var(--bg-primary)); }
+.kura-thumb-s1 { fill: color-mix(in srgb, var(--accent-cyan) 55%, var(--bg-primary)); stroke: color-mix(in srgb, var(--accent-cyan) 55%, var(--bg-primary)); }
+.kura-thumb-s2 { fill: color-mix(in srgb, var(--accent-cyan) 75%, var(--bg-primary)); stroke: color-mix(in srgb, var(--accent-cyan) 75%, var(--bg-primary)); }
+.kura-thumb-s3 { fill: color-mix(in srgb, var(--accent-cyan) 92%, var(--text-primary)); stroke: color-mix(in srgb, var(--accent-cyan) 92%, var(--text-primary)); }
+
+.kura-asis-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}

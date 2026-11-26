@@ -1,0 +1,80 @@
+/**
+ * @file src/styles/numberWithSlider.css
+ * @description Estilos de `NumberWithSlider`: el campo numérico y el deslizador en una fila que baja a dos filas si no
+ * cabe (1024 px con el panel angosto). El deslizador tiene foco visible y la parte ya recorrida rellena la pista, pero
+ * el valor siempre está también en el campo (el estado no depende del color).
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license MIT
+ */
+
+.kura-nws {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+.kura-nws > .kura-precision-input {
+  flex: 0 1 132px;
+  min-width: 96px;
+}
+
+.kura-nws-slider {
+  flex: 1 1 110px;
+  min-width: 90px;
+  height: 24px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.kura-nws-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(to right, var(--accent-cyan) var(--nws-pct, 0%), var(--bg-elevated) var(--nws-pct, 0%));
+}
+
+.kura-nws-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(to right, var(--accent-cyan) var(--nws-pct, 0%), var(--bg-elevated) var(--nws-pct, 0%));
+}
+
+.kura-nws-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.kura-nws-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.kura-nws-slider:hover::-webkit-slider-thumb {
+  background: var(--bg-hover);
+}
+
+.kura-nws-slider:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.kura-nws-slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
