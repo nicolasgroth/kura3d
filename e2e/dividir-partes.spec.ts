@@ -14,9 +14,11 @@ import { abrir, crear } from './ux4-helpers';
 test('por las partes de la figura: el corte cae en el cuello', async ({ page }) => {
   test.setTimeout(240_000);
   await abrir(page, 1440, 900);
-  const big = await crear(page, 'sphere', { radius: 60, segments: 64 }, [0, 60, 0]);
-  const neck = await crear(page, 'cylinder', { radius: 8, height: 25, segments: 48 }, [0, 115, 0]);
-  const head = await crear(page, 'sphere', { radius: 25, segments: 64 }, [0, 160, 0]);
+  // Las primitivas nacen apoyadas (origen en la base): `position` es la base, no el centro. Esfera grande 0–120,
+  // cuello 105–145 (asoma entre 119,5 y 136,3) y cabeza 135–185: una sola pieza de 185 mm de alto.
+  const big = await crear(page, 'sphere', { radius: 60, segments: 64 }, [0, 0, 0]);
+  const neck = await crear(page, 'cylinder', { radius: 8, height: 40, segments: 48 }, [0, 105, 0]);
+  const head = await crear(page, 'sphere', { radius: 25, segments: 64 }, [0, 135, 0]);
   const id = await page.evaluate(async ({ big, neck, head }) => {
     const r = await (window as any).__s.getState().executeCommand(
       { id: 'e2e_union', command: 'boolean_operation', params: { op: 'union', targetId: big, toolIds: [neck, head] } }, 'ui');
