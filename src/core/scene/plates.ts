@@ -102,10 +102,13 @@ export function assignable(obj: Pick<SceneObject, 'role' | 'locked'>): boolean {
   return obj.role === 'solid' && !obj.locked;
 }
 
-/** Primer nombre libre «Placa N» (`nameFor(n)` devuelve el texto traducido). */
+/**
+ * Primer nombre libre «Placa N» contando desde la cantidad de placas (con «Bases» y «Placa 2», la nueva es «Placa 3»;
+ * `nameFor(n)` devuelve el texto traducido). La primera placa creada sobre una escena sin placas es la 2: la 1 es la implícita.
+ */
 export function nextPlateName(plates: readonly ScenePlate[], nameFor: (n: number) => string): string {
   const names = new Set(plates.map((p) => p.name));
-  for (let n = plates.length ? 1 : 2; n <= MAX_PLATES + 1; n++) if (!names.has(nameFor(n))) return nameFor(n);
+  for (let n = Math.max(2, plates.length + 1); n <= MAX_PLATES + 1; n++) if (!names.has(nameFor(n))) return nameFor(n);
   return nameFor(plates.length + 1);
 }
 

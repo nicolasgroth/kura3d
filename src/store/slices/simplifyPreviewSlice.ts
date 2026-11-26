@@ -44,6 +44,9 @@ export interface SimplifyPreviewSession {
   report: SimplifyReport | null;
   /** Mensaje localizado si `status` es `error`. */
   error: string | null;
+  /** Código estable del error del motor (p. ej. `MESH_INVALID`) y su causa técnica, si los hay. */
+  errorCode?: string;
+  errorDetail?: string;
   /** «Comparar»: oculta el fantasma para ver solo la pieza original. */
   comparing: boolean;
   /** Dibuja las aristas (alambre) de la malla simplificada sobre el sólido translúcido. */
@@ -211,7 +214,11 @@ export function createSimplifyPreviewSlice(ctx: StoreContext): SimplifyPreviewSl
           set({ simplifyPreview: null });
           return null;
         }
-        patchSession({ status: 'error', phase: null, error: messageOf(err) });
+        const cause = isEngineError(err) ? err.params.cause : undefined;
+        patchSession({
+          status: 'error', phase: null, error: messageOf(err),
+          ...(isEngineError(err) ? { errorCode: err.code } : {}), ...(cause !== undefined ? { errorDetail: String(cause) } : {}),
+        });
         if (options.rethrow) throw err;
         return null;
       }

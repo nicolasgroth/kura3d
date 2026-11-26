@@ -79,7 +79,7 @@ const PLATES_VIEW_TABLE = {
     '有多块打印板时，X 和 Z 以零件所在打印板的中心为原点；全局位置指整个场景中的位置。',
   ],
   'plates.toast.moved': [
-    '{count} {count?pieza movida|piezas movidas} a «{name}».',
+    '{count} {count?pieza pasó|piezas pasaron} a «{name}».',
     '{count} {count?part|parts} moved to “{name}”.',
     '{count} {count?Teil|Teile} nach „{name}“ verschoben.',
     '{count} {count?pièce déplacée|pièces déplacées} vers « {name} ».',

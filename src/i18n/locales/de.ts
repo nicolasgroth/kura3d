@@ -16,6 +16,7 @@ import { GROUPS_DE } from './groups';
 import { PLATES_VIEW_DE } from './placasVista';
 import { VIEW_MODE_DE } from './vistaModos';
 import { USAB_N26B_DE } from './usabN26b';
+import { USAB_N26D_DE } from './usabN26d';
 import { SAVE_PROGRESS_DE } from './guardadoAvance';
 import { TIRA_VISTAS_DE } from './tiraVistas';
 import { PLATES_EXPORT_DE } from './placasExportar';
@@ -91,6 +92,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...PLATES_VIEW_DE,
   ...VIEW_MODE_DE,
   ...USAB_N26B_DE,
+  ...USAB_N26D_DE,
   ...SAVE_PROGRESS_DE,
   ...TIRA_VISTAS_DE,
   ...PLATES_EXPORT_DE,

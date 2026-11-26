@@ -21,6 +21,7 @@ import { GROUPS_EN, GROUPS_ES } from './locales/groups';
 import { PLATES_VIEW_EN, PLATES_VIEW_ES } from './locales/placasVista';
 import { VIEW_MODE_EN, VIEW_MODE_ES } from './locales/vistaModos';
 import { USAB_N26B_EN, USAB_N26B_ES } from './locales/usabN26b';
+import { USAB_N26D_EN, USAB_N26D_ES } from './locales/usabN26d';
 import { SAVE_PROGRESS_EN, SAVE_PROGRESS_ES } from './locales/guardadoAvance';
 import { TIRA_VISTAS_EN, TIRA_VISTAS_ES } from './locales/tiraVistas';
 import { PLATES_EXPORT_EN, PLATES_EXPORT_ES } from './locales/placasExportar';
@@ -98,6 +99,7 @@ export const TRANSLATIONS_ES = {
   ...PLATES_VIEW_ES,
   ...VIEW_MODE_ES,
   ...USAB_N26B_ES,
+  ...USAB_N26D_ES,
   ...SAVE_PROGRESS_ES,
   ...TIRA_VISTAS_ES,
   ...PLATES_EXPORT_ES,
@@ -1455,6 +1457,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...PLATES_VIEW_EN,
   ...VIEW_MODE_EN,
   ...USAB_N26B_EN,
+  ...USAB_N26D_EN,
   ...SAVE_PROGRESS_EN,
   ...TIRA_VISTAS_EN,
   ...PLATES_EXPORT_EN,

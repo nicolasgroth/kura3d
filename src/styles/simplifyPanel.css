@@ -139,3 +139,36 @@
   height: 8px;
   accent-color: var(--accent-cyan);
 }
+
+/* Resumen de una o dos líneas al abrir el informe (antes → después y qué muestra el fantasma). */
+.kura-simplify-summary {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* Malla abierta: aviso con su botón «Reparar malla» y el término técnico plegado. */
+.kura-simplify-open-mesh {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-simplify-open-mesh .kura-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kura-simplify-technical {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.kura-simplify-technical summary {
+  cursor: pointer;
+}
+
+.kura-simplify-technical summary:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
