@@ -15,9 +15,9 @@ Solo prepara la geometría: no lamina ni genera G-code.
    - **Forma**: *Base* redonda o cuadrada (la boca sigue siendo redonda) y *Agarre de la tapa*: moleteado (estrías verticales), caras planas (hexágono, sirve para una llave) o liso.
    - **Rosca**: *Paso*, *Vueltas*, *Entradas*, *Holgura radial* y *Juego axial* (ver más abajo).
    Cada campo tiene su deslizador y muestra su rango.
-3. Mira la barra **Vista previa**: además del fantasma de las dos piezas en el visor, dice **Enrosca: holgura mínima 0,30 mm** (con los valores por defecto). Si la holgura no alcanza, en su lugar aparece un aviso: *Sin holgura suficiente* (menos de 0,1 mm, se pegaría al imprimir) o *Interferencia* (las roscas se cruzan), con un icono y el texto, no solo color.
+3. Mira la barra **Vista previa**: además del fantasma de las dos piezas en el visor, dice **Enrosca: holgura mínima 0,31 mm** (con los valores por defecto: la holgura radial de 0,3 mm más el juego axial de los flancos). Si la holgura no alcanza, en su lugar aparece un aviso: *Sin holgura suficiente* (menos de 0,1 mm, se pegaría al imprimir) o *Interferencia* (las roscas se cruzan), con un icono y el texto, no solo color.
 
-   ![Formulario con la vista previa y «Enrosca: holgura mínima 0,30 mm»](img/tapa-roscada-02-formulario.png)
+   ![Formulario con la vista previa y «Enrosca: holgura mínima 0,31 mm»](img/tapa-roscada-02-formulario.png)
 
 4. Pulsa **Crear**. El **Recipiente** sale apoyado en su fondo y la **Tapa roscada** a su lado, boca arriba (el techo sobre la cama), en un solo paso de deshacer. Un aviso repite el resultado del enroscado.
 
