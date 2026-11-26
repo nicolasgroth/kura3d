@@ -12,7 +12,6 @@ import { describe, expect, it } from 'vitest';
 import { fakeBox } from '../../../test/fakeObjects';
 import type { SceneObject } from '../../../types/kura';
 import {
-  explodedFigurePositions,
   layoutOfViewMode,
   nextViewMode,
   plateToolBlockReason,
@@ -20,6 +19,7 @@ import {
   viewModeOf,
   viewModeTraits,
 } from '../viewMode';
+import { explodedFigurePositions } from '../../../utils/figureExplode';
 
 function solid(id: string, position: [number, number, number]): SceneObject {
   const h = 5;

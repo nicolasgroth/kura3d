@@ -12,7 +12,7 @@
 import { useMemo } from 'react';
 import { descendantObjectIds, selectedGroup } from '../../core/scene/groups';
 import { isReference } from '../../core/scene/objectRole';
-import { explodedFigurePositions } from '../../core/scene/viewMode';
+import { explodedFigurePositions } from '../../utils/figureExplode';
 import type { FigureExplode } from '../../store/slices/viewModeSlice';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneGroup, SceneObject, Vec3 } from '../../types/kura';
