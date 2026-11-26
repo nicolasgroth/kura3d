@@ -19,7 +19,7 @@ import { formatLocaleNumber } from '../../i18n/numberLocale';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { FileField } from './FileField';
-import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { NumberWithSlider } from '../NumberWithSlider';
 import type { FieldNote, FormField } from './recipeFormModel';
 
 /** Respuesta de un campo (lo que se guarda en `answers`) y, para archivos, su contenido. */
@@ -163,9 +163,13 @@ export const RecipeFieldControl: React.FC<Props> = ({ field, busy, onChange, onI
     case 'integer': {
       const value = typeof field.value === 'number' ? field.value : 0;
       control = (
-        <PrecisionNumberInput
+        <NumberWithSlider
           id={inputId}
           value={value}
+          ariaLabel={field.label}
+          integer={field.type === 'integer'}
+          {...(field.min !== undefined ? { sliderMin: field.min } : {})}
+          {...(field.max !== undefined ? { sliderMax: field.max } : {})}
           step={field.step}
           precision={field.type === 'integer' ? 0 : 2}
           unit={null}
