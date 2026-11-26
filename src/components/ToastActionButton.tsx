@@ -11,6 +11,15 @@ import React, { useId } from 'react';
 import type { ToastAction } from '../store/storeTypes';
 import { toastActionA11y } from './toastActionA11y';
 
+/** El botón del aviso se desmonta al ejecutarse: el foco pasa al control indicado cuando ya existe (hasta 4 cuadros). */
+export function focusWhenMounted(selector: string, tries = 0): void {
+  requestAnimationFrame(() => {
+    const el = document.querySelector<HTMLElement>(selector);
+    if (el && el.getClientRects().length > 0) el.focus({ preventScroll: true });
+    else if (tries < 4) focusWhenMounted(selector, tries + 1);
+  });
+}
+
 export const ToastActionButton: React.FC<{ action: ToastAction; className: string; onRun: () => void }> = ({ action, className, onRun }) => {
   const descId = useId();
   const { name, description } = toastActionA11y(action);
@@ -22,7 +31,10 @@ export const ToastActionButton: React.FC<{ action: ToastAction; className: strin
         aria-label={name}
         aria-describedby={description ? descId : undefined}
         title={description}
-        onClick={onRun}
+        onClick={() => {
+          onRun();
+          if (action.focusAfter) focusWhenMounted(action.focusAfter);
+        }}
       >
         {action.label}
       </button>

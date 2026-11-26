@@ -93,6 +93,21 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const previewReady = previewSession?.objectId === primary.id && previewSession.status === 'ready' && previewSession.signature === signature
     ? previewSession.report : null;
   const previewError = previewSession?.objectId === primary.id && previewSession.status === 'error' ? previewSession.error : null;
+  // Al terminar de calcular la vista previa, el botón «Vista previa» (deshabilitado mientras tanto) o «Cancelar»
+  // dejaron el foco en el documento: pasa a «Simplificar» si hay informe, o de vuelta a «Vista previa».
+  const wasPreviewing = useRef(false);
+  useEffect(() => {
+    if (previewing) {
+      wasPreviewing.current = true;
+      return;
+    }
+    if (!wasPreviewing.current) return;
+    wasPreviewing.current = false;
+    const active = document.activeElement;
+    if (active && active !== document.body && !(active instanceof HTMLButtonElement && active.disabled)) return;
+    const sel = previewReady ? '.kura-simplify-run' : '[data-testid="simplify-preview"]';
+    rootRef.current?.querySelector<HTMLElement>(sel)?.focus({ preventScroll: true });
+  }, [previewing, previewReady]);
   const runPreview = () => {
     if (busy || primary.locked || invalid.blocked || previewing) return;
     setLast(null);

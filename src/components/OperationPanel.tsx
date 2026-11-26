@@ -37,7 +37,9 @@ export const OperationPanel: React.FC<{
   className?: string;
   /** Selector (dentro del cuerpo) del control que recibe el foco al abrir; sin él, el primer control enfocable. */
   initialFocus?: string;
-}> = ({ open, onClose, title, children, footer, className, initialFocus }) => {
+  /** Selector del botón que abre el panel: recibe el foco al cerrar si el original ya no existe. */
+  returnFocusSelector?: string;
+}> = ({ open, onClose, title, children, footer, className, initialFocus, returnFocusSelector }) => {
   const panelRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const [insets, setInsets] = useState(dockInsets);
@@ -51,7 +53,7 @@ export const OperationPanel: React.FC<{
   }, [open]);
 
   // Foco: se recuerda el origen al abrir, entra al primer control (o al indicado) y vuelve al origen al cerrar.
-  usePanelFocusReturn(panelRef, { active: open, restoreOnClose: true });
+  usePanelFocusReturn(panelRef, { active: open, restoreOnClose: true, returnSelector: returnFocusSelector });
   usePanelInitialFocus(panelRef, { active: open, key: initialFocus, bodySelector: '.kura-op-panel-body', preferred: initialFocus, focusable: FOCUSABLE, fallbackSelector: 'root' });
 
   // Con la ventana angosta, la lista de escena se pliega mientras el panel está abierto y se restaura al cerrarlo.

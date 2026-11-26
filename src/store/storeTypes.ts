@@ -134,6 +134,8 @@ export interface ToastAction {
   /** Nombre accesible propio cuando el texto visible es corto y se repetiría en otro control (p. ej. «Deshacer»). */
   ariaLabel?: string;
   run: () => void;
+  /** Selector del control que recibe el foco tras ejecutar la acción (el aviso, y su botón, desaparecen). */
+  focusAfter?: string;
   /** Objetos sobre los que actúa: si ya no existe ninguno, la acción deja de ser aplicable. */
   targetIds?: readonly string[];
   /**

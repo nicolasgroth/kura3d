@@ -273,6 +273,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
       onClose={onClose}
       title={t(language, 'split.title')}
       className="kura-split-panel"
+      returnFocusSelector='#kura-inspector-panel [data-opens="splitForBed"]'
       footer={
         <>
           <button

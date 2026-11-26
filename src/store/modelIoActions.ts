@@ -291,7 +291,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     const offers = new Map(grouping.plateOffers.map((o) => [o.notice, o]));
     notices.forEach((notice, i) => {
       const o = offers.get(i);
-      get().addToast(notice, 'info', o ? { label: tr('plates.convert.offer'), ariaLabel: tr('plates.convert.importOffer', { name: o.fileName, count: o.count }), run: () => void get().convertGroupsToPlates?.(o.groupIds) } : undefined);
+      get().addToast(notice, 'info', o ? { label: tr('plates.convert.offer'), ariaLabel: tr('plates.convert.importOffer', { name: o.fileName, count: o.count }), run: () => void get().convertGroupsToPlates?.(o.groupIds), focusAfter: '[data-testid="plate-strip"] .kura-plate-chip[data-active="true"] button.kura-plate-chip-main' } : undefined);
     });
     reportUnitHint(plainModels, entries);
     deps.reportWarnings?.(models.flatMap((m) => m.warnings ?? []));

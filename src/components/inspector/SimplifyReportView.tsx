@@ -13,6 +13,7 @@
  * @license MIT
  */
 
+import { AlertTriangle } from 'lucide-react';
 import React, { useState } from 'react';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
@@ -70,7 +71,8 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
       {!report.applied && !blocked && <p className="kura-cut-hint">{t(language, 'simplify.report.notApplied')}</p>}
       {preview && report.applied && !safeApplied && !simplifyHasShapeNotice(report) && <p className="kura-cut-hint">{t(language, 'simplify.preview.wouldApply')}</p>}
       {simplifyHasShapeNotice(report) && (
-        <p className="kura-cut-hint" data-testid="simplify-notice">
+        <p className="kura-simplify-notice" role="note" data-testid="simplify-notice">
+          <AlertTriangle size={14} aria-hidden="true" />
           <strong>{t(language, preview ? 'simplify.preview.wouldNotice' : 'simplify.report.notice')}</strong>
         </p>
       )}
