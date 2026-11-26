@@ -28,6 +28,7 @@ import { FLOWUX_ZH } from './flowUx';
 import { PREVIEW_ZH } from './preview';
 import { SPLITJOINTS_ZH } from './splitJoints';
 import { SPLITPREFS_ZH } from './splitPrefs';
+import { SPLITNATURAL_ZH } from './splitNatural';
 import { UNIONES_FIRMES_ZH } from './unionesFirmes';
 import { FIRMEZA_UNIONES_ZH } from './firmezaUniones';
 import { AJUSTAR_ZH } from './ajustarImpresora';
@@ -104,6 +105,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...PREVIEW_ZH,
   ...SPLITJOINTS_ZH,
   ...SPLITPREFS_ZH,
+  ...SPLITNATURAL_ZH,
   ...UNIONES_FIRMES_ZH,
   ...FIRMEZA_UNIONES_ZH,
   ...AJUSTAR_ZH,

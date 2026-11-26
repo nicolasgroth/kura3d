@@ -16,7 +16,7 @@ import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { activeBed, FALLBACK_CONNECTOR_SIZE_MM } from '../../store/splitCommandSchemas';
 import { findPlate, plateBed } from '../../core/scene/plates';
-import type { BedSplitPlanOptions, SplitAxis, SplitBed, SplitConnectorOptions } from '../../engine';
+import type { BedSplitPlanOptions, SplitAxis, SplitBed, SplitConnectorOptions, SplitStrategy } from '../../engine';
 import { OPERATION_DEFAULTS, OPERATION_RANGES as OR, SPLIT_HARD_MAX_PIECES } from '../../engine/operationLimits';
 import { summarizeSplitPlan } from '../../core/scene/splitPlanSummary';
 import { formatNumber } from '../../utils/plural';
@@ -30,6 +30,7 @@ import { onSplitPlaneMove, planeKey } from './splitPlaneDrag';
 import { SplitPlanSummaryView } from './SplitPlanSummaryView';
 import { SplitSection } from './SplitSection';
 import { SplitLabelsToggle } from './SplitLabelsToggle';
+import { SplitStrategyField } from './SplitStrategyField';
 import { SplitMagnetOptions, splitMagnetConnector, useSplitMagnetChoice } from './SplitMagnetOptions';
 import '../../styles/splitForBed.css';
 import { userAxisLabel } from '../../core/scene/displayAxes';
@@ -86,6 +87,7 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const [labelPlacement, setLabelPlacement] = useState<LabelPlacement>('auto');
   const [maxPieces, setMaxPieces] = useState<'auto' | undefined>(undefined);
   const [overrides, setOverrides] = useState<Overrides>({});
+  const [strategy, setStrategy] = useState<SplitStrategy>('grid');
   const [magnetChoice, setMagnetChoice] = useSplitMagnetChoice();
 
   // Ligado al objeto con el que se abrió: clics en el visor no cambian el objetivo ni borran el plan.
@@ -116,6 +118,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
     setOverrides({});
     setMaxPieces(undefined);
   }, [targetId]);
+  // Otra estrategia propone otros planos: los movidos a mano ya no corresponden.
+  useEffect(() => setOverrides({}), [strategy]);
 
   const connector = useMemo<SplitConnectorOptions | null>(
     () =>
@@ -136,8 +140,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
   const isConnector = kind !== 'none' && kind !== 'lap' && kind !== 'magnet';
   const allowedAxes = useMemo(() => AXES.filter((a) => axes[a]), [axes]);
   const planOptions = useMemo<BedSplitPlanOptions>(
-    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, allowDiagonal, connector, planePositions: overrides, maxPieces }),
-    [margin, allowedAxes, allowRotation, allowDiagonal, connector, overrides, maxPieces],
+    () => ({ marginMm: margin, axes: allowedAxes, allowRotation, allowDiagonal, connector, planePositions: overrides, maxPieces, strategy }),
+    [margin, allowedAxes, allowRotation, allowDiagonal, connector, overrides, maxPieces, strategy],
   );
 
   const executeOptions = useMemo(
@@ -327,6 +331,8 @@ export const SplitForBedPanel: React.FC<{ open: boolean; onClose: () => void }> 
         </button>
         {num('margin', t(language, 'split.margin'), margin, setMargin, OR.split.marginMm, { step: 0.5, def: D.marginMm })}
       </fieldset>
+
+      <SplitStrategyField language={language} value={strategy} onChange={setStrategy} plan={pending ? null : plan} />
 
       <fieldset className="kura-split-group">
         <legend>{t(language, 'split.axes')}</legend>

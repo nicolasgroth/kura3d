@@ -28,6 +28,7 @@ import { FLOWUX_HI } from './flowUx';
 import { PREVIEW_HI } from './preview';
 import { SPLITJOINTS_HI } from './splitJoints';
 import { SPLITPREFS_HI } from './splitPrefs';
+import { SPLITNATURAL_HI } from './splitNatural';
 import { UNIONES_FIRMES_HI } from './unionesFirmes';
 import { FIRMEZA_UNIONES_HI } from './firmezaUniones';
 import { AJUSTAR_HI } from './ajustarImpresora';
@@ -104,6 +105,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...PREVIEW_HI,
   ...SPLITJOINTS_HI,
   ...SPLITPREFS_HI,
+  ...SPLITNATURAL_HI,
   ...UNIONES_FIRMES_HI,
   ...FIRMEZA_UNIONES_HI,
   ...AJUSTAR_HI,
