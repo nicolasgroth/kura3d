@@ -2,7 +2,8 @@
  * @file src/components/viewport/PreviewLayers.tsx
  * @description Capas de vista previa del Canvas: plano de corte arrastrable y mallas fantasma
  * de `operationPreview` (translúcidas con color de acento; atenuadas mientras se recalculan) con
- * sus rótulos. No se pueden seleccionar ni entran a la escena.
+ * sus rótulos. No se pueden seleccionar ni entran a la escena. Los fantasmas con `display` (Simplificar, mallas
+ * densas) saltan el cálculo de aristas vivas y dibujan, si se pide, el alambre de triángulos.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license MIT
@@ -15,6 +16,7 @@ import * as THREE from 'three';
 import { t, type TranslationKey } from '../../i18n';
 import type { PreviewGhost, PreviewRole } from '../../store/slices/previewSlice';
 import { useKuraStore } from '../../store/useKuraStore';
+import { buildGhostGeometry } from './ghostGeometry';
 import { LaserCutPreview } from './LaserCutPreview';
 import { SplitPlanPreview } from '../split/SplitPlanPreview';
 import { SplitJointHighlight } from '../split/SplitJointHighlight';
@@ -24,18 +26,14 @@ import { SplitLabels } from '../split/SplitLabels';
 const ROLE_COLOR: Record<PreviewRole, string> = { result: '#22d3ee', base: '#38bdf8', tool: '#f43f5e' };
 
 const GhostMesh: React.FC<{ ghost: PreviewGhost; dimmed: boolean }> = ({ ghost, dimmed }) => {
-  const geometry = useMemo(() => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(ghost.mesh.positions, 3));
-    g.setIndex(new THREE.BufferAttribute(ghost.mesh.indices, 1));
-    g.computeVertexNormals();
-    return g;
-  }, [ghost.mesh]);
-  const edges = useMemo(() => new THREE.EdgesGeometry(geometry, 30), [geometry]);
+  // Con `display` (mallas densas) no se calculan aristas vivas: solo sólido y, si se pide, el alambre de triángulos.
+  const light = ghost.display !== undefined;
+  const geometry = useMemo(() => buildGhostGeometry(ghost.mesh), [ghost.mesh]);
+  const edges = useMemo(() => (light ? null : new THREE.EdgesGeometry(geometry, 30)), [geometry, light]);
   useEffect(
     () => () => {
       geometry.dispose();
-      edges.dispose();
+      edges?.dispose();
     },
     [geometry, edges],
   );
@@ -53,9 +51,16 @@ const GhostMesh: React.FC<{ ghost: PreviewGhost; dimmed: boolean }> = ({ ghost, 
           side={THREE.DoubleSide}
         />
       </mesh>
-      <lineSegments geometry={edges} renderOrder={31} raycast={() => null}>
-        <lineBasicMaterial color={color} transparent opacity={dimmed ? 0.3 : 0.85} depthWrite={false} />
-      </lineSegments>
+      {edges && (
+        <lineSegments geometry={edges} renderOrder={31} raycast={() => null}>
+          <lineBasicMaterial color={color} transparent opacity={dimmed ? 0.3 : 0.85} depthWrite={false} />
+        </lineSegments>
+      )}
+      {ghost.display === 'solidWire' && (
+        <mesh geometry={geometry} renderOrder={31} raycast={() => null}>
+          <meshBasicMaterial color={color} wireframe transparent opacity={dimmed ? 0.3 : 0.85} depthWrite={false} />
+        </mesh>
+      )}
     </group>
   );
 };

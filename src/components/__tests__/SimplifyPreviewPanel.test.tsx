@@ -17,7 +17,7 @@ import { uvSphere } from '../../engine/__tests__/smoothFixtures';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { buildSceneObject } from '../../core/scene/sceneObjects';
 import { t } from '../../i18n';
-import { simplifySignature } from '../../store/slices/simplifyPreviewSlice';
+import { SIMPLIFY_GHOST_DEFAULTS, simplifySignature } from '../../store/slices/simplifyPreviewSlice';
 import { useKuraStore } from '../../store/useKuraStore';
 import { SimplifySection } from '../inspector/SimplifySection';
 import { SimplifyReportView } from '../inspector/SimplifyReportView';
@@ -56,7 +56,7 @@ describe('Simplificar: vista previa en el panel', () => {
       previewSimplify: async (id, request) => {
         calls.push(request);
         const report = { ...SAFE_APPLIED, objectId: id };
-        useKuraStore.setState({ simplifyPreview: { objectId: id, status: 'ready', phase: null, signature: simplifySignature(request), report, error: null } });
+        useKuraStore.setState({ simplifyPreview: { objectId: id, status: 'ready', phase: null, signature: simplifySignature(request), report, error: null, ...SIMPLIFY_GHOST_DEFAULTS } });
         return report;
       },
     }));
@@ -76,7 +76,7 @@ describe('Simplificar: vista previa en el panel', () => {
   it('el informe de otros parámetros no se muestra como vista previa', async () => {
     await mount();
     act(() => useKuraStore.setState({
-      simplifyPreview: { objectId: 'sph', status: 'ready', phase: null, signature: simplifySignature({ mode: 'target', targetPercent: 30 }), report: SAFE_APPLIED, error: null },
+      simplifyPreview: { objectId: 'sph', status: 'ready', phase: null, signature: simplifySignature({ mode: 'target', targetPercent: 30 }), report: SAFE_APPLIED, error: null, ...SIMPLIFY_GHOST_DEFAULTS },
     }));
     expect(screen.queryByTestId('simplify-report')).toBeNull();
   });
@@ -85,7 +85,7 @@ describe('Simplificar: vista previa en el panel', () => {
     await mount();
     let cancelled = 0;
     act(() => useKuraStore.setState({
-      simplifyPreview: { objectId: 'sph', status: 'computing', phase: null, signature: simplifySignature({ mode: 'lossless' }), report: null, error: null },
+      simplifyPreview: { objectId: 'sph', status: 'computing', phase: null, signature: simplifySignature({ mode: 'lossless' }), report: null, error: null, ...SIMPLIFY_GHOST_DEFAULTS },
       cancelSimplifyPreview: () => { cancelled++; },
     }));
     expect((screen.getByTestId('simplify-preview') as HTMLButtonElement).disabled).toBe(true);
