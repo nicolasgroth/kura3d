@@ -25,7 +25,7 @@ import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 import type { PieceMode, RepeatOutcome, RepeatRecord } from '../quickActionsTypes';
 import { sanitizeTransformPatch } from '../transformLimits';
-import { isNegative } from '../../core/scene/objectRole';
+import { isNegative, isReference, isSolid } from '../../core/scene/objectRole';
 import { negativeSpotFor } from '../negativeSpawn';
 
 /** Objetos cuyo nombre contiene `filter` (sin distinguir mayúsculas ni tildes). */
@@ -172,9 +172,12 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       case 'resetOrientation':
       case 'material': {
         if (!first) return 'notApplicable';
+        if (rec.kind === 'dropToBed') {
+          s.dropObjectsToBed(targets.map((o) => o.id));
+          return 'done';
+        }
         for (const o of targets) {
-          if (rec.kind === 'dropToBed') s.dropObjectToBed(o.id);
-          else if (rec.kind === 'centerObjectOnBed') s.centerObjectOnBed(o.id);
+          if (rec.kind === 'centerObjectOnBed') s.centerObjectOnBed(o.id);
           else if (rec.kind === 'resetOrientation') s.resetObjectOrientation(o.id);
           else s.setObjectMaterial(o.id, rec.materialPreset);
         }
@@ -283,6 +286,12 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       if (target) record({ kind: 'dropToBed' });
     },
 
+    dropObjectsToBed: (ids) => {
+      const moved = base.dropObjectsToBed!(ids);
+      if (moved.length > 0) record({ kind: 'dropToBed' });
+      return moved;
+    },
+
     centerObjectOnBed: (id) => {
       const target = editableById(id);
       base.centerObjectOnBed!(id);
@@ -348,6 +357,45 @@ export function createQuickActionsSlice(ctx: StoreContext, base: Partial<KuraSto
       const spots = new Map(role === 'negative' ? changing.map((o) => [o.id, negativeSpotFor(o, get().objects)] as const) : []);
       set((s) => ({ objects: s.objects.map((o) => (changeIds.has(o.id) ? { ...o, role, position: spots.get(o.id) ?? o.position } : o)) }));
       record({ kind: 'setType', role });
+    },
+
+    // Tecla H: cada pieza seleccionada alterna Sólido / Negativo (una referencia no cambia) en UN paso de deshacer.
+    toggleSelectionRole: () => {
+      const wanted = new Set(get().selectedIds);
+      const targets = get().objects.filter((o) => wanted.has(o.id) && !isReference(o));
+      if (targets.length === 0) return false;
+      pushHistory();
+      const next = new Map(targets.map((o) => [o.id, isNegative(o) ? 'solid' : 'negative'] as const));
+      const spots = new Map(targets.filter((o) => next.get(o.id) === 'negative').map((o) => [o.id, negativeSpotFor(o, get().objects)] as const));
+      set((s) => ({
+        objects: s.objects.map((o) => (next.has(o.id) ? { ...o, role: next.get(o.id)!, position: spots.get(o.id) ?? o.position } : o)),
+      }));
+      record({ kind: 'setType', role: next.get(targets[targets.length - 1].id)! });
+      return true;
+    },
+
+    // Ctrl+Mayús+U: con huecos y sólidos en la selección (o, con menos de 2 piezas elegidas, en la escena) aplica las
+    // restas; con 2 o más piezas sin esa mezcla, une. Devuelve la acción elegida o null si no aplica nada.
+    applyHolesOrUnion: () => {
+      const { objects, selectedIds } = get();
+      const selected = objects.filter((o) => selectedIds.includes(o.id));
+      const selHasHole = selected.some((o) => isNegative(o) && o.visible);
+      const selHasSolid = selected.some((o) => isSolid(o) && o.visible);
+      const sceneHasHole = objects.some((o) => isNegative(o) && o.visible);
+      const sceneHasSolid = objects.some((o) => isSolid(o) && o.visible);
+      if ((selHasHole && selHasSolid) || (selectedIds.length < 2 && sceneHasHole && sceneHasSolid)) {
+        void get().applyHolesOnSolids();
+        return 'applyHoles';
+      }
+      if (selectedIds.length >= 2) {
+        void get().runBooleanOnSelection('union');
+        return 'union';
+      }
+      if (sceneHasHole && sceneHasSolid) {
+        void get().applyHolesOnSolids();
+        return 'applyHoles';
+      }
+      return null;
     },
 
     // El SVG de una pieza se crea en el diálogo SVG: al terminar se coloca sobre el objeto y se marca el tipo.

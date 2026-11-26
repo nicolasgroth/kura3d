@@ -110,9 +110,14 @@ export async function simplifyMeshDetailed(
     const volumeAfterMm3 = simplified.volume();
     const trianglesAfter = simplified.numTri();
     const noReduction = !(trianglesAfter < trianglesBefore);
+    // La malla de la original y su BVH se calculan una sola vez y sirven a la verificación y a la búsqueda segura.
+    let originalMeshCache: ReturnType<typeof manifoldMesh> | undefined;
+    let originalBvhCache: ReturnType<typeof bvhOf> | undefined;
+    const originalMesh = () => (originalMeshCache ??= manifoldMesh(original!));
+    const originalBvh = () => (originalBvhCache ??= bvhOf(originalMesh()));
     const deviation = noReduction
       ? { maxMm: 0, samples: 0 }
-      : sampledDeviation(manifoldMesh(original), manifoldMesh(simplified), SIMPLIFY_WARN_LIMITS.maxDeviationSamples);
+      : sampledDeviation(originalMesh(), manifoldMesh(simplified), SIMPLIFY_WARN_LIMITS.maxDeviationSamples, originalBvh());
     const measured = {
       genusBefore,
       genusAfter: bodyGenus(simplified),
@@ -133,9 +138,8 @@ export async function simplifyMeshDetailed(
     const allowDestructive = request.mode !== 'lossless' && request.allowDestructive === true;
     let safe: SimplifySafeAlternative | null | undefined;
     if (destructive.length > 0 && !allowDestructive) {
-      const originalMesh = manifoldMesh(original);
       safe = findSafeAlternative({
-        original, originalMesh, originalBvh: bvhOf(originalMesh), trianglesBefore, genusBefore,
+        original, originalMesh: originalMesh(), originalBvh: originalBvh(), trianglesBefore, genusBefore,
         volumeBefore: volumeBeforeMm3, maxScale, diagMm, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
       }, opts);
     }

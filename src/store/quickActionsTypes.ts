@@ -50,6 +50,10 @@ export interface QuickActionsSliceState {
   pendingPiece: { mode: PieceMode; targetId: string } | null;
   /** Fija el rol (sólido / negativo / referencia) de objetos; un solo paso de deshacer. */
   setObjectsRole: (ids: string[], role: ObjectRole) => void;
+  /** Tecla H: alterna Sólido / Negativo en cada pieza seleccionada (no toca referencias) en un solo paso de deshacer. */
+  toggleSelectionRole: () => boolean;
+  /** Ctrl+Mayús+U: aplica las restas o une los sólidos según la selección; devuelve qué hizo (null: nada). */
+  applyHolesOrUnion: () => 'applyHoles' | 'union' | null;
   /** Regenera los paramétricos seleccionados (F5). Devuelve cuántos se recalcularon. */
   recomputeSelected: () => Promise<number>;
   /** Búsqueda en la escena (F3). */

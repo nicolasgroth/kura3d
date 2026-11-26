@@ -19,7 +19,7 @@ import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
 export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
-  const { set, get, tr, pushHistory, rejectWhileLocked } = ctx;
+  const { set, get, tr, pushHistory, rejectWhileLocked, runtime } = ctx;
 
   const scene = (): PlateScene => ({ objects: get().objects, plates: get().plates });
   const plateName = (n: number) => tr('plates.defaultName', { n });
@@ -132,8 +132,12 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       return result.moved.length;
     },
 
+    // Invariante: todo cambio de `objects` va dentro de un paso de deshacer. Al soltar un arrastre ese paso ya está
+    // abierto (`runtime.transformSnapshotBeforeDrag`, lo cierra `commitTransformSnapshot`) y la reasignación viaja en
+    // él; usada fuera de un arrastre abre su propio paso, para no dejar la escena cambiada sin deshacer.
     reassignPlatesByPosition: (ids) => {
       const next = reassignByPosition(scene(), ids, projectBed(get()));
+      if (next && runtime.transformSnapshotBeforeDrag === null) pushHistory();
       // Aunque la placa ya se haya reasignado durante el arrastre, al soltar la activa sigue a la selección.
       const objects = next?.objects ?? get().objects;
       const follow = followSelection(objects);

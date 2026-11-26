@@ -417,6 +417,8 @@ export interface KuraStoreState {
   /** Cancela un arrastre en curso: restaura la escena previa y no deja paso en el historial. */
   cancelTransformSnapshot: () => void;
   dropObjectToBed: (id: string) => void;
+  /** Apoya varias piezas en la cama con un solo paso de deshacer; devuelve los ids movidos (los bloqueados se omiten). */
+  dropObjectsToBed: (ids: string[]) => string[];
   centerObjectOnBed: (id: string) => void;
   resetObjectOrientation: (id: string) => void;
   nudgeSelectedObjects: (deltaMm: Vec3) => void;

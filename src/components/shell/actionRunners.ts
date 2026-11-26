@@ -95,7 +95,7 @@ export function runAction(id: ActionId): void {
       void state.applyHolesOnSolids();
       return;
     case 'dropToBed':
-      for (const objectId of ids) state.dropObjectToBed(objectId);
+      state.dropObjectsToBed(ids);
       return;
     case 'centerOnBed':
       state.centerSelectionOnBed(ids);
