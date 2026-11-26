@@ -191,7 +191,7 @@ describe('Asistentes: foco y paneles', () => {
     const user = userEvent.setup();
     render(<AssistantsPanel />);
     act(() => openAssistants(CAJA));
-    await user.click(screen.getByRole('button', { name: t('es', 'asis.back') }));
+    await user.click(screen.getByRole('button', { name: t('es', 'panel.action.back') }));
     await waitFor(() => expect((document.activeElement as HTMLElement | null)?.getAttribute('data-recipe')).toBe(CAJA));
   });
 

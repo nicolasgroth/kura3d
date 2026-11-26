@@ -158,14 +158,16 @@ export const RecipeGallery: React.FC<{ onOpen: (recipeId: string) => void }> = (
                 className="kura-asis-card kura-asis-gcard"
                 data-recipe={entry.id}
                 data-category={entry.category}
+                aria-labelledby={`kura-asis-card-title-${entry.id}`}
+                aria-describedby={`${entry.description ? `kura-asis-card-desc-${entry.id} ` : ''}kura-asis-card-meta-${entry.id}`}
                 title={t(language, 'asis.openTip', { name: entry.title })}
                 onClick={() => onOpen(entry.id)}
               >
                 <Thumb id={entry.id} category={entry.category} />
                 <span className="kura-asis-card-text">
-                  <span className="kura-asis-card-title">{entry.title}</span>
-                  {entry.description && <span className="kura-asis-card-desc">{entry.description}</span>}
-                  <span className="kura-asis-card-meta">
+                  <span className="kura-asis-card-title" id={`kura-asis-card-title-${entry.id}`}>{entry.title}</span>
+                  {entry.description && <span className="kura-asis-card-desc" id={`kura-asis-card-desc-${entry.id}`}>{entry.description}</span>}
+                  <span className="kura-asis-card-meta" id={`kura-asis-card-meta-${entry.id}`}>
                     {catName(entry.category)}
                     {entry.recipe.validated.recipe.presets?.length ? ` · ${t(language, 'asis.variants', { count: entry.recipe.validated.recipe.presets.length })}` : ''}
                   </span>

@@ -2,7 +2,7 @@
  * @file src/components/assistants/AssistantsPanel.tsx
  * @description Panel de operación «Asistentes» (no modal, en el lugar del inspector, como Texto 3D): muestra la lista de
  * recetas incorporadas o, con una elegida, su formulario. Se abre desde «Insertar» y desde la paleta de comandos; se
- * cierra al crear, con su botón X o con Escape desde la lista (Escape en el formulario vuelve a la lista). Con una
+ * cierra al crear o con su «Volver» / Escape desde la lista (en el formulario, «Volver» y Escape vuelven a la lista: un solo botón). Con una
  * pieza reabierta («Editar con el asistente») el formulario trae sus respuestas, o se explica por qué no se puede.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -38,8 +38,10 @@ export const AssistantsPanel: React.FC = () => {
     const handle = window.setTimeout(() => document.querySelector<HTMLElement>(`.kura-asis-card[data-recipe="${CSS.escape(id)}"]`)?.focus(), 0);
     return () => window.clearTimeout(handle);
   }, [entry]);
+  // «Volver» (y Esc) del encabezado es jerárquico: en el formulario vuelve a la lista; en la lista cierra el panel.
+  const inForm = entry !== undefined && !(edit && edit.status !== 'ok');
   return (
-    <OperationPanel open={open} onClose={closeAssistants} title={t(language, 'asis.title')} className="kura-asis-panel" initialFocus="#kura-asis-first">
+    <OperationPanel open={open} onClose={inForm ? back : closeAssistants} title={t(language, 'asis.title')} className="kura-asis-panel" initialFocus="#kura-asis-first">
       {edit && edit.status !== 'ok' ? (
         <EditProblem plan={edit} />
       ) : entry ? (
