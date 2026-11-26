@@ -9,9 +9,10 @@
 
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
+import { fakeBox } from '../../test/fakeObjects';
 import { CommandPalette } from '../CommandPalette';
 
 function setup() {
@@ -48,5 +49,18 @@ describe('CommandPalette', () => {
     const input = setup();
     await user.type(input, 'cubo');
     expect(screen.getAllByRole('option')[0].getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('«Simplificar…» abre el panel con su vista previa y no modifica la pieza', async () => {
+    const box = fakeBox('a', 'Pieza A');
+    const simplifySelectedMesh = vi.fn();
+    useKuraStore.setState({ objects: [box], selectedIds: ['a'], simplifyRequest: null, simplifySelectedMesh } as never);
+    const user = userEvent.setup();
+    const input = setup();
+    await user.type(input, 'simplificar');
+    await user.keyboard('{Enter}');
+    expect(useKuraStore.getState().simplifyRequest?.id).toBe('a');
+    expect(simplifySelectedMesh).not.toHaveBeenCalled();
+    expect(useKuraStore.getState().objects[0]).toBe(box);
   });
 });
