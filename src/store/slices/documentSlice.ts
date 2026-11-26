@@ -1,7 +1,7 @@
 /**
  * @file src/store/slices/documentSlice.ts
  * @description Slice de documento: estado del motor, escena, historial y proyecto `.kura`
- * (nuevo, abrir, recuperar borrador, guardar, confirmar descarga) e inicialización del motor. Al abrir o
+ * (nuevo, abrir, recuperar borrador, guardar con avance en la barra del visor, confirmar descarga) e inicialización del motor. Al abrir o
  * recuperar avisa si hay placas que se pisan (no las mueve).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -20,6 +20,7 @@ import { compactInfo, infoNow, type ProjectInfo } from '../../project/projectInf
 import { applyProjectInfoPatch } from '../../project/projectInfoPatch';
 import { revealProjectNotes } from '../../utils/projectNotesFocus';
 import { captureProject, hasProjectChanged, makeProjectDraftId } from '../projectDocument';
+import { trackSaveProgress } from '../saveProgress';
 import type { StoreContext } from '../storeContext';
 import type { KuraStoreState } from '../storeTypes';
 
@@ -243,6 +244,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         return false;
       }
       set({ projectBusy: true });
+      const progress = trackSaveProgress(get, set);
       try {
         const state = get();
         // La fecha de modificación se fija al guardar (no al abrir ni al editar).
@@ -251,7 +253,11 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         const name = state.projectName ?? `${tr('app.untitled')}.kura`;
         const saved = await saveProjectFile(
           name,
-          () => encodeProjectAsync(document),
+          async () => {
+            const bytes = await encodeProjectAsync(document, progress.update);
+            progress.writing();
+            return bytes;
+          },
           saveAs ? undefined : state.projectLocation,
         );
         if (!saved) {
@@ -278,6 +284,7 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
         get().addToast(tr('fileProject.saveError', { message: projectErrorMessage(error) }), 'error');
         return false;
       } finally {
+        progress.end();
         set({ projectBusy: false });
       }
     },
