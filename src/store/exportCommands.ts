@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+import { projectMetaOf } from '../project/projectMeta3mf';
 import { BRAND } from '../brand';
 import * as engine from '../engine';
 import type { SceneObject } from '../types/kura';
@@ -66,7 +67,7 @@ export const EXPORT_HANDLERS = {
     const input = schema.parseExport(p);
     if (input.wantsBytes || headless()) {
       const { plan, skippedHoles, skippedReferences } = scopedTargets(deps, input);
-      const bytes = engine.exportSceneTo3MF(plan.targets, deps.get().unitSystem, undefined, BRAND, undefined, plan.plateLayout);
+      const bytes = engine.exportSceneTo3MF(plan.targets, deps.get().unitSystem, undefined, BRAND, undefined, plan.plateLayout, projectMetaOf(deps.get()));
       return {
         format: '3mf', bytesBase64: deps.toBase64(bytes), triangleCount: triangles(plan.targets), skippedHoles, skippedReferences,
         skippedUnplaced: plan.excluded, plateCount: plan.plateCount,

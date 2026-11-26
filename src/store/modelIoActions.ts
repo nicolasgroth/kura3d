@@ -21,6 +21,7 @@ import { selectExportTargets } from './exportTargets';
 import { printPosedObjects } from './sceneLayout';
 import { placeGroupInFreeSpot, type BedSize } from '../core/scene/freeSpot';
 import { exportSceneFiles, type ExportTaskArgs, type ExportTaskResult } from '../core/operations/engineTasks';
+import { projectMetaOf } from '../project/projectMeta3mf';
 import { hasSplitParts, printLayoutTargets, zipPerPiece, type SplitExportMode } from './splitExport';
 import { MAX_GROUP_NAME, objectAncestors, reconcileGroups } from '../core/scene/groups';
 import { groupImported } from './importGrouping';
@@ -98,6 +99,8 @@ interface IoState {
   printerProfile: { bedWidthMm?: number };
   customBedDimensions?: { width: number } | null;
   projectName: string | null;
+  /** Datos del proyecto (descripción y autor viajan en el 3MF); ausente en pruebas que no lo usan. */
+  projectInfo?: Pick<import('../project/projectInfo').ProjectInfo, 'description' | 'author'>;
   /** Placas de impresión (cada pieza se exporta respecto de la cama de la suya). */
   plates?: import('../types/plates').ScenePlate[];
   /** Modo de vista (ausente = imprimir): se exporta siempre desde las poses de impresión. */
@@ -412,6 +415,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         unitSystem: state.unitSystem,
         ...(fullScene ? { sceneGroups: state.groups ?? [] } : {}),
         ...(single?.plateLayout && request.format === '3mf' ? { plateLayout: single.plateLayout } : {}),
+        ...(request.format === '3mf' ? { projectMeta: projectMetaOf(state) } : {}),
       });
       const entries: SaveSetEntry[] = files.map((f) => ({
         name: `${base}${f.suffix}`,
