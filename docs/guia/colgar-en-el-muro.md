@@ -68,6 +68,8 @@ Kurra Studio revisa cada ojo al colocarlo y te avisa sin impedirlo:
 
 Si la figura es más ancha que la cara en esa zona (sale de la pieza por lados opuestos), el ojo **no se coloca** y Kurra Studio te lo dice.
 
+Tampoco se coloca si **la cabeza no queda retenida**: en una cara demasiado chica no queda labio que sujete la cabeza del tornillo y la pieza se saldría. Pasa, por ejemplo, con un cubo de 10 mm. El mensaje dice «El ojo no se colocó: en esa cara no queda labio que sujete la cabeza del tornillo (se saldría). Usa una cara más grande o un tornillo menor.»
+
 El ojo **sigue a su pieza**: si la mueves, la giras o la escalas, el ojo va con ella y conserva sus medidas. Al duplicar la pieza se copia; al borrarla se borra. Se guarda en el proyecto `.kura`.
 
 ## Aplicar las restas

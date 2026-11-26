@@ -8,7 +8,8 @@
  * @license MIT
  */
 import { test, expect, type Page } from '@playwright/test';
-import { abrir, captura, cmd, encuadrar, seleccionar, sinAvisos } from './helpers';
+import path from 'node:path';
+import { abrir, captura, cmd, encuadrar, IMG_DIR, seleccionar, sinAvisos } from './helpers';
 
 const store = <T,>(page: Page, fn: (s: any) => T): Promise<T> => page.evaluate((src) => (0, eval)(`(${src})`)((window as any).__s.getState()), fn.toString());
 
@@ -27,6 +28,9 @@ test('placas', async ({ page }) => {
 
   // 2) Segunda placa por el botón real: aparece la tira y la cama nueva, que queda activa.
   await agregar.click();
+  // Aviso al crear: «Placa 2 creada» (se captura antes de que se cierre).
+  await expect(page.getByText(/Placa 2 creada/).first()).toBeVisible();
+  await page.screenshot({ path: path.join(IMG_DIR, 'placas-05-creada.png'), clip: { x: 0, y: 600, width: 1144, height: 300 } });
   const tira = page.getByRole('region', { name: 'Placas de impresión' });
   await expect(tira).toBeVisible();
   await store(page, (s) => s.moveToPlate(s.plates[1].id, [s.objects.find((o: any) => o.name === 'Cuerpo').id]));
@@ -52,4 +56,19 @@ test('placas', async ({ page }) => {
   await sinAvisos(page);
   await captura(page, 'placas-04-fuera');
   expect(torso.id).toBeTruthy();
+
+  // 5) Insignia de placa en la lista de escena y posición del inspector relativa a la placa (pieza en la placa 2).
+  await store(page, (s) => s.setObjectTransform(s.objects.find((o: any) => o.name === 'Cuerpo').id, { scale: [1, 1, 1] }, true));
+  await seleccionar(page, [torso.id]);
+  await expect(page.locator('.kura-plate-badge').first()).toBeVisible();
+  await expect(page.getByText(/Posición respecto de/)).toBeVisible();
+  await encuadrar(page, 'scene');
+  await captura(page, 'placas-06-insignia-inspector');
+
+  // 6) «Mover a placa» en el primer nivel del menú del clic derecho.
+  await seleccionar(page, [cubo.id]);
+  await page.getByRole('treeitem', { name: /Cabeza/ }).first().click({ button: 'right' });
+  await expect(page.getByRole('menuitem', { name: /Mover a placa/ }).first()).toBeVisible();
+  await captura(page, 'placas-07-menu');
+  await page.keyboard.press('Escape');
 });

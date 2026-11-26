@@ -81,7 +81,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Texto y SVG en relieve, grabado o incrustado sobre cualquier superficie.
 - Litofanías planas y cilíndricas, y cortadores desde una imagen.
 - Simplificar y refinar mallas, alinear y distribuir en la cama.
-- **Simplificar** (en revisión) para equipos con poca memoria: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después que avisa si se cerró un agujero o cambió el volumen, y un botón **Deshacer** en el aviso y en el informe. Se abre desde **Simplificar…** en el inspector, o desde el aviso de modelo pesado ya en «Por cantidad».
+- **Simplificar** (en revisión) para equipos con poca memoria: «sin pérdida» (solo se aplica si no cambia la forma), por tolerancia o por cantidad de triángulos, con un informe de antes y después y un botón **Deshacer** en el aviso y en el informe. Si el resultado estropearía la pieza (pierde un agujero pasante, cambia el volumen más de 5 % o mueve la superficie más de 1 mm), no se aplica: el informe da los motivos y ofrece **Aplicar la versión segura** o **Aplicar de todos modos**. Se abre desde **Simplificar…** en el inspector, o desde el aviso de modelo pesado ya en «Por cantidad».
 - **Suavizar malla** (en revisión): quita facetado y ruido de escaneos sin cambiar los triángulos, con aristas protegidas, zona pintada y vista previa antes de aplicar (**Acciones › Malla › Suavizar…**).
 
 **Preparación para imprimir**
@@ -94,7 +94,8 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - Siluetas de cama de 12 impresoras (Elegoo, Bambu Lab, Snapmaker, FlashForge y genéricas).
 
 **Estudio**
-- **Placas** (en revisión): crea una segunda cama con **+ Placa**, renombra, activa y borra placas en una tira sobre la barra de estado, mueve piezas entre ellas (paleta, clic derecho o arrastrando) y mira cuál se pasa del volumen de su cama. Lo nuevo cae en la placa activa y Dividir respeta la placa de la pieza ([guía](docs/guia/placas.md)).
+- **Placas** (en revisión): crea una segunda cama con **+ Placa**, renombra, activa y borra placas en una tira sobre la barra de estado, mueve piezas entre ellas (paleta, clic derecho › **Mover a placa**, arrastrando, con el panel o con las flechas), ve en la lista a qué placa pertenece cada pieza y mira cuál se pasa del volumen de su cama. Lo nuevo cae en la placa activa y Dividir respeta la placa de la pieza ([guía](docs/guia/placas.md)).
+- **Exportar por placa** (en revisión): con piezas en varias placas, el diálogo Exportar ofrece un 3MF con todas las placas o un archivo por placa en un ZIP (STL siempre ZIP por placa); las piezas sin placa quedan fuera con aviso. Bambu Studio y OrcaSlicer entienden las placas del 3MF, pero aún no está verificado en un laminador real: la opción segura es el ZIP ([guía](docs/guia/exportar.md#exportar-con-varias-placas)).
 - **Barra flotante** (en revisión) junto al objeto seleccionado, fuera de la pieza, con las acciones más usadas a un clic, una paleta de colores y **Alt+.** para llegar a ella con el teclado; se oculta mientras hay un panel de operación abierto.
 - **Arrastrar para mover**: el objeto seleccionado se arrastra sobre su plano horizontal.
 - 6 idiomas, 6 temas en claro y oscuro con contraste verificado, y modo compacto.
@@ -104,7 +105,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 **Inteligencia artificial (opcional)**
 - Asistente local sin conexión que entiende órdenes simples en español e inglés.
 - Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
-- **Servidor MCP** con 54 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
+- **Servidor MCP** con 56 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
 
 ## Guías
 
@@ -118,7 +119,7 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 
 **Lo siguiente**
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
-2. **Placas, lo que falta:** la vista de armado que muestra juntas las piezas de todas las placas, el reparto automático de piezas entre placas, la exportación por placa y una cama distinta para cada placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
+2. **Placas, lo que falta:** la vista de armado en la interfaz que muestra juntas las piezas de todas las placas, el reparto automático de piezas entre placas y una cama distinta para cada placa ([diseño](docs/diseno/PLACAS_Y_ARMADO.md), espera decisiones del autor).
 3. **Uniones firmes** en Dividir: tamaño mínimo de conector y de pared según la sección. El cálculo ya existe; falta mostrarlo en la interfaz.
 4. **Multimaterial verificado** en OrcaSlicer, Bambu Studio, Snapmaker Orca, PrusaSlicer y Cura.
 
