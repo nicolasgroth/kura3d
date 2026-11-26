@@ -10,6 +10,12 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Placas con nombre único.** Convertir las placas de un 3MF de laminador ya no deja dos «Placa 1». La insignia de cada pieza (P1, P2…) sigue el orden de la tira.
+- **El rótulo «Cama» del visor muestra la cama de la placa activa** cuando esa placa tiene cama propia.
+- **Cortar en un solo nivel:** el panel se llama «Cortar» y un «Volver» o un Esc lo cierra.
+- **Repartir en placas:** el resumen queda fijo junto al botón.
+- **Arrastrar con Mayús:** el rótulo dice el eje («Eje X»). La ayuda de atajos describe el plano según la vista.
+- **Asistentes:** un solo «Volver» (del formulario a la lista, de la lista al cierre) y tarjetas con nombre accesible corto.
 - **Ayudas de Torreta, Colgar en muro, Imán y Paso de cable:** ya nombran «Volver» (antes «Listo», un botón que no existe desde los paneles con un solo patrón), en los 6 idiomas.
 - **Asistentes con galería.** Tarjetas con miniatura generada desde la geometría real, búsqueda y filtro por categoría; deslizador junto a cada medida; holgura de la tapa ajustable en la caja con cierre a presión.
 - **Arrastrar eligiendo el plano.** En las vistas de frente y de lado la pieza se mueve en vertical; Alt fuerza el plano vertical y Mayús restringe a un eje. Un rótulo dice en qué plano se mueve.

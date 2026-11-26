@@ -875,18 +875,18 @@ Cuarta tanda integrada en `main`: regla de dos niveles de Simplificar, galería 
 | Placas (camas 256 y 180, 3MF real de laminador con 95 piezas, ida y vuelta del 3MF) | Aprobado con un menor (corregido) | Los botones de los avisos no tenían nombre accesible propio |
 | Datos del proyecto y recientes | Aprobado | |
 
-**Verificación final en navegador sobre `main`** (orquestador, 06:00 a 06:50). 27 recorridos de las correcciones: 23 pasaron al primer intento. Los 4 que fallaron eran del recorrido, no del producto, y quedaron corregidos:
+**Verificación final en navegador sobre `main`** (orquestador, antes de las 06:15). 27 recorridos de las correcciones: 23 pasaron al primer intento. Los 4 que fallaron eran del recorrido, no del producto, y quedaron corregidos:
 
 - Tres casos de `qa25g-repartir-atajos` buscaban el botón «una placa por objeto» de la primera tanda, que la segunda reemplazó por el panel «Repartir en placas…». Dos se adaptaron al panel; el tercero («en Armado, repartir no mueve la figura») describía un comportamiento que cambió por diseño y ya está cubierto en `placas-repartir`.
 - Un caso de arrastre en vista superior falló una vez de tres; lo más probable es que una animación de encuadre pisara la cámara que fija el recorrido (no confirmado). Ahora el recorrido comprueba que la cámara quedó donde se pidió.
 
 Comprobado a mano en la app: el comando de repartir deja 12 piezas apiladas sin ningún solape. El panel, abierto con una pieza seleccionada, reparte solo esa pieza (su alcance por defecto es «solo la selección» y el resumen lo dice: «1 pieza colocada»).
 
-La evaluación funcional lanzada a la 01:41 se cortó por el límite de uso sin dejar nota; se repitió a las 07:25 junto con la de usabilidad (sección siguiente).
+La evaluación funcional lanzada a la 01:41 se cortó por el límite de uso sin dejar nota; se repitió cerca de las 06:15 junto con la de usabilidad (sección siguiente).
 
 Consumo (modelo · duración; los tokens de esta tanda no quedaron anotados): `fix/qa25h` (Opus · 01:41 a 03:53 con el corte de 85 min en medio), galería de Asistentes (Sonnet · unos 15 min), foco y Esc de paneles más arrastre por plano (Sonnet · unos 15 min), `fix/qa25j` (10 min; modelo no anotado), guías y capturas (Sonnet · 39 min).
 
-## 26-nov-2026 · Evaluación a ciegas de lo de la noche (07:25, sobre 3fc31a1)
+## 26-nov-2026 · Evaluación a ciegas de lo de la noche (cerca de las 06:15, sobre 3fc31a1)
 
 **Funcional: 86** (Opus · 14 min · 189 k). Sin bloqueos. Sin navegador: midió con el motor, el servidor MCP sin interfaz y modelos reales.
 
@@ -916,5 +916,4 @@ Consumo (modelo · duración; los tokens de esta tanda no quedaron anotados): `f
 
 El evaluador vio que, tras deshacer un reparto, las piezas por placa no coincidían (1/70/26 antes, 0/71/26 después). El orquestador lo repitió en navegador con el mismo 3MF real de 95 piezas más un cubo: deshacer restauró placas, asignación y posiciones idénticas (0 diferencias). No se reproduce.
 
-Ronda de corrección de usabilidad en curso (`fix/usab-n26`); luego se reevalúa con un evaluador nuevo.
-
+**Ronda de corrección de usabilidad** (`fix/usab-n26`, Sonnet · 15 min · 187 k; en `main` como 320b16a). Ocho objetivos: nombres de placa únicos, insignia según la posición en la tira, cama de la placa activa en el visor, foco y tamaño de texto del diálogo de cama, Cortar en un solo nivel, resumen de Repartir fijo, eje en el rótulo de arrastre y ayuda de atajos, un solo «Volver» en Asistentes. Verificación del orquestador: 4346 pruebas del programa en verde, 62 recorridos de navegador de lo tocado en verde, 35 recorridos de capturas regenerados y 0 enlaces rotos. Queda anotado: el «Volver» de Asistentes no se deshabilita mientras se crea la pieza. Reevaluación de usabilidad con un evaluador nuevo: en curso.

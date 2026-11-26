@@ -71,6 +71,6 @@ Algunos asistentes traen **variantes**: conjuntos de medidas ya preparados, como
 - **El botón Crear está deshabilitado:** hay un campo con un error; búscalo marcado con *Error* y el motivo. Corrígelo y se habilita.
 - **Un error aparece arriba del formulario, bajo «Corrige esto antes de crear»:** la receta no pudo construir la pieza con esas medidas (por ejemplo, una pieza demasiado compleja). Cambia los valores y vuelve a intentar. La escena no se toca cuando algo falla.
 - **La vista previa no aparece:** el interruptor **Vista previa** está apagado, o el formulario tiene un error. Si dice *pausada*, pulsa **Actualizar**.
-- **`Esc`:** dentro de un formulario vuelve a la lista; desde la lista cierra el panel. El botón **Volver a la lista** hace lo mismo con el mouse.
+- **`Esc`:** dentro de un formulario vuelve a la lista; desde la lista cierra el panel. El botón **Volver** del encabezado hace lo mismo con el mouse.
 
 Anterior: [Generadores](generadores.md) · Siguiente: [Alojamiento de imán](alojamiento-de-iman.md) · [Índice](README.md)
