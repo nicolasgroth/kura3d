@@ -171,6 +171,24 @@ export interface BedSplitPlanOptions {
   minFragmentMm3?: number;
   /** Calcula `occupancy` (por defecto `true`). */
   countOccupancy?: boolean;
+  /**
+   * Cortes a mano (modo «A mano», `splitManualCuts.ts`): si viene, el plan es exactamente esta lista de planos y no
+   * se calcula la rejilla automática (se ignoran `axes`, `maxPieces`, `shiftWindow` y `planePositions`).
+   */
+  manualCuts?: SplitManualCut[];
+}
+
+/**
+ * Plano de corte elegido a mano, en ejes del motor. Pasa por el centro de la caja del modelo con la coordenada
+ * `positionMm` en su eje base; `tiltDeg` lo inclina hacia los otros dos ejes en orden (x: [y, z], y: [x, z],
+ * z: [x, y]): la normal es `e_eje + tan(t0)·e_u + tan(t1)·e_v`, normalizada. Rango de cada ángulo ±`SPLIT_MANUAL_MAX_TILT_DEG`.
+ */
+export interface SplitManualCut {
+  /** Identificador estable (lo usa la interfaz para resaltar el plano elegido); opcional. */
+  id?: string;
+  axis: SplitAxis;
+  positionMm: number;
+  tiltDeg?: [number, number];
 }
 
 /** Firmeza prevista de una unión (resumen del plan, antes de dividir): lo que `executeBedSplitGeometry` produce. */
@@ -212,6 +230,12 @@ export interface SplitPlane {
   smallestIslandMm2: number;
   /** Si la sección admite la unión: cabe el conector o, en pared delgada, el solape de borde (siempre `false` sin conector). */
   admitsConnectors: boolean;
+  /** Solo planos a mano inclinados: ángulos pedidos, normal unitaria y desplazamiento (`normal · x = offset`). */
+  tiltDeg?: [number, number];
+  normal?: Vec3;
+  offset?: number;
+  /** Solo planos a mano: `SplitManualCut.id` del que sale. */
+  cutId?: string;
 }
 
 /** Pieza estimada del plan (caja de la celda recortada a la caja del modelo). */
@@ -260,6 +284,8 @@ export interface BedSplitPlan {
    * `assemblyPreview`, en la misma corrida. Ausente si no se midió.
    */
   jointPreview?: SplitPreviewJoint[];
+  /** `true` si el plan sale de cortes a mano (`BedSplitPlanOptions.manualCuts`). */
+  manual?: boolean;
   elapsedMs: number;
 }
 
@@ -371,6 +397,11 @@ export interface SplitJoint {
   strength?: SplitJointStrength;
   /** Imanes de la unión (`type: 'magnet'`); las posiciones son `connectorCenters`. */
   magnets?: SplitJointMagnets;
+  /**
+   * Solo uniones en planos a mano inclinados: normal unitaria de la cara (los conectores van a lo largo de ella).
+   * `position` sigue siendo la coordenada del plano en su eje base, medida en el centro de la caja del modelo.
+   */
+  normal?: Vec3;
 }
 
 /**

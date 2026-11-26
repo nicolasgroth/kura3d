@@ -23,6 +23,7 @@ import type { AssemblyDirection, AssemblyJointInput, ConnectorClash } from './as
 import { holeDepth } from './splitJoints';
 import { layoutType } from './splitLooseDowel';
 import { twoSidedHoleDepth } from './splitMagnet';
+import { tiltedCapsuleEnds, tiltedWallTests } from './assemblyTilted';
 import type { SplitAxis, SplitConnectorOptions, SplitConnectorType } from './splitTypes';
 
 const AXIS_INDEX: Record<SplitAxis, number> = { x: 0, y: 1, z: 2 };
@@ -49,7 +50,8 @@ export function jointDirections(j: AssemblyJointInput, part: number): AssemblyDi
  * `allowSurface` (decisión del usuario). Pasar de cola de milano a espiga no la altera.
  */
 export function alternativeType(j: AssemblyJointInput, part: number, d: AssemblyDirection, allowSurface = true): SplitConnectorType | null {
-  if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap' || j.connector.type === 'magnet') return null;
+  // En una cara inclinada no se rehace el conector con otro tipo (el rehecho arma conectores rectos al eje)
+  if (j.kind !== 'connector' || !j.connector || j.connector.type === 'lap' || j.connector.type === 'magnet' || j.normal) return null;
   if (j.connector.type === 'dovetail') {
     const normal = `${part === j.a.part ? '+' : '-'}${j.axis}`;
     return d === normal ? 'dowel' : null;
@@ -78,6 +80,8 @@ export interface Capsule {
    * el usuario aceptó el cambio de superficie), así que esas caras son del propio conector, no pared.
    */
   slide?: number;
+  /** Solo uniones inclinadas: normal de la cara (la cápsula va a lo largo de ella y `plane` es `normal · x`). */
+  normal?: Vec3;
 }
 
 /** Cápsulas de los conectores de las uniones (las de pegar y solape no tienen). */
@@ -89,6 +93,12 @@ export function capsules(joints: AssemblyJointInput[]): Capsule[] {
     const r = connectorRadius(j.connector);
     const reach = holeDepth(j.connector);
     j.connectorCenters.forEach((c, index) => {
+      if (j.normal) {
+        const back = j.connector!.type === 'loose-dowel' || j.connector!.type === 'magnet' ? twoSidedHoleDepth(j.connector!) : 0.5;
+        const e = tiltedCapsuleEnds(c as Vec3, j.normal, back, reach);
+        out.push({ joint: j.label, index, p: e.p, q: e.q, r, axis: j.axis, plane: e.plane, parts: [j.a.part, j.b.part], normal: j.normal as Vec3 });
+        return;
+      }
       const p = [...c] as Vec3;
       const q = [...c] as Vec3;
       // Tarugo suelto: agujero a ambos lados del plano
@@ -174,6 +184,7 @@ export function exteriorWall(cap: Capsule, world: Float64Array[], meshes: MeshDa
 
 function partWall(cap: Capsule, w: Float64Array, mesh: MeshData, wall: number): number {
   const a = AXIS_INDEX[cap.axis];
+  const tilted = cap.normal ? tiltedWallTests({ ...cap, normal: cap.normal }) : null;
   const reach = cap.r + wall + 1;
   const lo = [0, 1, 2].map((i) => Math.min(cap.p[i], cap.q[i]) - reach);
   const hi = [0, 1, 2].map((i) => Math.max(cap.p[i], cap.q[i]) + reach);
@@ -202,8 +213,13 @@ function partWall(cap: Capsule, w: Float64Array, mesh: MeshData, wall: number): 
       }
       if (out) continue;
       // Cara de unión (coplanar al plano) y caras del propio conector (dentro de su cilindro y tramo)
-      if (Math.abs(w[A + a] - cap.plane) < 0.05 && Math.abs(w[B + a] - cap.plane) < 0.05 && Math.abs(w[C + a] - cap.plane) < 0.05) continue;
-      if (ownOf(w, A) && ownOf(w, B) && ownOf(w, C)) continue;
+      if (tilted) {
+        if (tilted.onFace(w, A) && tilted.onFace(w, B) && tilted.onFace(w, C)) continue;
+        if (tilted.own(w, A) && tilted.own(w, B) && tilted.own(w, C)) continue;
+      } else {
+        if (Math.abs(w[A + a] - cap.plane) < 0.05 && Math.abs(w[B + a] - cap.plane) < 0.05 && Math.abs(w[C + a] - cap.plane) < 0.05) continue;
+        if (ownOf(w, A) && ownOf(w, B) && ownOf(w, C)) continue;
+      }
       const v = [A, B, C].map((o) => [w[o], w[o + 1], w[o + 2]] as Vec3);
       for (const s of samples) best = Math.min(best, pointTriangle(s, v[0], v[1], v[2]) - cap.r);
     }

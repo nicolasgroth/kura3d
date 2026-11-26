@@ -17,6 +17,7 @@ import { engineWarning, type EngineWarning } from '../engineErrors';
 import { ASSEMBLY_LIMITS } from '../operationLimits';
 import { connectorClashes, connectorRadius, recommendedConnectorRadius } from './assemblyConnectors';
 import { findOrder, greedyFix } from './assemblyOrder';
+import { tiltedGap } from './assemblyTilted';
 import type {
   AssemblyClosure, AssemblyFix, AssemblyGap, AssemblySuggestion, AssemblyJointInput, AssemblyPartInput, AssemblyReport, AssemblySummary,
   ValidateAssemblyOptions, WeakJoint,
@@ -51,6 +52,7 @@ function jointGap(j: AssemblyJointInput, world: Float64Array[]): number | null {
   const r = j.connector && j.kind === 'connector' ? connectorRadius(j.connector) + 0.35 : 0;
   const wa = world[j.a.part], wb = world[j.b.part];
   if (!wa || !wb) return null;
+  if (j.normal) return tiltedGap(j, j.normal, wa, wb, r);
   let top = -Infinity;
   // Ejes del plano de la unión (sin crear arreglos por vértice: es el bucle caliente)
   const u = a === 0 ? 1 : 0, v = a === 2 ? 1 : 2;

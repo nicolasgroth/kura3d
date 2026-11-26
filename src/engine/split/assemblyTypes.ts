@@ -36,6 +36,8 @@ export interface AssemblyJointInput {
   connector: SplitConnectorOptions | null;
   connectorCenters: [number, number, number][];
   contactAreaMm2: number;
+  /** Solo uniones en planos inclinados: normal unitaria de la cara (conectores, pared y hueco se miden a lo largo de ella). */
+  normal?: [number, number, number];
 }
 
 /** Opciones de la validación. */

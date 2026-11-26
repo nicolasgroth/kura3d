@@ -17,7 +17,8 @@ import { engineWarning, type EngineWarning } from '../engineErrors';
 import { initManifoldEngine, manifoldToMeshData, meshDataToManifold } from '../manifoldKernel';
 import { applyTransformToMesh } from '../primitives';
 import { buildBodies, cellKey, contactSection, MIN_CONTACT_MM2, type Cell } from './splitBodies';
-import { cutIntoCells, gridOf, SPLIT_AXES } from './splitCells';
+import { cutGridKey, cutIntoCells, gridOf, hasTiltedPlanes, planeSpecsOf, SPLIT_AXES } from './splitCells';
+import { buildTiltedJoint, demoteCrossedTilts, TiltRooms } from './splitTiltedJoint';
 import { buildJoint } from './splitJoints';
 import { finishParts } from './splitFinish';
 import { buildLooseDowelBatch, looseDowelLength } from './splitLooseDowel';
@@ -85,7 +86,9 @@ export async function executeBedSplitGeometry(
   const codeOf = (c: Cell) => splitPartCode(c, counts[2]);
 
   // 1. Cortes en secuencia (o los del plan, si es el mismo sólido y la misma rejilla) y piezas de un solo cuerpo
-  const recalled = recallCut(cutKey(world, obj.color, bounds));
+  const tilted = hasTiltedPlanes(plan);
+  const specs = planeSpecsOf(plan);
+  const recalled = recallCut(cutKey(world, obj.color, cutGridKey(plan)));
   let sourceVolume: number;
   let cells: CutCells;
   if (recalled) {
@@ -96,7 +99,7 @@ export async function executeBedSplitGeometry(
   } else {
     const source = meshDataToManifold(wasm, world, undefined, obj.color);
     sourceVolume = source.volume();
-    cells = cutIntoCells(source, planesBy, tick);
+    cells = cutIntoCells(source, tilted ? specs : planesBy, tick);
   }
   releaseCutCache();
   clock.lap('cut');
@@ -106,6 +109,8 @@ export async function executeBedSplitGeometry(
   try {
     // 2. Uniones entre piezas con contacto real
     const joints: Array<Omit<SplitJoint, 'a' | 'b'> & PendingJoint> = [];
+    // Planos inclinados: cada familia de planos paralelos registra sus conectores en su propio marco girado
+    const tiltRooms = new TiltRooms();
     let clearance = 0;
     let engraved = 0;
     // Registro global: un conector nuevo deja la pared mínima a los de las demás uniones y al exterior
@@ -117,25 +122,31 @@ export async function executeBedSplitGeometry(
         const hc = [...low.cell] as Cell;
         hc[a]++;
         const coord = bounds[a][hc[a]];
+        const spec = specs[a][hc[a] - 1];
+        const tiltSpec = spec && (spec.normal[a] < 1 - 1e-12) ? spec : null;
         for (const hid of byCell.get(cellKey(hc)) ?? []) {
           const high = bodies.get(hid)!;
-          const contact = contactSection(cache, low.id, hid, axis, coord);
+          const contact = tiltSpec ? null : contactSection(cache, low.id, hid, axis, coord);
           try {
-            const area = contact.area();
-            if (area <= MIN_CONTACT_MM2) continue;
             const label = String(joints.length + 1);
             const addsBefore = low.adds.length;
             const subsBefore = high.subs.length;
             const lowSubsBefore = low.subs.length;
-            const out = await buildJoint(
-              wasm,
-              {
-                low, high, axis, coord, span: bounds[a][hc[a] + 1] - coord, contact, bounds, label, connector,
-                lapHeightMm: lapHeight, labels, labelPlacement, labelDepthMm: labelDepth, labelMinHeightMm: labelMin,
-                reinforce: options.reinforceWeakJoints ?? OPERATION_DEFAULTS.split.reinforceWeakJoints, room,
-              },
-              warnings,
-            );
+            const common = {
+              low, high, axis, label, connector, lapHeightMm: lapHeight, labels, labelPlacement, labelDepthMm: labelDepth, labelMinHeightMm: labelMin,
+              reinforce: options.reinforceWeakJoints ?? OPERATION_DEFAULTS.split.reinforceWeakJoints,
+            };
+            let area: number;
+            let out: Awaited<ReturnType<typeof buildJoint>>;
+            if (tiltSpec) {
+              const made = await buildTiltedJoint(wasm, common, tiltSpec, tiltRooms, warnings);
+              if (!made) continue;
+              ({ area, out } = made);
+            } else {
+              area = contact!.area();
+              if (area <= MIN_CONTACT_MM2) continue;
+              out = await buildJoint(wasm, { ...common, coord, span: bounds[a][hc[a] + 1] - coord, contact: contact!, bounds, room }, warnings);
+            }
             clearance += out.clearance;
             engraved += out.engraved;
             // Sólidos de conector o solape (sin la marca, que va al final de `high.subs`)
@@ -149,22 +160,26 @@ export async function executeBedSplitGeometry(
               kind: out.kind, lap: out.lap, islands: out.islands, contactAreaMm2: area, labelEngraved: out.labelPlacement !== null,
               labelPlacement: out.labelPlacement, labelHeightMm: out.labelHeightMm, strength: out.strength, clearance: out.clearance, solids,
               ...(out.magnets ? { magnets: out.magnets } : {}),
+              ...(tiltSpec ? { normal: tiltSpec.normal } : {}),
             });
           } finally {
-            contact.delete();
+            contact?.delete();
           }
         }
       }
     }
 
     clock.lap('joints');
+    // 2a. Planos inclinados: la pieza con caras de unión en direcciones distintas no tiene una entrada común
+    if (tilted) clearance -= demoteCrossedTilts(joints, bodies, warnings);
     // 2b. Montaje posible en algún orden: si no, las uniones que traban pasan a "para pegar"
     const check = options.validateAssembly !== false;
     let fix: AssemblyFix | null = null;
     let suggestions: AssemblySuggestion[] = [];
     if (check && joints.some((j) => j.kind !== 'glue')) {
       const r = fixAssemblyBeforeConnectors(
-        wasm, order, joints, warnings, options.assemblyAutoFix !== false, options.assemblyAllowTypeChange !== false,
+        // Con planos inclinados no se cambia el tipo de conector (el rehecho arma conectores rectos al eje)
+        wasm, order, joints, warnings, options.assemblyAutoFix !== false, options.assemblyAllowTypeChange !== false && !tilted,
         options.assemblyAllowSurfaceChange === true,
       );
       fix = r.fix;

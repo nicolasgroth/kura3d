@@ -2,7 +2,8 @@
  * @file src/engine/split/splitCells.ts
  * @description Corte del sólido mundial en celdas de la rejilla de "dividir para imprimir": planos del
  * plan ordenados por eje, límites de cada tramo y `splitByPlane` en secuencia X → Y → Z. Lo comparten
- * la ejecución (`splitExecute.ts`) y los conteos reales del plan (`splitOccupancy.ts`).
+ * la ejecución (`splitExecute.ts`) y los conteos reales del plan (`splitOccupancy.ts`). Los planos a mano
+ * inclinados (`SplitPlane.normal`) se cortan con su normal propia; la celda sigue siendo el índice del tramo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
@@ -24,11 +25,32 @@ export function gridOf(plan: { bounds: SplitBounds; planes: SplitPlane[] }): { p
   return { planesBy, bounds };
 }
 
+/** Plano de corte en mundo: `normal · x = offset`. */
+export interface CutPlaneSpec {
+  normal: Vec3;
+  offset: number;
+}
+
+/** Planos de cada eje en el orden de `gridOf` (por posición), con la normal propia de los inclinados. */
+export function planeSpecsOf(plan: { planes: SplitPlane[] }): CutPlaneSpec[][] {
+  return SPLIT_AXES.map((axis) => plan.planes.filter((p) => p.axis === axis).sort((p, q) => p.position - q.position)
+    .map((p) => (p.normal && p.offset !== undefined ? { normal: p.normal, offset: p.offset } : { normal: NORMALS[axis], offset: p.position })));
+}
+
+/** Huella de la rejilla para la caché de cortes: límites por eje y, si hay planos inclinados, su normal y desplazamiento. */
+export function cutGridKey(plan: { bounds: SplitBounds; planes: SplitPlane[] }): number[][] {
+  const tilted = plan.planes.filter((p) => p.normal && p.offset !== undefined).map((p) => [...p.normal!, p.offset!]);
+  return [...gridOf(plan).bounds, ...tilted];
+}
+
+/** `true` si algún plano del plan está inclinado. */
+export const hasTiltedPlanes = (plan: { planes: SplitPlane[] }): boolean => plan.planes.some((p) => p.normal !== undefined);
+
 /** Corta por los planos de un eje cada pieza de la lista; devuelve la nueva lista con su celda. Consume la entrada. */
 export function cutAxis(
   cells: Array<{ cell: Cell; m: Manifold }>,
   axis: SplitAxis,
-  planes: number[],
+  planes: Array<number | CutPlaneSpec>,
   tick: () => void = () => {},
 ): Array<{ cell: Cell; m: Manifold }> {
   if (planes.length === 0) return cells;
@@ -37,7 +59,7 @@ export function cutAxis(
   for (const { cell, m } of cells) {
     let rest = m;
     planes.forEach((p, t) => {
-      const [above, below] = rest.splitByPlane(NORMALS[axis], p);
+      const [above, below] = typeof p === 'number' ? rest.splitByPlane(NORMALS[axis], p) : rest.splitByPlane(p.normal, p.offset);
       if (rest !== m || t > 0) rest.delete();
       const c = [...cell] as Cell;
       c[a] = t;
@@ -54,7 +76,7 @@ export function cutAxis(
 }
 
 /** Corta `source` en todas las celdas (consume `source`). */
-export function cutIntoCells(source: Manifold, planesBy: number[][], tick?: () => void): Array<{ cell: Cell; m: Manifold }> {
+export function cutIntoCells(source: Manifold, planesBy: Array<Array<number | CutPlaneSpec>>, tick?: () => void): Array<{ cell: Cell; m: Manifold }> {
   let cells: Array<{ cell: Cell; m: Manifold }> = [{ cell: [0, 0, 0], m: source }];
   for (let a = 0; a < 3; a++) cells = cutAxis(cells, SPLIT_AXES[a], planesBy[a], tick);
   return cells;

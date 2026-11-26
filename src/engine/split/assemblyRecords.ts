@@ -9,7 +9,7 @@
  * @license AGPL-3.0-or-later
  */
 
-import type { SceneObject, SplitJointRecord } from '../../types/kura';
+import type { SceneObject, SplitJointRecord, Vec3 } from '../../types/kura';
 import type { AssemblyJointInput, AssemblyPartInput, AssemblyReport } from './assemblyTypes';
 import type { SplitJoint } from './splitTypes';
 import { summarizeAssembly, validateAssembly } from './validateAssembly';
@@ -23,6 +23,7 @@ export function jointRecord(j: SplitJoint): SplitJointRecord {
     connector: j.connector ? { ...connector, ...(magnet ? { magnet: { ...magnet } } : {}) } : null,
     connectorCenters: j.connectorCenters.map((c) => [c[0], c[1], c[2]]), contactAreaMm2: j.contactAreaMm2,
     labelPlacement: j.labelPlacement,
+    ...(j.normal ? { normal: [j.normal[0], j.normal[1], j.normal[2]] as Vec3 } : {}),
     ...(j.strength ? { strength: structuredClone(j.strength) } : {}),
     ...(j.magnets ? { magnets: { ...j.magnets, magnet: { ...j.magnets.magnet } } } : {}),
   };
@@ -57,7 +58,7 @@ export function storedAssemblyInput(objects: SceneObject[]): { parts: AssemblyPa
       seen.add(r.label);
       joints.push({
         label: r.label, axis: r.axis, position: r.position, kind: r.kind, connector: r.connector,
-        connectorCenters: r.connectorCenters, contactAreaMm2: r.contactAreaMm2,
+        connectorCenters: r.connectorCenters, contactAreaMm2: r.contactAreaMm2, ...(r.normal ? { normal: r.normal } : {}),
         a: { part: index.get(r.a)!, code: r.a }, b: { part: index.get(r.b)!, code: r.b },
       });
     }
