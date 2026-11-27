@@ -2,8 +2,6 @@
 
 **Patrón** repite una pieza (o varias) en una fila, en una rejilla o alrededor de un eje, y también la refleja como en un espejo conservando la original. Sirve para hacer diez tornillos iguales, una parrilla de agujeros, seis patas alrededor de una base o la otra mitad de una pieza simétrica. Antes de aplicar ves **cómo quedarían las copias** en el visor.
 
-> Capturas pendientes de generar (no están en `img/` todavía): `patrones-01-lineal.png`, `patrones-02-rejilla.png`, `patrones-03-grupo.png`, `patrones-04-circular.png` y `patrones-05-espejo.png`. Las crea `e2e/docs/capturas-patrones.spec.ts` con `npm run docs:capturas -- -g patrones`; al generarlas, quita este aviso.
-
 ## Abrir el panel
 
 1. Selecciona una o más piezas.

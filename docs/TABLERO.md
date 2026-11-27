@@ -1,14 +1,14 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 21:30.** Muestra qué funciona hoy, qué le falta a cada función y qué viene. El historial de lotes, pruebas y evaluaciones está en otros archivos (ver el final).
+**Actualizado el 26 de noviembre de 2026, 22:20.** Muestra qué funciona hoy, qué le falta a cada función y qué viene. El historial de lotes, pruebas y evaluaciones está en otros archivos (ver el final).
 
 ## En corto: hoy, 26 de noviembre
 
 **Notas a ciegas vigentes** (mínimo 85): funcional **86** · código **85** · usabilidad **81** en la última evaluación completa. En las dos funcionalidades más bajas, última ronda: placas **84** y Simplificar **72**; los cuatro defectos que encontró ya están corregidos, sin reevaluar todavía.
 
-**Pruebas en `main`:** 4655 del programa y 208 del servidor MCP, en verde. Recorridos de navegador de lo nuevo: patrones 20, Dividir a mano 2, partes de la figura 1, tapa roscada 3, arrastre 15, todos en verde.
+**Pruebas en `main`:** 4776 del programa y 220 del servidor MCP, en verde. Recorridos de navegador de lo nuevo, todos en verde: patrones 23, Dividir a mano 2, partes de la figura 1, tapa roscada 3, acople de tubería 2, instrucciones de armado 2, arrastre 15, escala de grupo 2, Simplificar 21.
 
-En desarrollo ahora mismo: nada. Los cuatro bloques de la noche están en `main`, **sin evaluar todavía** (la evaluación a ciegas queda para la mañana).
+En desarrollo ahora mismo: nada. Las seis funcionalidades de la noche están en `main`, **sin evaluar todavía**. Por cuidado del consumo semanal no se lanzaron más lotes; la evaluación a ciegas se acuerda con el autor antes de lanzarla.
 
 Lo que entró hoy y está en `main`:
 
@@ -16,6 +16,9 @@ Lo que entró hoy y está en `main`:
 - **Dividir por las partes de la figura** (cortes en los estrechamientos). Sin evaluar.
 - **Recipiente con tapa roscada** y **pareja de roscas que enrosca**, con comprobación de holgura. Sin evaluar.
 - **Patrón** lineal, en rejilla, circular y espejo. Sin evaluar.
+- **Acople de tubería** roscado o a presión. Sin evaluar.
+- **Instrucciones de armado** después de dividir, con descarga en Markdown y HTML. Sin evaluar.
+- **Corregido:** la barra flotante tapaba el agarre vertical al escalar un grupo; foco y encuadre en Simplificar; «Escena vacía» sobre la vista previa de un asistente; la cámara muestra todas las copias del patrón.
 - **Corregido:** con la vista inicial, arrastrar una pieza la movía en vertical en vez de sobre la cama.
 - **Tira de placas rediseñada:** el selector Imprimir / Armado / Libre y los controles de Armado viven en la tira; el visor queda libre a 1024 px.
 - **3MF que el laminador abre con sus bandejas:** con un «proyecto de ejemplo» de tu laminador (Exportar › 3MF › Laminador) llegan bandejas, nombres, filamento por pieza y colores. Probado por el autor en Elegoo Slicer y OrcaSlicer.
@@ -26,9 +29,8 @@ Lo que entró hoy y está en `main`:
 
 Qué falta verificar:
 
-- Evaluación a ciegas de los cuatro bloques de la noche, y reevaluación de placas y Simplificar.
+- Evaluación a ciegas de las seis funcionalidades de la noche, y reevaluación de placas y Simplificar.
 - «Por las partes de la figura» con figuras reales: en las pruebas con modelos de terceros solo una de cinco tuvo un estrechamiento útil; en figuras con pelo o capa vuelve a los cortes rectos y lo dice.
-- El punto de agarre Y de la escala de un grupo no responde al puntero en su recorrido de navegador (fallo anterior a esta noche, sin diagnosticar).
 - Los cuatro defectos de la última evaluación están corregidos y con recorrido de navegador (aviso y ajuste a la cama al arrastrar entre placas; informe de Simplificar tras «Aplicar de todos modos»; tolerancia pedida; Enter hace vista previa). Falta reevaluar.
 - Si la barra de avance del guardado se ve en un equipo con tarjeta gráfica (consulta abierta).
 - El 3MF con bandejas en Bambu Studio (el autor no lo tiene).
@@ -43,12 +45,12 @@ Para cerrar el día:
 
 Siguientes funcionalidades, en este orden:
 
-3. Encajes: acoples de tubería, clips y biblioteca de conectores.
-4. Instrucciones de armado y preajustes de conectores.
+3. Encajes: clips, preajustes de insertos y biblioteca de conectores.
+4. Instrucciones de armado con imágenes de cada paso.
 5. Tiradores en las caras para estirar una pieza.
 6. Mejoras de pintura (cursor de área, borde duro o suave, relleno con tolerancia).
 
-Pendientes chicos anotados: encuadrar la cámara para que entren las copias de la vista previa del patrón, el aviso «Escena vacía» tapa la vista previa de un asistente, deslizadores en las formas básicas del inspector, conmutador «Ver lo pedido» en Simplificar, alojamientos rectangulares dibujados como círculos en la guía de armado, «Ajustar a la impresora» y «Cama de Placa N» todavía como diálogos.
+Pendientes chicos anotados: deslizadores en las formas básicas del inspector, conmutador «Ver lo pedido» en Simplificar, alojamientos rectangulares dibujados como círculos en la guía de armado, «Ajustar a la impresora» y «Cama de Placa N» todavía como diálogos.
 
 Sin fecha: instalador con actualización desde la app y firma de instaladores; revisar qué código de OrcaSlicer conviene aprovechar ahora que la licencia lo permite.
 
@@ -77,6 +79,7 @@ Lo que ya puede usar cualquiera. Las guías con capturas están en `guia/`.
 - **Roscas ISO M3 a M64** con paso y holgura según la norma: perno, tuerca y agujero roscado. [Generadores](guia/generadores.md)
 - **Pareja de roscas que enrosca:** en el diálogo de roscas, perno y tuerca (o agujero y perno) de una vez, con la holgura comprobada. *Sin evaluar.*
 - **Recipiente con tapa roscada** (Insertar › Asistentes): frasco y tapa con rosca gruesa imprimible sin soportes, holgura ajustable y aviso de si enrosca. *Sin evaluar.* [Recipiente con tapa roscada](guia/tapa-roscada.md)
+- **Acople de tubería** (Insertar › Asistentes): macho y hembra para unir tubos, roscado o a presión, con el paso interior libre y aviso de si encaja. *Sin evaluar.* [Acople de tubería](guia/acople-de-tuberia.md)
 - **Asistentes** (Insertar › Asistentes): caja con tapa, llavero y placa de enchufe, con formulario, vista previa en el visor y «Editar con el asistente» para reabrir una pieza. [Asistentes](guia/asistentes.md)
 - **Alojamiento de imán** (Insertar): un clic sobre una cara deja el hueco para un imán redondo, cuadrado o rectangular, con holgura y preajustes propios. [Alojamiento de imán](guia/alojamiento-de-iman.md)
 - **Torreta para tornillo** (Insertar): un poste con agujero para tornillo directo o inserto roscado. [Torreta para tornillo](guia/torreta-para-tornillo.md)
@@ -99,6 +102,7 @@ Lo que ya puede usar cualquiera. Las guías con capturas están en `guia/`.
 - **Dividir para imprimir:** parte un modelo más grande que la cama en piezas con nombre (A1, B1…), uniones, marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza. [Dividir para imprimir](guia/dividir-para-imprimir.md)
 - **Cortes a mano e inclinados:** pones los planos donde quieras, los inclinas hasta 45° y puedes ver solo las piezas. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
 - **Cortes por las partes de la figura:** los planos van a los estrechamientos (cuello, cintura) en vez de la rejilla pareja. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
+- **Instrucciones de armado:** pasos en orden, con la unión de cada uno y la lista de materiales; se descargan en Markdown o HTML. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
 - **Corte por plano con conectores** (espiga, pasador, cola de milano), con holgura configurable. Al conservar una sola mitad, eliges dónde dejarla. [Cortar y ahuecar](guia/cortar-y-ahuecar.md)
 - **Uniones con imanes enfrentados** para una figura desmontable.
 - **Tamaño de conector automático** según la sección del corte, y un resumen que dice cuántas uniones quedan firmes, regulares, débiles o para pegar.
@@ -165,7 +169,8 @@ Funciones que ya se usan y lo que les falta, en una línea cada una.
 | Dividir: cortes a mano | Arrastrar un plano inclinado en el visor; firmeza en vivo con planos inclinados; una pieza con uniones en dos direcciones y un plano inclinado queda para pegar |
 | Dividir: por las partes de la figura | Solo planos rectos que atraviesan todo el modelo; no reconoce partes del cuerpo, solo estrechamientos; sin avance propio durante el análisis |
 | Recipiente con tapa roscada | Solo rosca derecha; el ángulo de flanco no está en el formulario; un recipiente grande puede pausar la vista previa |
-| Patrón | La cámara no se aleja sola para mostrar todas las copias de la vista previa |
+| Acople de tubería | Sin junta tórica ni púas para manguera; la pared mínima informada es la de diseño, no medida |
+| Instrucciones de armado | Sin imágenes del visor; el aviso de unión débil se repite en cada paso |
 | Proyectos `.kura` | Encuadrar la vista al abrir; confirmar en un equipo real que la barra de avance al guardar aparece y avanza |
 | Recuperación local | Vista previa del borrador |
 | Importar | Importar GLB |
@@ -208,7 +213,6 @@ Lo que todavía no existe. Ordenado por prioridad dentro de cada grupo.
 | Dividir para imprimir | Guía de uniones: previsualizar, editar y confirmar (hoy hay vista previa, no edición) |
 | Dividir para imprimir | Uniones firmes: tamaño mínimo de pared según la sección (el tamaño del conector ya es automático) |
 | Dividir para imprimir | Vista sin camas, con las piezas flotando entre armado y desarmado (la vista Libre de Placas es el punto de partida) |
-| Encajes | Acoples de tubería macho y hembra |
 | Encajes | Clips, tornillos, insertos y biblioteca de conectores |
 | Encajes | Preajustes para insertos, y holgura de encajes a presión (hoy fija en 0,2 mm). Los imanes ya tienen preajustes |
 | Placas y escena | Asistente de importación con 11 modos de distribución (repartir hoy tiene 4) |
@@ -236,7 +240,7 @@ Lo que todavía no existe. Ordenado por prioridad dentro de cada grupo.
 | IA e integraciones | Adjuntar imágenes y archivos de referencia en el chat |
 | Automatización | Recetas: guardar una secuencia de pasos y repetirla sobre otra pieza o un lote |
 | Aprender | Tutorial interactivo de uso y modelos de ejemplo |
-| Aprender | Instrucciones de armado generadas al dividir un modelo |
+| Aprender | Instrucciones de armado con una imagen del visor por paso (el texto ya existe) |
 | Distribución | Instaladores firmados para Windows, Linux y macOS, con actualizaciones |
 | Distribución | Estimación de material por pieza |
 

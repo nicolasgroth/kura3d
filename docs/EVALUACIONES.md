@@ -1031,3 +1031,17 @@ Lectura del orquestador: es la tercera vez que un lote sin navegador entrega alg
 
 Pruebas tras la integración: 4655 del programa y 208 del servidor MCP.
 
+**Segunda tanda de la noche (hasta las 22:20, en `main`).** Tras el aviso del autor sobre el consumo semanal no se lanzaron más lotes.
+
+| Lote | Agente | Duración | Tokens | Resultado |
+|---|---|---|---|---|
+| `feat/acoples-tuberia` | dev-motor (Opus), sin navegador | 19 min | 292 k | Sus 2 recorridos pasaron a la primera en navegador |
+| `feat/instrucciones-armado` | dev-motor (Opus), sin navegador | 29 min | 316 k | Sus 2 recorridos pasaron a la primera en navegador |
+| `fix/menores-n27` | dev-ui (Sonnet), con navegador | 55 min | 219 k | Cinco arreglos, cada uno reproducido antes de corregir |
+
+El agarre Y de la escala de grupo era un defecto real: la barra flotante de la selección quedaba encima del agarre. Ahora la barra se coloca fuera de la huella del manipulador.
+
+Los dos lotes sin navegador de esta tanda pasaron sus recorridos sin correcciones; sus encargos ya traían las lecciones de la tanda anterior (selectores exactos, primitivas apoyadas en su base, ejes del usuario).
+
+Pruebas tras la integración: 4776 del programa y 220 del servidor MCP. Consumo de agentes de la noche completa: unos 2,1 millones de tokens en siete agentes con dato (falta el de patrones).
+

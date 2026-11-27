@@ -10,6 +10,13 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Acople de tubería** (Insertar › Asistentes): pareja macho y hembra para unir tubos o mangueras impresos, roscada o a presión, con el paso interior libre y un aviso que dice si enrosca o encaja y con cuánta holgura.
+- **Instrucciones de armado:** después de dividir, «Instrucciones de armado» lista los pasos en orden (qué pieza va con cuál, por qué cara, con qué unión y hacia dónde entra) y los materiales; al pulsar un paso se resaltan sus piezas. Se descargan como Markdown o como HTML para imprimir.
+- **Patrón:** la cámara se aleja sola para que entren todas las copias de la vista previa.
+- **Corregido:** la barra flotante de la selección tapaba el punto de agarre vertical al escalar un grupo.
+- **Corregido en Simplificar:** tras «Reparar malla» el foco vuelve al panel, y la vista previa encuadra la pieza si no estaba a la vista.
+- **Corregido:** el aviso «Escena vacía» tapaba la vista previa de un asistente.
+- **Servidor MCP:** 75 herramientas. Nuevas: `kura_create_pipe_coupling` y `kura_get_assembly_instructions`. `npm run mcp:build` vuelve a compilar.
 - **Dividir con cortes a mano.** En *Dividir para imprimir*, «A mano» deja poner los planos donde quieras: agregar, quitar, duplicar, mover con deslizador o número e **inclinar** hasta 45°. «Editar estos cortes a mano» parte de la rejilla automática, y «Solo las piezas» oculta los planos en el visor. Las uniones de un plano inclinado quedan perpendiculares a su cara.
 - **Dividir por las partes de la figura.** «Cómo cortar › Por las partes de la figura» pone los cortes en los estrechamientos (cuello, cintura, tobillos) en vez de la rejilla pareja, y dice cuántos cayeron ahí y cuántos quedaron rectos.
 - **Recipiente con tapa roscada** (Insertar › Asistentes): frasco y tapa que enroscan, con rosca gruesa imprimible sin soportes, holgura ajustable y un aviso que dice si enrosca y con cuánta holgura. En el diálogo de roscas, «Crear la pareja que enrosca» hace perno y tuerca (o agujero y perno) de una vez.
