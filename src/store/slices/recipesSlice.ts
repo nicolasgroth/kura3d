@@ -143,7 +143,7 @@ export function createRecipesSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const result: RecipeRunResult = precomputed ?? (await runEngine('runRecipe', taskArgs(request)));
       if (!result.ok || result.change.added.length === 0) return result;
       const placed = place(result, request, targetIds);
-      if (!placed.fits) get().addToast(t(get().language, 'toast.placedOutsideBed'), 'info');
+      if (!placed.fits) get().addToast(t(get().language, 'toast.placedOutsideBed'), 'warning');
       commitChange(placed.change, { select: placed.change.added.map((o) => o.id), spawned: placed.change.added });
       return { ...result, change: placed.change };
     });

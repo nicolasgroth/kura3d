@@ -17,7 +17,7 @@ const CENTRO = {
     en: '{count} {count?error|errors}',
     de: '{count} {count?Fehler|Fehler}',
     fr: '{count} {count?erreur|erreurs}',
-    hi: '{count} त्रुटियाँ',
+    hi: '{count} {count?त्रुटि|त्रुटियाँ}',
     zh: '{count} 个错误',
   },
   'toastCenter.count.warning': {
@@ -25,7 +25,7 @@ const CENTRO = {
     en: '{count} {count?warning|warnings}',
     de: '{count} {count?Warnung|Warnungen}',
     fr: '{count} {count?avertissement|avertissements}',
-    hi: '{count} चेतावनियाँ',
+    hi: '{count} {count?चेतावनी|चेतावनियाँ}',
     zh: '{count} 条警告',
   },
   'toastCenter.count.info': {
@@ -33,7 +33,7 @@ const CENTRO = {
     en: '{count} info {count?message|messages}',
     de: '{count} {count?Information|Informationen}',
     fr: '{count} {count?information|informations}',
-    hi: '{count} सूचनाएँ',
+    hi: '{count} {count?सूचना|सूचनाएँ}',
     zh: '{count} 条信息',
   },
   'toastCenter.title.error': {
@@ -75,6 +75,14 @@ const CENTRO = {
     fr: 'Retirer ce message',
     hi: 'यह संदेश हटाएँ',
     zh: '移除此消息',
+  },
+  'toastCenter.removeNamed': {
+    es: 'Quitar: {text}',
+    en: 'Remove: {text}',
+    de: 'Entfernen: {text}',
+    fr: 'Retirer : {text}',
+    hi: 'हटाएँ: {text}',
+    zh: '移除：{text}',
   },
   'toastCenter.clear': {
     es: 'Vaciar',

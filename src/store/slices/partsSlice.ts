@@ -45,7 +45,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
     const others = get().objects.filter((o) => !source.has(o.id));
     const result = keepClearOfOthers(others, added, placementBedSize(get()));
     if (!result.moved) return change;
-    if (!result.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+    if (!result.fits) get().addToast(tr('toast.placedOutsideBed'), 'warning');
     get().requestCameraPreset('ensure', result.parts.map((p) => p.id));
     return { ...change, added: result.parts };
   };
@@ -105,14 +105,14 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
           if (kept.overlaps.length > 0) {
             get().addToast(tr('toast.cutKeptOverlaps', { half, names: kept.overlaps.join(', ') }), 'info');
           }
-          if (!kept.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+          if (!kept.fits) get().addToast(tr('toast.placedOutsideBed'), 'warning');
           return cleared.added;
         }
         get().addToast(
           tr('toast.cutDone', { a: tr('cut.half.a', { axis }), b: tr('cut.half.b', { axis }) }),
           'success',
         );
-        if (!separated.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+        if (!separated.fits) get().addToast(tr('toast.placedOutsideBed'), 'warning');
         return cleared.added;
       });
     },
@@ -223,7 +223,7 @@ export function createPartsSlice(ctx: StoreContext): Partial<KuraStoreState> {
         commitChange({ ...change, added: placed }, { select: placed.map((c) => c.id), spawned: placed });
         const names = placed.map((c) => c.name).join(', ');
         get().addToast(tCount(get().language, { one: 'toast.moldDone.one', other: 'toast.moldDone.other' }, placed.length, { names }), 'success');
-        if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+        if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'warning');
         // El molde queda en un hueco libre que puede estar fuera de la vista: se encuadra siempre.
         get().requestCameraPreset('focus', placed.map((c) => c.id));
         return placed;

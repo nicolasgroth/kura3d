@@ -34,6 +34,7 @@ import { structureLabel } from '../utils/structureLabels';
 import { StoreOperationError } from './commandErrors';
 import { createExclusiveRunner } from './exclusiveOperation';
 import { createOperationErrorTracker, localizeWarnings } from './operationErrors';
+import { engineWarningKind } from './engineWarningKind';
 import { cloneSnapshot } from './projectDocument';
 import { notePushedStep } from './historyLabels';
 import type { HistoryStep, KuraStoreState, SceneSnapshot } from './storeTypes';
@@ -254,7 +255,8 @@ export function createStoreContext(rawSet: SetState, get: () => KuraStoreState):
   };
   const reportEngineWarnings = (warnings: readonly engine.EngineWarning[] | undefined) => {
     if (warnings) busWarnings.push(...warnings);
-    for (const text of localizeWarnings(get().language, warnings)) get().addToast(text, 'info');
+    const texts = localizeWarnings(get().language, warnings);
+    (warnings ?? []).forEach((warning, i) => get().addToast(texts[i], engineWarningKind(warning)));
   };
 
   // Historial y borrado quedan bloqueados durante una operación asíncrona o un arrastre sin confirmar.

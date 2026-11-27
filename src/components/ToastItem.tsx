@@ -26,13 +26,16 @@ export const TOAST_ACTION_MS = 9000;
 interface Props {
   toast: ToastMessage;
   language: LanguageCode;
+  /** Cierre explícito del usuario (botón o Escape). */
   onDismiss: (id: string) => void;
+  /** Cierre por tiempo: no cuenta como descartado por el usuario. */
+  onExpire?: (id: string) => void;
 }
 
 /** Errores y advertencias no caducan: esperan al usuario. */
 const staysUntilClosed = (toast: ToastMessage) => toast.kind === 'error' || toast.kind === 'warning';
 
-export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
+export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss, onExpire = onDismiss }) => {
   const [paused, setPaused] = useState(false);
   const remaining = useRef(toast.action || toast.secondaryAction ? TOAST_ACTION_MS : TOAST_AUTO_MS);
   const isError = toast.kind === 'error';
@@ -55,12 +58,12 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
   useEffect(() => {
     if (paused || sticky) return undefined;
     const started = Date.now();
-    const timer = window.setTimeout(() => onDismiss(toast.id), remaining.current);
+    const timer = window.setTimeout(() => onExpire(toast.id), remaining.current);
     return () => {
       window.clearTimeout(timer);
       remaining.current = Math.max(800, remaining.current - (Date.now() - started));
     };
-  }, [paused, sticky, toast.id, onDismiss]);
+  }, [paused, sticky, toast.id, onExpire]);
 
   return (
     <div

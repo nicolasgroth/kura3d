@@ -214,7 +214,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
     if (placement === 'bed' && !wasEmpty && placed.length > 0) {
       const spot = placeGroupInFreeSpot(state.objects, placed, bed);
       for (const p of placed) p.position = [p.position[0] + spot.offset[0], p.position[1], p.position[2] + spot.offset[2]];
-      if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+      if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'warning');
     }
     // Objetos construidos por tramos acotados en triángulos (cediendo el hilo entre tramos). El
     // sombreado del visor llega hecho desde el Worker y se siembra en su caché antes de montar.
@@ -250,7 +250,7 @@ export function createModelIoActions(deps: ModelIoDeps) {
         const items = model.parts.map((p) => ({ mesh: p.mesh, position: kuraWorldPosition(p.kura!), rotation: p.kura!.rotation, scale: p.kura!.scale }));
         const spot = placeGroupInFreeSpot(others, items, bed);
         offset = [spot.offset[0], 0, spot.offset[2]];
-        if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+        if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'warning');
       }
       for (const part of model.parts) primeImportedShading(part.mesh, part);
       // P7: abierto en una escena vacía y sin placas, sus placas reales vuelven como placas (con su cama).

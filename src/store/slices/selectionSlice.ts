@@ -205,7 +205,7 @@ export function createSelectionSlice(ctx: StoreContext): Partial<KuraStoreState>
       );
       set({ objects: next.objects, groups: next.groups, selectedIds: created.map((c) => c.id) });
       get().addToast(tr('toast.duplicated'), 'info');
-      if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'info');
+      if (!spot.fits) get().addToast(tr('toast.placedOutsideBed'), 'warning');
       if (spot.moved) get().requestCameraPreset('ensure', created.map((c) => c.id));
       return created;
     },

@@ -51,7 +51,7 @@ export function announceFreePlacement(
     const back = state.setViewMode;
     state.addToast(tr('viewMode.newPiece'), 'info', back ? { label: tr('viewMode.badge.back'), run: () => void back('print') } : undefined);
   }
-  else if (!result.fits) state.addToast(tr('toast.placedOutsideBed'), 'info');
+  else if (!result.fits) state.addToast(tr('toast.placedOutsideBed'), 'warning');
   if (!result.fits || result.wasEmpty) state.requestCameraPreset('fit', [newId]);
   else state.requestCameraPreset('ensure', [newId]);
 }

@@ -276,6 +276,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
     removeToastHistoryEntry: (id) =>
       set((state) => ({ toastHistory: state.toastHistory.filter((x) => x.id !== id), toasts: state.toasts.filter((x) => x.id !== id) })),
     dismissErrorToasts: () => set((state) => (state.toasts.some((x) => x.kind === 'error') ? { toasts: state.toasts.filter((x) => x.kind !== 'error') } : state)),
+    expireToast: (id) => set((state) => (state.toasts.some((toast) => toast.id === id) ? { toasts: state.toasts.filter((toast) => toast.id !== id) } : state)),
     dismissToast: (id) => {
       rememberDismissed(get().toasts.filter((toast) => toast.id === id));
       set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) }));

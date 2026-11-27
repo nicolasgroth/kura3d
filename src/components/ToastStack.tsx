@@ -40,6 +40,7 @@ export const ToastStack: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const toasts = useKuraStore((s) => s.toasts);
   const dismissToast = useKuraStore((s) => s.dismissToast);
+  const expireToast = useKuraStore((s) => s.expireToast);
   const modal = useTopModal();
   const stackRef = useRef<HTMLDivElement | null>(null);
   const toastCount = toasts.length;
@@ -85,7 +86,7 @@ export const ToastStack: React.FC = () => {
       ref={stackRef}
       {...(inModal ? ({ popover: 'manual' } as Record<string, string>) : {})}
     >
-      <ToastItem key={toast.id} toast={toast} language={language} onDismiss={dismissToast} />
+      <ToastItem key={toast.id} toast={toast} language={language} onDismiss={dismissToast} onExpire={expireToast} />
     </div>
   );
   if (modal && inModal) return createPortal(stack, modal);

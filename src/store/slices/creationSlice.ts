@@ -192,7 +192,7 @@ export function createCreationSlice(ctx: StoreContext): Partial<KuraStoreState> 
         if (grown && !overlappedBefore && overlapsOthers(others, [grown])) {
           const spot = placeInFreeSpot(others, grown.mesh, grown.rotation, grown.scale, activeBed());
           set((st) => ({ objects: st.objects.map((o) => (o.id === id ? { ...o, position: spot.position } : o)) }));
-          get().addToast(tr(spot.fits ? 'uxEscena.grewMoved' : 'toast.placedOutsideBed'), 'info');
+          get().addToast(tr(spot.fits ? 'uxEscena.grewMoved' : 'toast.placedOutsideBed'), spot.fits ? 'info' : 'warning');
           get().requestCameraPreset('ensure', [id]);
         }
         return get().objects.find((o) => o.id === id) ?? null;
