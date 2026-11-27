@@ -9,7 +9,7 @@
  * @license AGPL-3.0-or-later
  */
 
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { uvSphere } from '../../engine/__tests__/smoothFixtures';
@@ -71,6 +71,16 @@ describe('Simplificar: malla abierta', () => {
     expect(details.textContent).toContain('NotManifold');
     fireEvent.click(screen.getByTestId('simplify-open-mesh-repair'));
     expect(repair).toHaveBeenCalledExactlyOnceWith(obj.id);
+    // Tras reparar, el aviso ya no existe: el foco no se pierde en <body>, queda en «Vista previa».
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('simplify-preview')));
+  });
+
+  it('pedir la vista previa pide encuadrar la pieza (solo se mueve la cámara si no estaba a la vista)', async () => {
+    const obj = mount();
+    act(() => useKuraStore.setState({ cameraRequest: null }));
+    fireEvent.click(screen.getByTestId('simplify-preview'));
+    expect(useKuraStore.getState().cameraRequest).toMatchObject({ preset: 'ensure', ids: [obj.id] });
+    act(() => useKuraStore.getState().cancelSimplifyPreview());
   });
 });
 

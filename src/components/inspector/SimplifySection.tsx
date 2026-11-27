@@ -135,7 +135,14 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const repair = () => {
     setApplyMeshError(null);
     clearSimplifyPreview();
-    void repairObjectMesh(primary.id);
+    // El aviso (con su botón) desaparece al limpiar el bloqueo: al terminar la reparación el foco vuelve a «Vista previa».
+    void Promise.resolve(repairObjectMesh(primary.id)).finally(() => {
+      window.setTimeout(() => {
+        const active = document.activeElement;
+        if (active && active !== document.body && active.isConnected && !(active instanceof HTMLButtonElement && active.disabled)) return;
+        rootRef.current?.querySelector<HTMLElement>('[data-testid="simplify-preview"]')?.focus({ preventScroll: true });
+      }, 0);
+    });
   };
   const undone = Boolean(last?.report.applied && appliedDepth !== null && past.length < appliedDepth);
   // Tras deshacer, el botón pulsado (o la tecla) ya no existe: el foco va a «Vista previa», no a `document.body`.

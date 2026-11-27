@@ -177,6 +177,8 @@ export function createSimplifyPreviewSlice(ctx: StoreContext): SimplifyPreviewSl
     previewSimplify: async (id, request, options = {}) => {
       const obj = get().objects.find((o) => o.id === id);
       if (!obj || obj.locked || get().busyOperation) return null;
+      // La pieza debe estar a la vista para ver el fantasma: la cámara solo se mueve si no estaba en cuadro.
+      get().requestCameraPreset('ensure', [id]);
       const signature = simplifySignature(request);
       const hit = cacheFor(obj, signature);
       if (hit) {
