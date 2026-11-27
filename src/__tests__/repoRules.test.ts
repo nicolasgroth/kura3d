@@ -61,6 +61,24 @@ describe('reglas del repositorio', () => {
     expect(BRAND.version).toBe(pkg.version);
   });
 
+  it('todo archivo de texto del repositorio es UTF-8 válido (el build de producción falla con otra codificación)', () => {
+    const readBytes = readFileSync as unknown as (path: string) => Uint8Array;
+    const decoder = new TextDecoder('utf-8', { fatal: true });
+    const files = walk(ROOT, ['.ts', '.tsx', '.rs', '.css', '.html', '.json', '.md', '.mjs', '.cjs', '.js', '.toml', '.yml', '.yaml']);
+    expect(files.length).toBeGreaterThan(100);
+    const invalid = files
+      .filter((f) => {
+        try {
+          decoder.decode(readBytes(f));
+          return false;
+        } catch {
+          return true;
+        }
+      })
+      .map(rel);
+    expect(invalid).toEqual([]);
+  });
+
   it('todo .ts/.tsx/.rs lleva la cabecera de autoría', () => {
     const files = walk(ROOT, ['.ts', '.tsx', '.rs']);
     expect(files.length).toBeGreaterThan(100);

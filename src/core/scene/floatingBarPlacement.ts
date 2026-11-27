@@ -56,7 +56,7 @@ export function screenExtent(points: readonly ScreenPoint[]): ScreenExtent | nul
   return { left, right, top, bottom };
 }
 
-/** Caja mínima que contiene a las dos. */
+/** Caja mÃ­nima que contiene a las dos. */
 export function unionExtent(a: ScreenExtent, b: ScreenExtent): ScreenExtent {
   return { left: Math.min(a.left, b.left), right: Math.max(a.right, b.right), top: Math.min(a.top, b.top), bottom: Math.max(a.bottom, b.bottom) };
 }
