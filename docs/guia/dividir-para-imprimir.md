@@ -99,6 +99,30 @@ Tras dividir, el control **Armado** del visor deja ver cómo encajan:
 
 Animación de muestra: [dividir-para-imprimir-armado.webm](img/dividir-para-imprimir-armado.webm) (se descarga o se abre en el navegador).
 
+## Instrucciones de armado
+
+Con las piezas ya divididas, Kurra Studio arma la lista de pasos para montarlas, solo con reglas sobre las uniones que guardó al dividir (sin IA):
+
+1. Selecciona cualquier pieza del grupo y pulsa **Instrucciones de armado** en el control **Armado** del visor (también está en **Acciones › Preparar**).
+2. El panel muestra los **pasos numerados**. El paso 1 es la **pieza base**: la que apoya en la mesa y, si hay varias a la misma altura, la de más volumen. Cada paso siguiente agrega una pieza que ya toca lo armado y dice con cuál se une, por qué cara, cómo (espigas o tarugos con su diámetro, pares de imanes con su medida, solape o pegar) y en qué dirección entra (−Z = bajando desde arriba). Si al dividir se validó un orden de montaje, se respeta.
+3. **Enfoca o pulsa un paso** (también con Tab) para seleccionar sus piezas en el visor.
+4. Revisa los **avisos** del paso: unión débil (pégala además de encajarla), pieza que hay que **sostener** porque no apoya en nada mientras seca, imanes con **polos opuestos** enfrentados y pieza que quedó trabada al dividir.
+5. Abajo está la **lista de materiales**: piezas impresas, tarugos sueltos, imanes por medida (dos por posición, uno en cada pieza) y uniones para pegar.
+6. **Descargar instrucciones** guarda los pasos como **Markdown** (`.md`) o como **HTML imprimible**, una página que no carga nada de internet. **Volver** (o Esc) cierra el panel.
+
+Ejemplo real (torre de 300 × 120 × 300 mm en una cama de 200 mm, espigas de 6 mm):
+
+> 1. Coloca A1 como base, apoyada en la mesa.
+> 2. Une B1 con A1 por su cara izquierda: 2 espigas de 6 mm. Entra hacia la izquierda (−X).
+> 3. Une A2 con A1 por su cara inferior: 2 espigas de 6 mm. Entra bajando desde arriba (−Z).
+> 4. Une B2 con B1 por su cara inferior: 2 espigas de 6 mm. Une B2 con A2 por su cara izquierda: pega las caras. Entra bajando desde arriba (−Z).
+
+![Panel Instrucciones de armado con los pasos numerados y la lista de materiales](img/dividir-para-imprimir-08-instrucciones.png)
+
+![Un paso enfocado: sus piezas quedan seleccionadas en el visor](img/dividir-para-imprimir-09-paso-resaltado.png)
+
+Límites de esta versión: las instrucciones no traen imágenes del visor (sigue los códigos grabados en las piezas) y se calculan al abrir el panel, no se guardan en el proyecto. Desde un agente externo, la herramienta MCP `kura_get_assembly_instructions` devuelve lo mismo en JSON ([Servidor MCP](../MCP.md)).
+
 ## Problemas frecuentes
 
 - **«No se puede dividir: la pieza ya cabe en la cama»:** no hace falta dividir; cambia la cama o el margen si esperabas cortes.
