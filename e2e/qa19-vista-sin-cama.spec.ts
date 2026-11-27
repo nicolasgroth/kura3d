@@ -13,6 +13,25 @@ import { agregarForma } from './agregar-helpers';
 
 test.use({ viewport: { width: 1280, height: 720 } });
 
+/**
+ * Un punto del visor donde de verdad hay solo fondo: el lienzo (no la píldora de Consejo ni los chips del pie) y lejos
+ * del centro, donde queda la pieza. Se busca en una rejilla en vez de fijar coordenadas, que cambian con los chips del pie.
+ */
+async function puntoVacio(page: Page): Promise<{ x: number; y: number }> {
+  const punto = await page.evaluate(() => {
+    const c = document.querySelector('canvas')!.getBoundingClientRect();
+    for (const fy of [0.2, 0.3, 0.4, 0.5]) {
+      for (const fx of [0.15, 0.25, 0.75, 0.85]) {
+        const x = Math.round(c.x + c.width * fx), y = Math.round(c.y + c.height * fy);
+        if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') return { x, y };
+      }
+    }
+    return null;
+  });
+  expect(punto, 'no hay un punto vacío del visor').not.toBeNull();
+  return punto!;
+}
+
 const cama = (page: Page) => page.evaluate(() => (window as any).__s.getState().showBed as boolean);
 
 async function exportarStl(page: Page, ruta: string) {
@@ -35,7 +54,8 @@ test('Sin cama: botón, atajo B, paleta y menú del fondo; B no actúa al escrib
   expect(await cama(page)).toBe(false);
   await expect(page.getByTestId('bed-toggle')).toHaveAttribute('aria-pressed', 'true');
 
-  await page.mouse.click(420, 560); // vacío del visor
+  const vacio = await puntoVacio(page);
+  await page.mouse.click(vacio.x, vacio.y); // vacío del visor
   await page.keyboard.press('b');
   expect(await cama(page)).toBe(true);
   await page.keyboard.press('b');
@@ -46,7 +66,7 @@ test('Sin cama: botón, atajo B, paleta y menú del fondo; B no actúa al escrib
   await page.keyboard.press('Enter');
   await expect.poll(() => cama(page)).toBe(true);
 
-  await page.mouse.click(420, 560, { button: 'right' });
+  await page.mouse.click(vacio.x, vacio.y, { button: 'right' });
   await page.getByRole('menuitem', { name: /cama/i }).click();
   await expect.poll(() => cama(page)).toBe(false);
 

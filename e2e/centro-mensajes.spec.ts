@@ -75,8 +75,8 @@ for (const [w, h] of [[1024, 768], [1440, 900]] as const) {
         await expect(icono(page, /error/)).toHaveCount(0);
         await inf.click();
         await page.getByRole('dialog', { name: 'Información' }).getByRole('button', { name: 'Quitar este mensaje' }).first().click();
-        await expect(inf).toHaveAccessibleName('2 mensajes informativos');
-        await page.getByRole('dialog', { name: 'Información' }).getByRole('button', { name: /Vaciar/ }).click();
+        await expect(icono(page, '2 mensajes informativos')).toBeVisible();
+        await page.getByRole('dialog', { name: 'Información' }).getByRole('button', { name: /^Vaciar/ }).click();
         await expect(page.getByTestId('toast-center').getByRole('button', { name: /informativo/ })).toHaveCount(0);
         await expect(adv).toBeVisible();
 

@@ -47,7 +47,7 @@ for (const [w, h] of [[1280, 720], [1440, 900]] as const) {
     // Un solo emergente a la vista; los anteriores quedan en el histórico (icono «5 errores»), sin «N avisos más».
     await expect(page.locator('.kura-toast')).toHaveCount(1);
     await expect(page.getByRole('button', { name: /avisos más|Cerrar todos/ })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /^d+ errores/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^\d+ errores/ })).toBeVisible();
     // Abajo a la izquierda del visor: no toca el panel derecho, el cubo de vista ni la mitad derecha del visor.
     const visor = await caja(page, '.kura-viewport-wrap');
     expect(rp.x + rp.w).toBeLessThan(visor.x + visor.w / 2);

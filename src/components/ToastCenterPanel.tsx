@@ -50,7 +50,7 @@ export const ToastCenterPanel: React.FC<Props> = ({ id, bucket, entries, onClose
           type="button"
           className="kura-btn kura-btn-sm"
           title={t(language, 'toastCenter.clearTip', { title })}
-          aria-label={t(language, 'toastCenter.clearTip', { title })}
+          aria-label={`${t(language, 'toastCenter.clear')} · ${title}`}
           onClick={() => clearToastHistory(bucket)}
         >
           {t(language, 'toastCenter.clear')}
@@ -60,6 +60,20 @@ export const ToastCenterPanel: React.FC<Props> = ({ id, bucket, entries, onClose
         {newestFirst.map((entry) => (
           <li key={entry.id} data-kind={entry.kind}>
             <span className="kura-toast-center-text">{entry.text}</span>
+            <button
+              type="button"
+              className="kura-mini-icon-btn kura-toast-center-remove"
+              aria-label={t(language, 'toastCenter.remove')}
+              title={t(language, 'toastCenter.remove')}
+              onClick={() => {
+                // El botón desaparece con el mensaje: el foco se queda en el panel.
+                panelRef.current?.focus({ preventScroll: true });
+                removeEntry(entry.id);
+              }}
+            >
+              <X size={13} aria-hidden="true" />
+            </button>
+            {(entry.actions ?? []).length > 0 && (
             <span className="kura-toast-center-row">
               {(entry.actions ?? []).map((action, i) => {
                 const block = toastActionBlock(action, Boolean(entry.applied), objectIds);
@@ -83,20 +97,8 @@ export const ToastCenterPanel: React.FC<Props> = ({ id, bucket, entries, onClose
                   </span>
                 );
               })}
-              <button
-                type="button"
-                className="kura-mini-icon-btn kura-toast-center-remove"
-                aria-label={t(language, 'toastCenter.remove')}
-                title={t(language, 'toastCenter.remove')}
-                onClick={() => {
-                  // El botón desaparece con el mensaje: el foco se queda en el panel.
-                  panelRef.current?.focus({ preventScroll: true });
-                  removeEntry(entry.id);
-                }}
-              >
-                <X size={13} aria-hidden="true" />
-              </button>
             </span>
+            )}
           </li>
         ))}
       </ul>

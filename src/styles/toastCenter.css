@@ -68,7 +68,7 @@
 .kura-toast-center-btn.is-error {
   background: var(--accent-red);
   border-color: var(--accent-red);
-  color: #fff;
+  color: light-dark(#ffffff, #1a0505);
 }
 
 .kura-toast-center-btn.is-warning {
@@ -125,9 +125,10 @@
 }
 
 .kura-toast-center-panel li {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px 6px;
   min-width: 0;
   padding-left: 6px;
   border-left: 3px solid var(--accent-cyan);
@@ -145,6 +146,7 @@
 }
 
 .kura-toast-center-row {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -170,5 +172,11 @@
 }
 
 .kura-toast-center-remove {
-  margin-left: auto;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Con el panel abierto el pie del visor queda por encima de la píldora de Consejo. */
+.kura-hud-bottom:has(.kura-toast-center-panel) {
+  z-index: 60;
 }

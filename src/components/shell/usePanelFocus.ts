@@ -1,7 +1,7 @@
 /**
  * @file src/components/shell/usePanelFocus.ts
  * @description Foco de los paneles de herramienta: `usePanelFocusReturn` recuerda qué control tenía el foco al
- * abrirse (se lee en un efecto de layout, no al pintar) y lo devuelve al cerrar; `usePanelInitialFocus` lleva el
+ * abrirse (se lee en un efecto de layout, no al pintar; si el efecto vuelve a correr con el foco ya dentro, conserva el origen) y lo devuelve al cerrar; `usePanelInitialFocus` lleva el
  * foco al primer control del cuerpo (o a un respaldo) si la propia sección no lo tomó ya.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -42,7 +42,10 @@ export function usePanelFocusReturn(rootRef: RefObject<HTMLElement | null>, opts
   useLayoutEffect(() => {
     if (!active || !remember) return;
     const current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    returnRef.current = current && current !== document.body && !rootRef.current?.contains(current) ? current : null;
+    const origin = current && current !== document.body && !rootRef.current?.contains(current) ? current : null;
+    // Si el foco ya está dentro del panel (el efecto vuelve a correr tras tomarlo una sección, p. ej. el doble montaje de
+    // desarrollo), se conserva el origen ya recordado en vez de perderlo.
+    returnRef.current = origin ?? (returnRef.current?.isConnected ? returnRef.current : null);
     if (!restoreOnClose) return;
     return () => {
       const back = returnRef.current;
