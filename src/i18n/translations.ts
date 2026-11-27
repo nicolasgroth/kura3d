@@ -74,6 +74,7 @@ import { TORRETA_EN, TORRETA_ES } from './locales/torreta';
 import { INSTRUCCIONES_ARMADO_EN, INSTRUCCIONES_ARMADO_ES } from './locales/instruccionesArmado';
 import { BORDES_EN, BORDES_ES } from './locales/bordesPrimitivas';
 import { UX7_EN, UX7_ES } from './locales/ux7';
+import { CENTRO_MENSAJES_EN, CENTRO_MENSAJES_ES } from './locales/centroMensajes';
 import { UX8_EN, UX8_ES } from './locales/ux8';
 import { UX10_EN, UX10_ES } from './locales/ux10';
 import { UX9_EN, UX9_ES } from './locales/ux9';
@@ -155,6 +156,7 @@ export const TRANSLATIONS_ES = {
   ...BORDES_ES,
   ...UX7_ES,
   ...UX8_ES,
+  ...CENTRO_MENSAJES_ES,
   ...UX10_ES,
   ...UX9_ES,
   ...REDISENO_ES,
@@ -966,9 +968,6 @@ export const TRANSLATIONS_ES = {
   'toast.simplifyDone': 'Malla simplificada: {before} → {tris} triángulos',
   'toast.simplifyMarginal': 'Casi sin reducción: {before} → {tris} triángulos (menos de 1 %). Prueba una tolerancia mayor.',
   'toast.simplifyNoChange': 'No se pudo reducir con esa tolerancia: la malla sigue con {tris} triángulos. Prueba una tolerancia mayor.',
-  'toast.moreTip': 'Mostrar {count} avisos anteriores',
-  'toast.less': 'Ver menos',
-  'toast.lessTip': 'Plegar los avisos anteriores',
   'narrow.bar.label': 'Paneles',
   'narrow.bar.inspectorTip': 'Abrir o cerrar la hoja del Inspector (Escape cierra)',
   'toast.refineDone': 'Malla refinada ({tris} triángulos)',
@@ -1518,6 +1517,7 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   ...BORDES_EN,
   ...UX7_EN,
   ...UX8_EN,
+  ...CENTRO_MENSAJES_EN,
   ...UX10_EN,
   ...UX9_EN,
   ...REDISENO_EN,
@@ -2301,9 +2301,6 @@ export const TRANSLATIONS_EN: Record<TranslationKey, string> = {
   'toast.simplifyDone': 'Mesh simplified: {before} → {tris} triangles',
   'toast.simplifyMarginal': 'Barely reduced: {before} → {tris} triangles (less than 1%). Try a larger tolerance.',
   'toast.simplifyNoChange': 'Could not reduce with that tolerance: the mesh still has {tris} triangles. Try a larger tolerance.',
-  'toast.moreTip': 'Show {count} earlier notices',
-  'toast.less': 'Show less',
-  'toast.lessTip': 'Collapse earlier notices',
   'narrow.bar.label': 'Panels',
   'narrow.bar.inspectorTip': 'Open or close the Inspector sheet (Escape closes)',
   'toast.refineDone': 'Mesh refined ({tris} triangles)',

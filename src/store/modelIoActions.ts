@@ -106,7 +106,7 @@ interface IoState {
   /** Modo de vista (ausente = imprimir): se exporta siempre desde las poses de impresión. */
   layout?: import('../types/plates').SceneLayout;
   importPlacementMode: engine.ImportPlacementMode;
-  addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: import('./storeTypes').ToastAction) => void;
+  addToast: (text: string, kind?: 'info' | 'success' | 'warning' | 'error', action?: import('./storeTypes').ToastAction, options?: { objectIds?: readonly string[] }) => void;
   requestCameraPreset: (preset: 'fit' | 'ensure', ids?: string[]) => void;
 }
 

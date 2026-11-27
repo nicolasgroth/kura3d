@@ -467,8 +467,8 @@ test.describe('5/6. Avisos y árbol', () => {
     await page.waitForTimeout(500);
     await page.screenshot({ path: `${SHOTS}/p5-avisos-1280.png` });
     console.log('toasts visibles', await page.locator('.kura-toast').count(), 'pila:', (await page.locator('.kura-toast-stack').innerText()).replace(/\s+/g, ' | '));
-    await expect(page.locator('.kura-toast')).toHaveCount(2);
-    await expect(page.getByRole('button', { name: /avisos? más/ })).toBeVisible();
+    await expect(page.locator('.kura-toast')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: /avisos? más|Cerrar todos/ })).toHaveCount(0);
     // Se compara contra los avisos y los botones propios de la pila (no contra el contenedor, que tiene holgura).
     const tapados = await page.evaluate(() => {
       const rects = [...document.querySelectorAll('.kura-toast-stack .kura-toast, .kura-toast-stack button')].map((e) => e.getBoundingClientRect());

@@ -1,27 +1,24 @@
 /**
  * @file src/components/ToastItem.tsx
- * @description Un aviso de la pila: los informativos se cierran solos a los ~4 s (9 s si traen una acción
- * transitoria como Deshacer), los de error a los 12 s, y el temporizador se pausa mientras el cursor o el foco
- * están sobre el aviso. Un aviso cuya acción sigue siendo aplicable (escalar, reparar…) no caduca solo: espera
- * a que el usuario lo cierre o lo use, y queda en el historial con su botón.
+ * @description El emergente del centro de mensajes: informativos y de éxito pasan solos al histórico a los 6 s, con el
+ * temporizador en pausa mientras el cursor o el foco están sobre el aviso; errores y advertencias esperan a que el
+ * usuario los cierre. Todo emergente se cierra con el botón o con Escape estando enfocado, y no se pierde: queda en el
+ * histórico de su tipo (iconos de la barra de estado).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { t } from '../i18n';
-import type { LanguageCode, } from '../types/kura';
+import type { LanguageCode } from '../types/kura';
 import type { ToastAction, ToastMessage } from '../store/storeTypes';
 import { useKuraStore } from '../store/useKuraStore';
-import { indexObjects, toastIsSticky } from '../store/toastActionState';
 import { ToastActionButton } from './ToastActionButton';
 
-export const TOAST_INFO_MS = 4000;
-export const TOAST_ACTION_MS = 9000;
-/** Los errores caducan a los 12 s (siguen en el historial de avisos de la barra de estado). */
-export const TOAST_ERROR_MS = 12000;
+/** Tiempo a la vista de un informativo o de éxito antes de pasar solo al histórico. */
+export const TOAST_AUTO_MS = 6000;
 
 interface Props {
   toast: ToastMessage;
@@ -29,24 +26,20 @@ interface Props {
   onDismiss: (id: string) => void;
 }
 
-const isErrorKind = (toast: ToastMessage) => toast.kind === 'error';
+/** Errores y advertencias no caducan: esperan al usuario. */
+const staysUntilClosed = (toast: ToastMessage) => toast.kind === 'error' || toast.kind === 'warning';
 
 export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
   const [paused, setPaused] = useState(false);
-  const remaining = useRef(isErrorKind(toast) ? TOAST_ERROR_MS : toast.action ? TOAST_ACTION_MS : TOAST_INFO_MS);
+  const remaining = useRef(TOAST_AUTO_MS);
   const isError = toast.kind === 'error';
-  const objects = useKuraStore((s) => s.objects);
-  const past = useKuraStore((s) => s.past);
+  // Se suscribe al historial de deshacer para reevaluar la validez de «Deshacer» (ver `actionLive`).
+  useKuraStore((s) => s.past);
   const runToastAction = useKuraStore((s) => s.runToastAction);
-  const sticky = useMemo(
-    () => toastIsSticky([toast.action, toast.secondaryAction].filter((a): a is ToastAction => Boolean(a)), indexObjects(objects)),
-    // `past` entra para recalcular la validez de las acciones que dependen del historial.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [toast.action, toast.secondaryAction, objects, past],
-  );
+  const sticky = staysUntilClosed(toast);
 
   // Una acción que ya no es aplicable (su paso se deshizo por otra vía o el historial avanzó) deja de ofrecerse:
-  // «Deshacer» nunca debe revertir otra cosa. `past` entra en las dependencias del componente, así que se reevalúa.
+  // «Deshacer» nunca debe revertir otra cosa.
   const actionLive = (a: ToastAction) => !a.applicable || a.applicable();
 
   useEffect(() => {

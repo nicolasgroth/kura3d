@@ -1,6 +1,6 @@
 /**
  * @file src/i18n/locales/ux3Forma.ts
- * @description Textos de la tercera revisión de usabilidad (forma): avisos con «Cerrar todos», ayudas táctiles de
+ * @description Textos de la tercera revisión de usabilidad (forma): ayudas táctiles de
  * Medir, rótulos de pieza de Dividir y el panel de IA, en los 6 idiomas. Se mezclan en cada diccionario.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -14,8 +14,6 @@ export const UX3F_ES = {
   'measure.hint.distance0Touch': 'Toca el primer punto',
   'measure.cancelPoint': 'Cancelar punto',
   'measure.cancelPointTip': 'Descartar el punto marcado y empezar de nuevo',
-  'toast.closeAll': 'Cerrar todos',
-  'toast.closeAllTip': 'Cerrar todos los avisos',
 };
 
 export const UX3F_EN = {
@@ -25,8 +23,6 @@ export const UX3F_EN = {
   'measure.hint.distance0Touch': 'Tap the first point',
   'measure.cancelPoint': 'Cancel point',
   'measure.cancelPointTip': 'Discard the marked point and start over',
-  'toast.closeAll': 'Close all',
-  'toast.closeAllTip': 'Close all notices',
 };
 
 export const UX3F_DE = {
@@ -36,8 +32,6 @@ export const UX3F_DE = {
   'measure.hint.distance0Touch': 'Tippe auf den ersten Punkt',
   'measure.cancelPoint': 'Punkt abbrechen',
   'measure.cancelPointTip': 'Den markierten Punkt verwerfen und neu beginnen',
-  'toast.closeAll': 'Alle schließen',
-  'toast.closeAllTip': 'Alle Hinweise schließen',
 };
 
 export const UX3F_FR = {
@@ -47,8 +41,6 @@ export const UX3F_FR = {
   'measure.hint.distance0Touch': 'Touchez le premier point',
   'measure.cancelPoint': 'Annuler le point',
   'measure.cancelPointTip': 'Abandonner le point marqué et recommencer',
-  'toast.closeAll': 'Tout fermer',
-  'toast.closeAllTip': 'Fermer tous les avis',
 };
 
 export const UX3F_HI = {
@@ -58,8 +50,6 @@ export const UX3F_HI = {
   'measure.hint.distance0Touch': 'पहले बिंदु को छुएँ',
   'measure.cancelPoint': 'बिंदु रद्द करें',
   'measure.cancelPointTip': 'चिह्नित बिंदु हटाएँ और फिर से शुरू करें',
-  'toast.closeAll': 'सभी बंद करें',
-  'toast.closeAllTip': 'सभी सूचनाएँ बंद करें',
 };
 
 export const UX3F_ZH = {
@@ -69,6 +59,4 @@ export const UX3F_ZH = {
   'measure.hint.distance0Touch': '点击第一个点',
   'measure.cancelPoint': '取消点',
   'measure.cancelPointTip': '放弃已标记的点并重新开始',
-  'toast.closeAll': '全部关闭',
-  'toast.closeAllTip': '关闭所有通知',
 };

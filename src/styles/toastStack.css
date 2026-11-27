@@ -1,6 +1,6 @@
 /**
  * @file src/styles/toastStack.css
- * @description Pila de avisos sin scroll: como máximo 3 visibles y el resto plegado en «+N».
+ * @description Emergente del centro de mensajes: un solo aviso a la vista, sin scroll, y el color de las advertencias.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
@@ -11,24 +11,8 @@
   overflow: visible;
 }
 
-.kura-toast-more {
-  pointer-events: auto;
-  align-self: center;
-  min-height: 24px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.kura-toast-more:focus-visible {
-  outline: 2px solid var(--tool-accent, #0ea5e9);
-  outline-offset: 2px;
+.kura-toast.warning {
+  border-left: 4px solid var(--accent-amber);
 }
 
 /* Botón de acción del aviso («Deshacer»): no se encoge y no baja de 28 px de alto. */

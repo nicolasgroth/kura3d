@@ -32,7 +32,7 @@ export interface ImportedEntry {
 export interface ImportNoticeDeps {
   tr: Translate;
   language: LanguageCode;
-  addToast: (text: string, kind?: 'info' | 'success' | 'error', action?: ToastAction) => void;
+  addToast: (text: string, kind?: 'info' | 'success' | 'warning' | 'error', action?: ToastAction, options?: { objectIds?: readonly string[] }) => void;
   openSimplify?: (id: string) => void;
   /** Repara un objeto; si devuelve una promesa, las reparaciones en lote van una tras otra. */
   repairMesh?: (id: string) => void | Promise<unknown>;
@@ -141,10 +141,11 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
       ids.length === 1
         ? tr('import.openMesh', { name: label(u.entries[0]), edges })
         : tr('realesMotor.openMeshShared', { name: label(u.entries[0]), count: ids.length, edges }),
-      'info',
+      'warning',
       ids.length === 1
         ? deps.repairMesh ? { label: tr('repair.action'), run: () => void deps.repairMesh?.(ids[0]), targetIds: ids, watch: 'mesh' } : undefined
         : canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll([ids]), targetIds: ids, watch: 'mesh' } : undefined,
+      { objectIds: ids },
     );
     return;
   }
@@ -152,7 +153,8 @@ export function reportImportNotices(entries: readonly ImportedEntry[], modelCoun
   const groups = open.map((u) => u.entries.map((e) => e.object.id));
   addToast(
     tr('import.openMeshMany', { count: open.length, list: names.slice(0, 3).join(', ') + (names.length > 3 ? '…' : '') }),
-    'info',
+    'warning',
     canRepair ? { label: tr('realesMotor.repairAll'), run: repairAll(groups), targetIds: groups.flat(), watch: 'mesh' } : undefined,
+    { objectIds: groups.flat() },
   );
 }

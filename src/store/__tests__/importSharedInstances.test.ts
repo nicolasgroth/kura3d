@@ -66,11 +66,11 @@ describe('instancias repetidas de un 3MF', () => {
     const x0 = worldBox([llavero[0]])!.min[0];
     const x1 = worldBox([llavero[1]])!.min[0];
     expect(x1 - x0).toBeCloseTo(15, 4);
-    const openToasts = get().toasts.filter((t) => t.text.includes('abierta'));
+    const openToasts = get().toastHistory.filter((t) => t.text.includes('abierta'));
     expect(openToasts).toHaveLength(1);
     expect(openToasts[0].text).toContain(`usada en ${A_COUNT} piezas`);
-    expect(openToasts[0].action?.label).toBe('Reparar todas');
-    openToasts[0].action!.run();
+    expect(openToasts[0].actions?.[0]?.label).toBe('Reparar todas');
+    openToasts[0].actions![0].run();
     // Un solo grupo: las 30 piezas que comparten la malla abierta.
     expect(repairObjectMeshes).toHaveBeenCalledExactlyOnceWith([llavero.map((o) => o.id)]);
   });
@@ -84,15 +84,15 @@ describe('instancias repetidas de un 3MF', () => {
       ),
     });
     await get().importModelFiles([{ name: 'dos.3mf', read: async () => twoOpen }], { placement: 'original' });
-    const toast = get().toasts.find((t) => t.action?.label === 'Reparar todas');
+    const toast = get().toastHistory.find((t) => t.actions?.[0]?.label === 'Reparar todas');
     expect(toast).toBeTruthy();
-    toast!.action!.run();
-    await vi.waitFor(() => expect(get().toasts.some((t) => t.text.includes('Se repararon y cerraron'))).toBe(true));
-    const summary = get().toasts.find((t) => t.text.includes('Se repararon y cerraron'))!;
+    toast!.actions![0].run();
+    await vi.waitFor(() => expect(get().toastHistory.some((t) => t.text.includes('Se repararon y cerraron'))).toBe(true));
+    const summary = get().toastHistory.find((t) => t.text.includes('Se repararon y cerraron'))!;
     expect(summary.text).toContain('2 mallas (las usan 4 piezas)');
     expect(summary.kind).toBe('success');
     // Un solo aviso de reparación (no uno por pieza)
-    expect(get().toasts.filter((t) => t.text.startsWith('Malla reparada:'))).toHaveLength(0);
+    expect(get().toastHistory.filter((t) => t.text.startsWith('Malla reparada:'))).toHaveLength(0);
     const objects = get().objects;
     const llaveros3 = objects.filter((o) => o.name.startsWith('Llavero'));
     expect(new Set(llaveros3.map((o) => o.mesh)).size).toBe(1);

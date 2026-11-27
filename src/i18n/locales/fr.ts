@@ -69,6 +69,7 @@ import { TORRETA_FR } from './torreta';
 import { INSTRUCCIONES_ARMADO_FR } from './instruccionesArmado';
 import { BORDES_FR } from './bordesPrimitivas';
 import { UX7_FR } from './ux7';
+import { CENTRO_MENSAJES_FR } from './centroMensajes';
 import { UX8_FR } from './ux8';
 import { UX10_FR } from './ux10';
 import { UX9_FR } from './ux9';
@@ -148,6 +149,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   ...BORDES_FR,
   ...UX7_FR,
   ...UX8_FR,
+  ...CENTRO_MENSAJES_FR,
   ...UX10_FR,
   ...UX9_FR,
   ...REDISENO_FR,
@@ -959,9 +961,6 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'toast.simplifyDone': 'Maillage simplifié : {before} → {tris} triangles',
   'toast.simplifyMarginal': 'Réduction quasi nulle : {before} → {tris} triangles (moins de 1 %). Essayez une tolérance plus grande.',
   'toast.simplifyNoChange': 'Impossible de réduire avec cette tolérance : le maillage garde {tris} triangles. Essayez une tolérance plus grande.',
-  'toast.moreTip': 'Afficher {count} avis précédents',
-  'toast.less': 'Voir moins',
-  'toast.lessTip': 'Replier les avis précédents',
   'narrow.bar.label': 'Panneaux',
   'narrow.bar.inspectorTip': 'Ouvrir ou fermer la feuille Inspecteur (Échap ferme)',
   'toast.refineDone': 'Maillage affiné ({tris} triangles)',

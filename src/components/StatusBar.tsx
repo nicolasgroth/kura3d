@@ -18,7 +18,6 @@ import '../styles/statusFit1100.css';
 import { RecoveryStatusNotice } from './RecoveryStatusNotice';
 import { StatusBarCount } from './StatusBarCount';
 import { StatusBarMeasures } from './StatusBarMeasures';
-import { ToastHistoryButton } from './ToastHistoryButton';
 import { StatusHelpLine } from './shell/StatusHelpLine';
 import { operationLabel } from './viewport/OperationProgressBar';
 
@@ -74,7 +73,6 @@ export const StatusBar: React.FC<{ recoveryStatus?: RecoveryStatus; recoveryFail
 
       <div className="kura-statusbar-group">
         <RecoveryStatusNotice status={recoveryStatus} failure={recoveryFailure} />
-        <ToastHistoryButton />
         <button
           type="button"
           className="kura-statusbar-btn kura-statusbar-shortcuts"

@@ -30,12 +30,12 @@ export async function placeKeepingSelection<T>(place: () => Promise<T | null>, c
   return result;
 }
 
-/** Aviso de colocación de un panel: cada uno nuevo reemplaza al anterior (apilados tapaban la pieza en el visor). */
+/** Aviso de colocación de un panel: cada uno nuevo reemplaza al anterior, también en el histórico (no se acumulan «agregado» tras «agregado»). */
 export function createPlacementToast(): (text: string, kind: ToastMessage['kind']) => void {
   let lastId: string | null = null;
   return (text, kind) => {
     const previous = lastId;
-    if (previous) useKuraStore.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== previous) }));
+    if (previous) useKuraStore.getState().removeToastHistoryEntry(previous);
     lastId = useKuraStore.getState().addToast(text, kind);
   };
 }

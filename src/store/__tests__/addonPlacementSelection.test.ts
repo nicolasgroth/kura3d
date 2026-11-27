@@ -76,15 +76,17 @@ describe('colocar un agregado: aviso', () => {
     expect(store().toasts.find((x) => x.id === id)?.text).toBe('hola');
   });
 
-  it('cada colocación reemplaza su aviso anterior y no toca otros avisos', async () => {
+  it('cada colocación reemplaza a la anterior a la vista y no toca otros avisos del histórico', async () => {
     const other = store().addToast('otro aviso', 'error');
     const { panel, release } = panelWithGate(false);
     for (let i = 0; i < 3; i += 1) {
       const placing = panel.placeAt('host', [0, 0, 0], [0, 1, 0]);
       release();
       await placing;
-      expect(store().toasts.filter((x) => x.id !== other)).toHaveLength(1);
-      expect(store().toasts.some((x) => x.id === other)).toBe(true);
+      // A la vista queda un solo emergente y el histórico conserva una sola colocación (la más reciente) y el aviso ajeno.
+      expect(store().toasts).toHaveLength(1);
+      expect(store().toastHistory.filter((x) => x.id !== other)).toHaveLength(1);
+      expect(store().toastHistory.some((x) => x.id === other)).toBe(true);
     }
   });
 });

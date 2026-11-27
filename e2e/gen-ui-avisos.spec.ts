@@ -1,7 +1,7 @@
 /**
  * @file e2e/gen-ui-avisos.spec.ts
  * @description Avisos de error: el error de un diálogo abierto se muestra solo dentro de él (sin toast), un error
- * fuera de diálogos caduca a los 12 s, queda en el historial de la barra de estado y nunca se superpone con la
+ * fuera de diálogos espera a que el usuario lo cierre, queda en el histórico del centro de mensajes (icono de errores) y nunca se superpone con la
  * barra de la herramienta activa ni con el aviso «No cabe en la cama». Con un modal abierto Ctrl+Z no deshace la escena.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -26,19 +26,22 @@ test('error de un diálogo abierto: solo dentro del diálogo, sin toast, y queda
   expect(await page.evaluate(() => (window as any).__s.getState().toasts.filter((x: any) => x.kind === 'error').length)).toBe(0);
   await page.screenshot({ path: `${SHOTS}/04-svg-error-en-dialogo.png` });
   await dlg.getByRole('button', { name: 'Cancelar' }).click();
-  await page.getByRole('button', { name: /^Avisos/ }).click();
-  await expect(page.getByRole('region', { name: 'Avisos recientes' })).toContainText(/línea|relleno|lines|forma/i);
+  await page.getByRole('button', { name: /^1 error/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Errores' })).toContainText(/línea|relleno|lines|forma/i);
   await page.screenshot({ path: `${SHOTS}/05-historial-avisos.png` });
 });
 
-test('un error fuera de diálogos caduca a los 12 s y el historial lo conserva', async ({ page }) => {
+test('un error fuera de diálogos espera al usuario, y al cerrarlo el histórico lo conserva', async ({ page }) => {
   await abrir(page);
   await page.evaluate(() => (window as any).__s.getState().addToast('Error de prueba visible', 'error'));
   const toast = page.getByRole('alert').filter({ hasText: 'Error de prueba visible' });
   await expect(toast).toBeVisible();
-  await expect(toast).toBeHidden({ timeout: 16000 });
-  await page.getByRole('button', { name: /^Avisos/ }).click();
-  await expect(page.getByRole('region', { name: 'Avisos recientes' })).toContainText('Error de prueba visible');
+  await page.waitForTimeout(7000);
+  await expect(toast).toBeVisible();
+  await toast.getByRole('button', { name: 'Cerrar' }).click();
+  await expect(toast).toBeHidden();
+  await page.getByRole('button', { name: /^1 error/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Errores' })).toContainText('Error de prueba visible');
 });
 
 test('los avisos no se superponen con la barra del pincel ni con «No cabe en la cama»', async ({ page }) => {

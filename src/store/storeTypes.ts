@@ -112,11 +112,13 @@ export type CameraPresetType = 'iso' | 'top' | 'bottom' | 'front' | 'back' | 'le
 export interface ToastMessage {
   id: string;
   text: string;
-  kind: 'info' | 'success' | 'error';
+  kind: 'info' | 'success' | 'warning' | 'error';
   /** Acción opcional del aviso (p. ej. «Deshacer»); al ejecutarla el aviso se cierra. */
   action?: ToastAction;
   /** Segunda acción, secundaria (p. ej. «Otra unidad…»); también cierra el aviso. */
   secondaryAction?: ToastAction;
+  /** Piezas a las que está ligado el mensaje: si se borran, el mensaje sale del histórico. */
+  objectIds?: readonly string[];
 }
 
 /** Entrada del historial corto de avisos (consultable desde la barra de estado). */
@@ -129,6 +131,8 @@ export interface ToastHistoryEntry {
   actions?: ToastAction[];
   /** La acción ya se ejecutó (desde el aviso o el historial). */
   applied?: boolean;
+  /** Piezas ligadas al mensaje (ver `ToastMessage.objectIds`). */
+  objectIds?: readonly string[];
 }
 
 export interface ToastAction {
@@ -345,13 +349,17 @@ export interface KuraStoreState {
   setAiBusy: (busy: boolean) => void;
   setMcpConnected: (connected: boolean) => void;
   /** Muestra un aviso y devuelve su id; null si no quedó a la vista (solo historial o descartado para siempre). */
-  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction, options?: { historyOnly?: boolean; secondaryAction?: ToastAction }) => string | null;
-  clearToastHistory: () => void;
+  addToast: (text: string, kind?: ToastMessage['kind'], action?: ToastAction, options?: { historyOnly?: boolean; secondaryAction?: ToastAction; objectIds?: readonly string[] }) => string | null;
+  /** Vacía el histórico (o solo el de un tipo). */
+  clearToastHistory: (bucket?: 'error' | 'warning' | 'info') => void;
+  /** Quita un mensaje del histórico (y del emergente si está a la vista). */
+  removeToastHistoryEntry: (id: string) => void;
   dismissErrorToasts: () => void;
   dismissToast: (id: string) => void;
+  /** Cierra el emergente a la vista (el histórico no se toca). */
+  dismissAllToasts: () => void;
   /** Ejecuta una acción de un aviso (visible o del historial): lo cierra y la marca como aplicada. */
   runToastAction: (id: string, action: ToastAction) => void;
-  dismissAllToasts: () => void;
 
   // Selección e historial
   selectObject: (id: string, additive?: boolean) => void;

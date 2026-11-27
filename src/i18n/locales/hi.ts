@@ -69,6 +69,7 @@ import { TORRETA_HI } from './torreta';
 import { INSTRUCCIONES_ARMADO_HI } from './instruccionesArmado';
 import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
+import { CENTRO_MENSAJES_HI } from './centroMensajes';
 import { UX8_HI } from './ux8';
 import { UX10_HI } from './ux10';
 import { UX9_HI } from './ux9';
@@ -148,6 +149,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...BORDES_HI,
   ...UX7_HI,
   ...UX8_HI,
+  ...CENTRO_MENSAJES_HI,
   ...UX10_HI,
   ...UX9_HI,
   ...REDISENO_HI,
@@ -959,9 +961,6 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'toast.simplifyDone': 'मेश सरल किया गया: {before} → {tris} त्रिभुज',
   'toast.simplifyMarginal': 'लगभग कोई कमी नहीं: {before} → {tris} त्रिभुज (1% से कम)। बड़ा टॉलरेंस आज़माएँ।',
   'toast.simplifyNoChange': 'इस टॉलरेंस से घटाया नहीं जा सका: मेश में अब भी {tris} त्रिभुज हैं। बड़ा टॉलरेंस आज़माएँ।',
-  'toast.moreTip': '{count} पिछली सूचनाएँ दिखाएँ',
-  'toast.less': 'कम दिखाएँ',
-  'toast.lessTip': 'पिछली सूचनाएँ समेटें',
   'narrow.bar.label': 'पैनल',
   'narrow.bar.inspectorTip': 'इंस्पेक्टर शीट खोलें या बंद करें (Escape बंद करता है)',
   'toast.refineDone': 'मेश परिष्कृत किया गया ({tris} त्रिभुज)',

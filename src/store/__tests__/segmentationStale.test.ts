@@ -90,6 +90,6 @@ describe('Exclusión de operaciones asíncronas', () => {
     const b = await store().createPrimitive('sphere');
     expect(b).toBeNull();
     expect(await a).not.toBeNull();
-    expect(store().toasts.some((t) => t.text.includes('Espera'))).toBe(true);
+    expect(store().toastHistory.some((t) => t.text.includes('Espera'))).toBe(true);
   });
 });

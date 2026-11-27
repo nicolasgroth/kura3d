@@ -1,6 +1,6 @@
 /**
  * @file e2e/pulido7-contraste.spec.ts
- * @description «Cerrar todos» y «+N» de la pila de avisos usan los tokens del tema: contraste del texto contra su
+ * @description Los iconos del centro de mensajes (errores, advertencias, información) usan los tokens del tema: contraste del texto contra su
  * fondo >= 4,5:1 en tema claro y oscuro (colores computados, resueltos con un canvas para aceptar light-dark()).
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -12,14 +12,14 @@ import { abrir } from './ux-escena-helpers';
 const SHOTS = 'G:/proyectos/kura3d/.eval-tmp/pulido7';
 
 for (const scheme of ['light', 'dark'] as const) {
-  test(`«Cerrar todos» tiene contraste suficiente en tema ${scheme}`, async ({ page }) => {
+  test(`los iconos del centro de mensajes tienen contraste suficiente en tema ${scheme}`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: scheme });
     await page.setViewportSize({ width: 1440, height: 900 });
     await abrir(page);
     await page.evaluate((s) => (window as any).__s.getState().setColorScheme(s), scheme);
-    await page.evaluate(() => { const s = (window as any).__s.getState(); for (let i = 0; i < 5; i++) s.addToast(`Aviso ${i}`, 'info'); });
-    const botones = page.locator('.kura-toast-more');
-    await expect(botones.first()).toBeVisible();
+    await page.evaluate(() => { const s = (window as any).__s.getState(); s.addToast('Error', 'error'); s.addToast('Advertencia', 'warning'); s.addToast('Dato', 'info'); });
+    const botones = page.locator('.kura-toast-center-btn');
+    await expect(botones).toHaveCount(3);
     await page.waitForTimeout(400);
     await page.screenshot({ path: `${SHOTS}/contraste-${scheme}.png` });
     const ratios = await page.evaluate(() => {
@@ -34,10 +34,10 @@ for (const scheme of ['light', 'dark'] as const) {
         const f = (v: number) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; };
         return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
       };
-      return [...document.querySelectorAll('.kura-toast-more')].map((e) => {
+      return [...document.querySelectorAll('.kura-toast-center-btn')].map((e) => {
         const cs = getComputedStyle(e);
         const a = lum(rgb(cs.color)), b = lum(rgb(cs.backgroundColor));
-        return { texto: e.textContent, ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05), color: cs.color, fondo: cs.backgroundColor };
+        return { texto: e.getAttribute('aria-label'), ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05), color: cs.color, fondo: cs.backgroundColor };
       });
     });
     expect(ratios.length).toBeGreaterThan(0);

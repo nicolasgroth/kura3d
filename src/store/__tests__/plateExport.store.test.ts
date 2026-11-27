@@ -133,7 +133,7 @@ describe('exportar con placas', () => {
     expect(lastSaved()[0].name).toBe('x.stl');
     const only = exportSceneToBinarySTL([byId(a.id)!], stlBrandHeader(BRAND));
     expect(savedBytes()).toEqual(only);
-    expect(store().toasts.some((x) => x.text === t('es', 'export.plates.excluded', { count: 1 }))).toBe(true);
+    expect(store().toastHistory.some((x) => x.text === t('es', 'export.plates.excluded', { count: 1 }))).toBe(true);
   });
 
   it('sin placas: los archivos son idénticos a los de siempre', async () => {

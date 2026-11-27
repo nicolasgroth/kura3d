@@ -15,10 +15,9 @@ const action = (ids: string[]) => ({ label: 'Separar cuerpos', run: () => undefi
 beforeEach(() => useKuraStore.setState({ toasts: [], toastHistory: [] } as never));
 
 describe('aviso descartado', () => {
-  it('«Cerrar todos» no deja que el mismo aviso vuelva a emerger', () => {
+  it('cerrar el emergente a la vista no deja que el mismo aviso vuelva a emerger', () => {
     const s = useKuraStore.getState();
     s.addToast('Llavero: trae 4 cuerpos', 'info', action(['a']));
-    s.addToast('Otro aviso', 'info');
     useKuraStore.getState().dismissAllToasts();
     useKuraStore.getState().addToast('Llavero: trae 4 cuerpos', 'info', action(['a']));
     expect(useKuraStore.getState().toasts).toHaveLength(0);

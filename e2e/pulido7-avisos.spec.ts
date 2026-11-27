@@ -1,7 +1,7 @@
 /**
  * @file e2e/pulido7-avisos.spec.ts
- * @description La pila de avisos nunca se dibuja sobre la píldora de Consejo ni sobre un diálogo modal abierto, a
- * 390, 1024, 1280 y 1440 px: se comparan los rectángulos de los avisos (y «Cerrar todos») con los de la barra de
+ * @description El emergente de avisos nunca se dibuja sobre la píldora de Consejo ni sobre un diálogo modal abierto, a
+ * 390, 1024, 1280 y 1440 px: se comparan los rectángulos de los avisos con los de la barra de
  * Consejo y, con un modal, se comprueba que ningún punto del aviso dentro del diálogo es el elemento superior.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -26,7 +26,7 @@ for (const [w, h] of ANCHOS) {
   test.describe(`${w} px`, () => {
     test.use({ viewport: { width: w, height: h } });
 
-    test('los avisos y «Cerrar todos» no tapan la barra de Consejo', async ({ page }) => {
+    test('el emergente no tapa la barra de Consejo', async ({ page }) => {
       await abrir(page);
       await avisos(page);
       const r = await page.evaluate(() => {
@@ -36,7 +36,7 @@ for (const [w, h] of ANCHOS) {
         return { tip, items };
       });
       await page.screenshot({ path: `${SHOTS}/avisos-consejo-${w}.png` });
-      expect(r.items.some((i) => i.name.includes('kura-toast-close-all'))).toBe(true);
+      expect(r.items).toHaveLength(1);
       for (const t of r.tip) {
         for (const i of r.items) {
           const cruza = i.x < t.x + t.w && i.x + i.w > t.x && i.y < t.y + t.h && i.y + i.h > t.y;

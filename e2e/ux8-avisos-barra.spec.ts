@@ -1,6 +1,6 @@
 /**
  * @file e2e/ux8-avisos-barra.spec.ts
- * @description Lote ux8: los avisos no tapan paneles ni controles del visor (apilado acotado), la barra de
+ * @description Lote ux8: el emergente único no tapa paneles ni controles del visor, la barra de
  * herramientas tiene exactamente una herramienta pulsada y ninguna apagada, y a 1024 px el chip de la cama y el
  * pie caben sin scroll horizontal. Ejecuta con `KURA_URL=… npx playwright test e2e/ux8-avisos-barra.spec.ts`.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -44,9 +44,10 @@ for (const [w, h] of [[1280, 720], [1440, 900]] as const) {
     await expect(pila).toBeVisible();
     await page.screenshot({ path: `.eval-tmp/ux8-avisos-${w}.png` });
     const rp = await caja(page, '.kura-toast-stack');
-    // Apilado acotado: como mucho 2 avisos visibles y el resto plegado en «N aviso(s) más».
-    await expect(page.locator('.kura-toast')).toHaveCount(2);
-    await expect(page.getByRole('button', { name: /avisos más/ })).toBeVisible();
+    // Un solo emergente a la vista; los anteriores quedan en el histórico (icono «5 errores»), sin «N avisos más».
+    await expect(page.locator('.kura-toast')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: /avisos más|Cerrar todos/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^d+ errores/ })).toBeVisible();
     // Abajo a la izquierda del visor: no toca el panel derecho, el cubo de vista ni la mitad derecha del visor.
     const visor = await caja(page, '.kura-viewport-wrap');
     expect(rp.x + rp.w).toBeLessThan(visor.x + visor.w / 2);

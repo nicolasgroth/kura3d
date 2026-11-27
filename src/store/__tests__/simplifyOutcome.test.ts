@@ -54,10 +54,10 @@ describe('simplificar: aviso veraz', () => {
     const sphere = await store().createPrimitive('sphere', { radius: 10, segments: 48 });
     const before = sphere!.stats.triangles;
     setStoreEngineClient(clientWithTriangles((b) => b - 2));
-    const count = store().toasts.length;
+    const seen = new Set(store().toastHistory.map((x) => x.id));
     // 0,3 mm sí reduce la esfera (hay parche); el cliente fija el recuento a «casi igual».
     expect(await store().simplifySelectedMesh(sphere!.id, 0.3)).toBe(true);
-    const added = store().toasts.slice(count);
+    const added = store().toastHistory.filter((x) => !seen.has(x.id));
     expect(added.some((x) => x.kind === 'success')).toBe(false);
     const lang = store().language;
     expect(added.map((x) => x.text)).toContain(
@@ -68,20 +68,20 @@ describe('simplificar: aviso veraz', () => {
   it('el aviso de resultado trae «Deshacer» persistente (no caduca solo) y lo deshace', async () => {
     const sphere = await store().createPrimitive('sphere', { radius: 10, segments: 48 });
     setStoreEngineClient(clientWithTriangles((b) => b - 2));
-    const count = store().toasts.length;
+    const seen = new Set(store().toastHistory.map((x) => x.id));
     expect(await store().simplifySelectedMesh(sphere!.id, 0.3)).toBe(true);
-    const withUndo = store().toasts.slice(count).filter((x) => x.action?.label === t(store().language, 'toast.undo'));
+    const withUndo = store().toastHistory.filter((x) => !seen.has(x.id)).filter((x) => x.actions?.[0]?.label === t(store().language, 'toast.undo'));
     expect(withUndo).toHaveLength(1);
-    expect(withUndo[0].action!.transient).toBe(false);
-    expect(withUndo[0].action!.applicable?.()).toBe(true);
+    expect(withUndo[0].actions![0].transient).toBe(false);
+    expect(withUndo[0].actions![0].applicable?.()).toBe(true);
   });
 
   it('sin reducción: no cambia la malla ni avisa éxito', async () => {
     const sphere = await store().createPrimitive('sphere', { radius: 10, segments: 48 });
     setStoreEngineClient(clientWithTriangles((b) => b));
-    const count = store().toasts.length;
+    const seen = new Set(store().toastHistory.map((x) => x.id));
     expect(await store().simplifySelectedMesh(sphere!.id, 0.01)).toBe(false);
     expect(store().objects[0].mesh).toBe(sphere!.mesh);
-    expect(store().toasts.slice(count).some((x) => x.kind === 'success')).toBe(false);
+    expect(store().toastHistory.filter((x) => !seen.has(x.id)).some((x) => x.kind === 'success')).toBe(false);
   });
 });

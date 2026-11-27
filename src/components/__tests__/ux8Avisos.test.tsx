@@ -1,6 +1,6 @@
 /**
  * @file src/components/__tests__/ux8Avisos.test.tsx
- * @description Lote ux8: la pila de avisos muestra como máximo 2 y pliega el resto en «N aviso(s) más»; el panel
+ * @description Lote ux8: el emergente muestra solo el aviso más reciente (centro de mensajes); el panel
  * Dividir marca el resultado viejo como desactualizado y anuncia el cálculo con `role="status"`; la región viva
  * del panel derecho sale en el idioma activo; Medir no mueve la cámara al abrirse y ordena sus secciones.
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -24,15 +24,16 @@ beforeEach(() => {
   useKuraStore.setState({ language: 'es', objects: [], selectedIds: [], toasts: [], activeTool: 'select' } as never);
 });
 
-describe('pila de avisos', () => {
-  it('muestra como máximo 2 y pliega el resto en «N aviso(s) más»', () => {
+describe('emergente del centro de mensajes', () => {
+  it('muestra solo el aviso más reciente: sin «N avisos más» ni «Cerrar todos»; los anteriores quedan en el histórico', () => {
     render(<ToastStack />);
     act(() => {
       for (let i = 1; i <= 5; i += 1) useKuraStore.getState().addToast(`Aviso ${i}`, 'info');
     });
-    expect(document.querySelectorAll('.kura-toast')).toHaveLength(2);
+    expect(document.querySelectorAll('.kura-toast')).toHaveLength(1);
     expect(screen.getByText('Aviso 5')).toBeTruthy();
-    expect(screen.getByRole('button', { name: '1 aviso más' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /más|Cerrar todos/ })).toBeNull();
+    expect(useKuraStore.getState().toastHistory.map((h) => h.text)).toEqual(['Aviso 1', 'Aviso 2', 'Aviso 3', 'Aviso 4', 'Aviso 5']);
   });
 });
 

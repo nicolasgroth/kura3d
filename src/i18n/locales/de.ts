@@ -69,6 +69,7 @@ import { TORRETA_DE } from './torreta';
 import { INSTRUCCIONES_ARMADO_DE } from './instruccionesArmado';
 import { BORDES_DE } from './bordesPrimitivas';
 import { UX7_DE } from './ux7';
+import { CENTRO_MENSAJES_DE } from './centroMensajes';
 import { UX8_DE } from './ux8';
 import { UX10_DE } from './ux10';
 import { UX9_DE } from './ux9';
@@ -148,6 +149,7 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   ...BORDES_DE,
   ...UX7_DE,
   ...UX8_DE,
+  ...CENTRO_MENSAJES_DE,
   ...UX10_DE,
   ...UX9_DE,
   ...REDISENO_DE,
@@ -959,9 +961,6 @@ export const TRANSLATIONS_DE: Record<TranslationKey, string> = {
   'toast.simplifyDone': 'Netz vereinfacht: {before} → {tris} Dreiecke',
   'toast.simplifyMarginal': 'Kaum reduziert: {before} → {tris} Dreiecke (weniger als 1 %). Versuche eine größere Toleranz.',
   'toast.simplifyNoChange': 'Mit dieser Toleranz ließ sich nichts reduzieren: Das Netz hat weiterhin {tris} Dreiecke. Versuche eine größere Toleranz.',
-  'toast.moreTip': '{count} frühere Hinweise anzeigen',
-  'toast.less': 'Weniger anzeigen',
-  'toast.lessTip': 'Frühere Hinweise einklappen',
   'narrow.bar.label': 'Bereiche',
   'narrow.bar.inspectorTip': 'Inspektor-Blatt öffnen oder schließen (Escape schließt)',
   'toast.refineDone': 'Netz verfeinert ({tris} Dreiecke)',

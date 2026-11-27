@@ -69,6 +69,7 @@ import { TORRETA_ZH } from './torreta';
 import { INSTRUCCIONES_ARMADO_ZH } from './instruccionesArmado';
 import { BORDES_ZH } from './bordesPrimitivas';
 import { UX7_ZH } from './ux7';
+import { CENTRO_MENSAJES_ZH } from './centroMensajes';
 import { UX8_ZH } from './ux8';
 import { UX10_ZH } from './ux10';
 import { UX9_ZH } from './ux9';
@@ -148,6 +149,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   ...BORDES_ZH,
   ...UX7_ZH,
   ...UX8_ZH,
+  ...CENTRO_MENSAJES_ZH,
   ...UX10_ZH,
   ...UX9_ZH,
   ...REDISENO_ZH,
@@ -959,9 +961,6 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'toast.simplifyDone': '网格已简化：{before} → {tris} 个三角面',
   'toast.simplifyMarginal': '几乎未简化：{before} → {tris} 个三角面（不到 1%）。请尝试更大的容差。',
   'toast.simplifyNoChange': '该容差无法再简化：网格仍有 {tris} 个三角面。请尝试更大的容差。',
-  'toast.moreTip': '显示之前的 {count} 条提示',
-  'toast.less': '收起',
-  'toast.lessTip': '收起之前的提示',
   'narrow.bar.label': '面板',
   'narrow.bar.inspectorTip': '打开或关闭“检查器”面板（Esc 关闭）',
   'toast.refineDone': '网格已细分（{tris} 个三角面）',

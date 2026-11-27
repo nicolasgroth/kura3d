@@ -21,6 +21,7 @@ import { platesBedStatus, sceneBedStatus } from './plateBedStatus';
 import { BedHiddenChip } from './BedHiddenChip';
 import { ViewModeBedChip } from '../viewmode/ViewModeBedChip';
 import { FitOutOfBoundsButton } from '../fitToBed/FitOutOfBoundsButton';
+import { ToastCenter } from '../ToastCenter';
 
 /** HUD inferior en una sola línea. */
 export const ViewportHudBottom: React.FC = () => {
@@ -78,6 +79,7 @@ export const ViewportHudBottom: React.FC = () => {
         <span className="kura-dims-badge">{activeDimensionsText}</span>
       </div>
 
+      <div className="kura-hud-bottom-end">
       {/* Armado y Libre: sin cama ni «Fuera de volumen» (se evalúa en Imprimir). */}
       {layout === 'assembly' ? <ViewModeBedChip /> : !showBed ? <BedHiddenChip /> : (
         <div className="kura-hud-card kura-hud-pill-nowrap kura-bed-card" data-oob={bedStatus === 'outOfBounds' || undefined}>
@@ -103,6 +105,8 @@ export const ViewportHudBottom: React.FC = () => {
           )}
         </div>
       )}
+      <ToastCenter />
+      </div>
     </div>
   );
 };

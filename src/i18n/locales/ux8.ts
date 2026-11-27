@@ -20,14 +20,6 @@ const UX8 = {
     hi: 'चयन छिपाएँ / फिर दिखाएँ (कुछ न चुना हो: सब दिखाएँ)',
     zh: '隐藏所选 / 重新显示(未选择时:全部显示)',
   },
-  'ux8.toast.more': {
-    es: '{count} {count?aviso|avisos} más',
-    en: '{count} more {count?notice|notices}',
-    de: '{count} weitere {count?Hinweis|Hinweise}',
-    fr: '{count} {count?avis|avis} de plus',
-    hi: '{count} और सूचनाएँ',
-    zh: '另有 {count} 条提示',
-  },
   'ux8.split.stale': {
     es: 'El resultado anterior está desactualizado.',
     en: 'The previous result is out of date.',

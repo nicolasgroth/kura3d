@@ -16,7 +16,7 @@ import { closeAssistants, runAssistant } from '../assistantsPanel';
 import { resetStore, store } from './storeTestUtils';
 
 const fp = (o: ReturnType<typeof store>['objects'][number]) => footprintOf(o.mesh, o.position, o.rotation, o.scale)!;
-const outsideToast = () => store().toasts.some((x) => x.text === t('es', 'toast.placedOutsideBed'));
+const outsideToast = () => store().toastHistory.some((x) => x.text === t('es', 'toast.placedOutsideBed'));
 
 describe('colocación de las salidas de un asistente', () => {
   beforeEach(async () => {

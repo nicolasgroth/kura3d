@@ -88,32 +88,3 @@
   color: var(--accent-cyan);
 }
 
-.kura-toast-history {
-  position: fixed;
-  right: 8px;
-  bottom: 30px;
-  z-index: 70;
-  width: min(360px, calc(100vw - 16px));
-  max-height: 40vh;
-  overflow: auto;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background: var(--bg-panel);
-  box-shadow: var(--shadow-hud);
-  font-size: 12px;
-}
-
-.kura-toast-history ul {
-  margin: 6px 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.kura-toast-history li.is-error {
-  border-left: 3px solid var(--accent-red);
-  padding-left: 6px;
-}

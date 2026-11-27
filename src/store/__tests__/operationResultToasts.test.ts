@@ -73,10 +73,10 @@ describe('aviso de resultado y encuadre', () => {
 
   it('error del motor: aviso tipado y localizado, sin aviso de éxito', async () => {
     const box = await addBox(20, [0, 0, 0]);
-    const before = store().toasts.length;
+    const seen = new Set(store().toastHistory.map((x) => x.id));
     const parts = await store().generateMoldForObject(box.id, { ...MOLD, wallMarginMm: -3 });
     expect(parts).toEqual([]);
-    const added = store().toasts.slice(before);
+    const added = store().toastHistory.filter((x) => !seen.has(x.id));
     expect(added.some((x) => x.kind === 'success')).toBe(false);
     expect(added.some((x) => x.kind === 'error')).toBe(true);
     expect(store().lastOperationError).toBeTruthy();

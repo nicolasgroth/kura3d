@@ -28,7 +28,6 @@ html .kura-toast-stack.kura-toast-stack-modal[data-slot="top"] {
   inset: 8px 12px auto 12px;
 }
 
-.kura-toast-stack-modal .kura-toast,
-.kura-toast-stack-modal .kura-toast-more {
+.kura-toast-stack-modal .kura-toast {
   pointer-events: auto;
 }

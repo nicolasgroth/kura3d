@@ -1,9 +1,9 @@
 /**
  * @file src/components/ToastStack.tsx
- * @description Pila de notificaciones: los errores usan `role="alert"` y los informativos
- * `role="status"`; todas se pueden cerrar con el botón (teclado) o con Escape estando enfocadas.
- * Muestra como máximo las 2 más recientes; las anteriores quedan plegadas en un botón «N avisos más» (siguen en el historial de «Avisos») y «Cerrar todos»
- * las descarta. Los informativos se cierran solos (`ToastItem`); los de error esperan al usuario.
+ * @description Emergente del centro de mensajes: muestra solo el mensaje más reciente en la esquina inferior del visor
+ * (los errores usan `role="alert"`, el resto `role="status"`). Todo emergente es cerrable con el botón o con Escape
+ * estando enfocado; al cerrarse o ser reemplazado por uno más nuevo queda en el histórico de su tipo (iconos de la
+ * barra de estado, `ToastCenter`). Con un diálogo modal abierto nunca se dibuja sobre él.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
@@ -22,7 +22,6 @@ import { useTopModal } from './useTopModal';
 import { ToastItem } from './ToastItem';
 import { useToastClearance } from './useToastClearance';
 
-const MAX_VISIBLE = 2;
 /** Holgura entre la pila y el diálogo o el borde de la ventana (px). */
 const GAP = 8;
 
@@ -41,8 +40,6 @@ export const ToastStack: React.FC = () => {
   const language = useKuraStore((s) => s.language);
   const toasts = useKuraStore((s) => s.toasts);
   const dismissToast = useKuraStore((s) => s.dismissToast);
-  const dismissAllToasts = useKuraStore((s) => s.dismissAllToasts);
-  const [expanded, setExpanded] = useState(false);
   const modal = useTopModal();
   const stackRef = useRef<HTMLDivElement | null>(null);
   const toastCount = toasts.length;
@@ -78,9 +75,8 @@ export const ToastStack: React.FC = () => {
     }
   }, [inModal, toastCount]);
 
-  if (toasts.length === 0) return null;
-  const hidden = expanded ? 0 : Math.max(0, toasts.length - MAX_VISIBLE);
-  const visible = toasts.slice(hidden);
+  const toast = toasts[toasts.length - 1];
+  if (!toast) return null;
 
   const stack = (
     <div
@@ -89,42 +85,7 @@ export const ToastStack: React.FC = () => {
       ref={stackRef}
       {...(inModal ? ({ popover: 'manual' } as Record<string, string>) : {})}
     >
-      {hidden > 0 && (
-        <button
-          type="button"
-          className="kura-toast-more"
-          aria-expanded={false}
-          onClick={() => setExpanded(true)}
-          title={t(language, 'toast.moreTip', { count: hidden })}
-        >
-          {t(language, 'ux8.toast.more', { count: hidden })}
-        </button>
-      )}
-      {expanded && toasts.length > MAX_VISIBLE && (
-        <button
-          type="button"
-          className="kura-toast-more"
-          aria-expanded={true}
-          onClick={() => setExpanded(false)}
-          title={t(language, 'toast.lessTip')}
-        >
-          {t(language, 'toast.less')}
-        </button>
-      )}
-      {visible.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} language={language} onDismiss={dismissToast} />
-      ))}
-      {toasts.length > 1 && (
-        <button
-          type="button"
-          className="kura-toast-more kura-toast-close-all"
-          onClick={dismissAllToasts}
-          title={t(language, 'toast.closeAllTip')}
-          aria-label={t(language, 'toast.closeAllTip')}
-        >
-          {t(language, 'toast.closeAll')}
-        </button>
-      )}
+      <ToastItem key={toast.id} toast={toast} language={language} onDismiss={dismissToast} />
     </div>
   );
   if (modal && inModal) return createPortal(stack, modal);
