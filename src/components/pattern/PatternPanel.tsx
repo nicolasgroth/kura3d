@@ -15,7 +15,7 @@ import { AlertTriangle, Copy, Info } from 'lucide-react';
 import { t } from '../../i18n';
 import { MAX_PATTERN_UNION_PIECES } from '../../core/scene/patterns';
 import {
-  applyPatternPanel, closePatternPanel, patternRequestOf, patternTargetIds, setPatternOptions, usePatternPanel, type PatternKind,
+  applyPatternPanel, closePatternPanel, patternFrameBox, patternRequestOf, patternTargetIds, setPatternOptions, usePatternPanel, type PatternKind,
 } from '../../store/patternPanel';
 import { resolvePattern, type PatternRequest } from '../../store/patternPlanning';
 import { useKuraStore } from '../../store/useKuraStore';
@@ -63,6 +63,11 @@ export const PatternPanel: React.FC = () => {
   );
   useEffect(() => {
     usePatternPanel.setState({ ghost: open ? resolved?.ghost ?? null : null });
+    // Las copias pueden caer fuera del encuadre (pieza chica, patrón grande): la cámara se aleja lo justo para que
+    // entre todo el patrón; nunca se acerca sola ni se mueve si ya entra.
+    if (!open || !resolved || resolved.problem) return;
+    const box = patternFrameBox(resolved.ghost, resolved.sources);
+    if (box) useKuraStore.getState().requestCameraContain(box);
   }, [open, resolved]);
 
   // Si la selección se vacía con el panel abierto, no hay nada que repetir: se cierra.

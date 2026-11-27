@@ -77,6 +77,20 @@ describe('panel Patrón', () => {
     expect(panel().ghost).toBeNull();
   });
 
+  it('al cambiar los parámetros pide a la cámara que quepa la caja de todo el patrón (copias y original)', async () => {
+    const user = userEvent.setup();
+    render(<PatternPanel />);
+    useKuraStore.setState({ cameraRequest: null });
+    act(() => void openPatternPanel());
+    await waitFor(() => expect(store().cameraRequest?.box).toBeTruthy());
+    const count = screen.getByRole('spinbutton', { name: 'Piezas en total' });
+    await user.clear(count);
+    await user.type(count, '5{Enter}');
+    // Cubo de 10 mm con paso de 15: la original en x [-5, 5] y la última copia termina en 4·15 + 5 = 65.
+    await waitFor(() => expect(store().cameraRequest?.box?.max[0]).toBeCloseTo(65));
+    expect(store().cameraRequest?.box?.min[0]).toBeCloseTo(-5);
+  });
+
   it('cambia de tipo con teclado y cada formulario muestra sus campos', async () => {
     const user = userEvent.setup();
     render(<PatternPanel />);

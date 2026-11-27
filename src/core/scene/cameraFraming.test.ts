@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import {
   candidateViewDirs,
   chooseUnoccludedViewDir,
+  containPose,
   fitDistance,
   framePose,
   isBoxInView,
@@ -159,5 +160,30 @@ describe('needsReframeAfterEdit', () => {
   it('reencuadra si queda diminuto (< 3 %)', () => {
     const tiny: FrameBox = { min: [-0.05, 5, -0.05], max: [0.05, 5.1, 0.05] };
     expect(needsReframeAfterEdit(tiny, pose.position, vp)).toBe(true);
+  });
+});
+
+describe('containPose: solo aleja, nunca acerca', () => {
+  const box: FrameBox = { min: [-50, 0, -50], max: [50, 20, 50] };
+  const fit = { box, viewDir: [1, 1, 1] as Vec3, fovDeg: 42, aspect: 1.5, insets: { top: 0, bottom: 0, left: 0, right: 0 }, margin: 1.2 };
+
+  it('si la pose ajustada queda más cerca que la actual, conserva la distancia actual', () => {
+    const framed = framePose(fit);
+    const far = containPose(framed, framed.distance * 3);
+    expect(far.distance).toBeCloseTo(framed.distance * 3);
+    expect(far.target).toEqual(framed.target);
+    const dist = new THREE.Vector3(...far.position).distanceTo(new THREE.Vector3(...far.target));
+    expect(dist).toBeCloseTo(framed.distance * 3);
+  });
+
+  it('si la actual es más cercana de lo que hace falta, se aleja a la ajustada', () => {
+    const framed = framePose(fit);
+    expect(containPose(framed, framed.distance / 4)).toEqual(framed);
+  });
+
+  it('la pose resultante deja la caja entera a la vista', () => {
+    const framed = framePose(fit);
+    const pose = containPose(framed, framed.distance * 2);
+    expect(isBoxInView(box, cameraAt(pose, 42, 1.5))).toBe(true);
   });
 });

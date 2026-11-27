@@ -12,6 +12,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { abrir } from './ux-escena-helpers';
 import { agregarForma } from './agregar-helpers';
+import { abrir as abrirConR3f } from './qa12-helpers';
 
 const store = <T,>(page: Page, fn: (s: any) => T): Promise<T> => page.evaluate((src) => (0, eval)(`(${src})`)((window as any).__s.getState()), fn.toString());
 
@@ -113,3 +114,50 @@ for (const width of [1024, 1440]) {
     });
   }
 }
+
+test.describe('patrón: encuadre de la vista previa', () => {
+  test.use({ viewport: { width: 1280, height: 768 } });
+
+  const cajaEnVista = (page: Page) => page.evaluate(() => {
+    const w = window as any;
+    const st = w.__r3f.getState();
+    const cam = st.camera;
+    cam.updateMatrixWorld();
+    const rc = st.gl.domElement.getBoundingClientRect();
+    const pts: number[][] = [];
+    st.scene.traverse((o: any) => {
+      if (o.parent?.name !== 'pattern-preview' || !o.isInstancedMesh) return;
+      const m = new o.matrix.constructor();
+      o.geometry.computeBoundingBox();
+      const b = o.geometry.boundingBox;
+      for (let k = 0; k < o.count; k++) {
+        o.getMatrixAt(k, m);
+        for (let i = 0; i < 8; i++) {
+          const v = new b.min.constructor(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).applyMatrix4(m).applyMatrix4(o.matrixWorld).project(cam);
+          pts.push([v.x, v.y, v.z]);
+        }
+      }
+    });
+    return { n: pts.length, dentro: pts.every(([x, y, z]) => Math.abs(x) <= 1 && Math.abs(y) <= 1 && z >= -1 && z <= 1) };
+  });
+
+  test('una fila larga de copias de una pieza chica entra entera en el encuadre y la cámara no se acerca sola', async ({ page }) => {
+    await abrirConR3f(page);
+    await agregarForma(page, 'Cubo');
+    await abrirDesdePaleta(page);
+    await expect(page.getByTestId('pattern-summary')).toContainText('Se crearán');
+    const antes = await page.evaluate(() => (window as any).__r3f.getState().camera.position.length());
+    await numero(page, 'Piezas en total', '40');
+    await numero(page, 'Distancia (mm)', '60');
+    await expect(page.getByTestId('pattern-summary')).toContainText('Se crearán 39 piezas nuevas');
+    await expect.poll(async () => { const r = await cajaEnVista(page); return r.n > 0 && r.dentro; }, { message: 'todas las copias dentro del encuadre', timeout: 8000 }).toBe(true);
+    const despues = await page.evaluate(() => (window as any).__r3f.getState().camera.position.length());
+    expect(despues).toBeGreaterThanOrEqual(antes - 0.01);
+    // Cambiar a pocas copias no acerca la cámara: se queda donde está.
+    await numero(page, 'Piezas en total', '3');
+    await expect(page.getByTestId('pattern-summary')).toContainText('Se crearán 2 piezas nuevas');
+    await page.waitForTimeout(800);
+    const final = await page.evaluate(() => (window as any).__r3f.getState().camera.position.length());
+    expect(final).toBeGreaterThanOrEqual(despues - 0.5);
+  });
+});

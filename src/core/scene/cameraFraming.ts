@@ -187,6 +187,17 @@ export function framePose(params: FitParams & { minDistance?: number; maxDistanc
   return { target: target.toArray() as Vec3, distance, position: position.toArray() as Vec3 };
 }
 
+/**
+ * Pose que deja la caja a la vista sin acercar nunca la cámara: la de `framePose` (misma dirección de vista), pero si
+ * esa quedara más cerca del objetivo que la actual, se conserva la distancia actual. Así solo se aleja lo justo.
+ */
+export function containPose(pose: FramePose, currentDistance: number): FramePose {
+  if (pose.distance >= currentDistance) return pose;
+  const forward = new THREE.Vector3(...pose.position).sub(new THREE.Vector3(...pose.target)).normalize();
+  const position = new THREE.Vector3(...pose.target).addScaledVector(forward, currentDistance);
+  return { target: pose.target, distance: currentDistance, position: position.toArray() as Vec3 };
+}
+
 /** true si el segmento a→b atraviesa la caja (prueba de franjas). */
 export function segmentHitsBox(a: Vec3, b: Vec3, box: FrameBox): boolean {
   let t0 = 0;

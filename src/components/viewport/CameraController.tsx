@@ -20,6 +20,7 @@ import {
   boxForObjects,
   candidateViewDirs,
   chooseUnoccludedViewDir,
+  containPose,
   framePose,
   isBoxInView,
   needsReframeAfterEdit,
@@ -115,10 +116,10 @@ export const CameraController: React.FC<{
    * Encuadra la caja dentro del área libre del visor. `ensure`: no hace nada si ya está entera a la
    * vista. `focus`: encuadra siempre y busca una dirección desde la que `blockers` no la tapen.
    */
-  const frameBox = (box: FrameBox, mode: 'fit' | 'ensure' | 'scene' | 'focus', blockers: FrameBox[] = [], margin = INSET_MARGIN) => {
+  const frameBox = (box: FrameBox, mode: 'fit' | 'ensure' | 'contain' | 'scene' | 'focus', blockers: FrameBox[] = [], margin = INSET_MARGIN) => {
     const persp = camera as THREE.PerspectiveCamera;
     const aspect = sizeRef.current.height > 0 ? sizeRef.current.width / sizeRef.current.height : persp.aspect;
-    if (mode === 'ensure') {
+    if (mode === 'ensure' || mode === 'contain') {
       camera.updateMatrixWorld();
       const vp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       // Visible = entera en el área que no tapan los paneles (no basta con estar en el lienzo).
@@ -131,7 +132,8 @@ export const CameraController: React.FC<{
         height,
       };
       // A la vista y de un tamaño legible: no se mueve. Diminuta (< 3 % del encuadre), se encuadra.
-      if (isBoxInView(box, vp.elements, undefined, free) && !needsReframeAfterEdit(box, camera.position.toArray() as Vec3, vp.elements)) return;
+      // `contain`: si entra, no se toca (aunque se vea pequeña); `ensure` además reencuadra lo diminuto.
+      if (isBoxInView(box, vp.elements, undefined, free) && (mode === 'contain' || !needsReframeAfterEdit(box, camera.position.toArray() as Vec3, vp.elements))) return;
     }
     const diagonal = Math.hypot(box.max[0] - box.min[0], box.max[1] - box.min[1], box.max[2] - box.min[2]);
     const fit = {
@@ -150,7 +152,9 @@ export const CameraController: React.FC<{
       : mode === 'focus'
         ? chooseUnoccludedViewDir({ ...fit, candidates: candidateViewDirs(current), blockers })
         : current;
-    const pose = framePose({ ...fit, viewDir: dir });
+    const framed = framePose({ ...fit, viewDir: dir });
+    // `contain` solo aleja: nunca deja la cámara más cerca de lo que ya estaba.
+    const pose = mode === 'contain' ? containPose(framed, camera.position.distanceTo(currentTarget())) : framed;
     moveTo(pose.position, pose.target);
   };
 
@@ -204,6 +208,12 @@ export const CameraController: React.FC<{
       const beds = plateBedsBox(state, preset === 'plates' ? 'visible' : 'active');
       const box = preset === 'plates' ? unionBox(beds, boxForObjects(cur.filter((o) => o.visible !== false))) : beds;
       if (box) frameBox(box, preset === 'plates' ? 'fit' : 'ensure');
+      return;
+    }
+
+    // Caja arbitraria (p. ej. todas las copias de un patrón): entra entera sin acercar la cámara.
+    if (cameraRequest.box) {
+      frameBox(cameraRequest.box, 'contain');
       return;
     }
 

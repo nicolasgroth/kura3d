@@ -14,7 +14,7 @@ import type { MeshData, SceneObject, Vec3 } from '../../../types/kura';
 import { createKeyedNaming } from '../resultNames';
 import { reflectMeshInWorld, mirrorAcrossPlane, patternCopies } from '../../operations/patternOperations';
 import { APP_BUILD_POLICY } from '../sceneObjects';
-import { ghostOfMirror, ghostOfPoses } from '../patternGhost';
+import { ghostOfMirror, ghostOfPoses, ghostWorldBox } from '../patternGhost';
 import { circularPivot, isDegenerateCircular, planCircular, planLinear } from '../patternPlan';
 import {
   checkPatternLimits, circularAngles, groupBoxOf, groupCenterOf, linearSteps, MAX_PATTERN_COPIES, MAX_PATTERN_TRIANGLES,
@@ -257,6 +257,16 @@ describe('fantasma', () => {
     expect(ghost?.entries[0].matrices).toHaveLength(48);
     // Traslación de la primera copia en la columna 4.
     expect(ghost?.entries[0].matrices[12]).toBeCloseTo(20);
+  });
+
+  it('la caja del fantasma envuelve todas las copias (y no la original)', () => {
+    const a = obj('a');
+    const plan = planLinear([a], { count: 4, axis: 'x', mode: 'step', distanceMm: 20 });
+    const box = ghostWorldBox(ghostOfPoses([a], plan.poses)!)!;
+    // Cubo de 10 mm centrado en x: copias en x = 20, 40, 60.
+    expect(box.min[0]).toBeCloseTo(15);
+    expect(box.max[0]).toBeCloseTo(65);
+    expect(box.max[1]).toBeCloseTo(10);
   });
 
   it('sin fantasma cuando son demasiados triángulos', () => {

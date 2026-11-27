@@ -13,7 +13,8 @@ import { create } from 'zustand';
 import { t } from '../i18n';
 import { internalAxisOfUser, internalIndexOfUser, type AxisName } from '../core/scene/displayAxes';
 import { groupBoxOf, PATTERN_RANGES, type CircularSpec, type LinearSpec, type MirrorSpec, type PatternCenterMode, type PatternDistanceMode, type MirrorBase } from '../core/scene/patterns';
-import type { PatternGhost } from '../core/scene/patternGhost';
+import { boxForObjects, type FrameBox } from '../core/scene/cameraFraming';
+import { ghostWorldBox, type PatternGhost } from '../core/scene/patternGhost';
 import type { SceneObject, Vec3 } from '../types/kura';
 import { patternSources, type PatternRequest } from './patternPlanning';
 import { useKuraStore } from './useKuraStore';
@@ -62,6 +63,15 @@ const INITIAL: PatternPanelState = {
   mirrorAxis: 'x', mirrorBase: 'object', offsetMm: 0, keepOriginal: true,
   ghost: null,
 };
+
+/** Caja de todo el patrón (copias del fantasma y piezas de origen), para que la cámara lo deje entero a la vista. */
+export function patternFrameBox(ghost: PatternGhost | null, sources: ReadonlyArray<Pick<SceneObject, 'mesh' | 'position' | 'rotation' | 'scale'>>): FrameBox | null {
+  const copies = ghost ? ghostWorldBox(ghost) : null;
+  const originals = boxForObjects(sources);
+  if (!copies) return originals;
+  if (!originals) return copies;
+  return { min: [0, 1, 2].map((i) => Math.min(copies.min[i], originals.min[i])) as Vec3, max: [0, 1, 2].map((i) => Math.max(copies.max[i], originals.max[i])) as Vec3 };
+}
 
 export const usePatternPanel = create<PatternPanelState>(() => ({ ...INITIAL }));
 

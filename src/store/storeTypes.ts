@@ -247,7 +247,7 @@ export interface KuraStoreState {
   /** El pincel subdivide los triángulos del borde del trazo para que el color siga el círculo. */
   paintRefineEdge: boolean;
   eraseRadiusMm: number;
-  cameraRequest: { preset: CameraPresetType; nonce: number; ids?: string[] } | null;
+  cameraRequest: { preset: CameraPresetType; nonce: number; ids?: string[]; box?: { min: [number, number, number]; max: [number, number, number] } } | null;
 
   // Plano de corte visual (Rayos X / Sección), Validador y Segmentación Estructural Local
   sectionPlane: { enabled: boolean; heightMm: number };
@@ -328,6 +328,8 @@ export interface KuraStoreState {
   ) => void;
   setEraseRadiusMm: (radiusMm: number) => void;
   requestCameraPreset: (preset: CameraPresetType, ids?: string[]) => void;
+  /** Deja la caja entera a la vista: solo aleja la cámara (nunca la acerca) y no se mueve si ya entra. */
+  requestCameraContain: (box: { min: [number, number, number]; max: [number, number, number] }) => void;
   setActiveDialog: (dialog: ActiveDialogType) => void;
   setSettingsTab: (tab: SettingsTabType) => void;
   openSettings: (tab?: SettingsTabType) => void;

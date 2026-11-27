@@ -25,6 +25,27 @@ export interface PatternGhost {
   entries: PatternGhostEntry[];
 }
 
+/** Caja en mundo que envuelve todas las copias del fantasma (null si no hay copias). */
+export function ghostWorldBox(ghost: PatternGhost): { min: [number, number, number]; max: [number, number, number] } | null {
+  const total = new THREE.Box3();
+  const local = new THREE.Box3();
+  const m = new THREE.Matrix4();
+  const c = new THREE.Vector3();
+  for (const entry of ghost.entries) {
+    if (entry.mesh.positions.length < 3 || entry.count === 0) continue;
+    local.setFromArray(entry.mesh.positions);
+    for (let k = 0; k < entry.count; k++) {
+      m.fromArray(entry.matrices, 16 * k);
+      for (let i = 0; i < 8; i++) {
+        c.set(i & 1 ? local.max.x : local.min.x, i & 2 ? local.max.y : local.min.y, i & 4 ? local.max.z : local.min.z).applyMatrix4(m);
+        total.expandByPoint(c);
+      }
+    }
+  }
+  if (total.isEmpty()) return null;
+  return { min: total.min.toArray() as [number, number, number], max: total.max.toArray() as [number, number, number] };
+}
+
 type Source = Pick<SceneObject, 'id' | 'mesh' | 'scale' | 'position' | 'rotation' | 'stats'>;
 
 const matrixOf = (scale: SceneObject['scale'], pose: PatternPose): THREE.Matrix4 =>
