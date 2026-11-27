@@ -357,6 +357,8 @@ export interface KuraStoreState {
   dismissErrorToasts: () => void;
   dismissToast: (id: string) => void;
   /** Cierra el emergente a la vista (el histórico no se toca). */
+  /** Vacía emergentes, histórico y el veto de avisos descartados: abrir o crear un proyecto parte limpio. */
+  resetMessages: () => void;
   dismissAllToasts: () => void;
   /** Ejecuta una acción de un aviso (visible o del historial): lo cierra y la marca como aplicada. */
   runToastAction: (id: string, action: ToastAction) => void;

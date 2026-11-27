@@ -47,6 +47,8 @@ export function createDocumentSlice(ctx: StoreContext): Partial<KuraStoreState> 
     name: string | null,
     { location, recoveredDraftId }: { location?: string; recoveredDraftId?: string } = {},
   ) => {
+    // Los mensajes del proyecto anterior no viajan al nuevo; se limpia antes de que la apertura emita los suyos.
+    get().resetMessages();
     ctx.runtime.paintStroke = { open: false, recorded: false };
     ctx.runtime.livePaint = null;
     // La vista de sección es un estado de visualización: abrir un proyecto o recuperar un borrador

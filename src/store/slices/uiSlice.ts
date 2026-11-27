@@ -51,6 +51,7 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
   const dismissedNoticeKeys = new Set<string>();
   const noticeKey = (x: Pick<ToastMessage, 'text' | 'kind' | 'action'>) =>
     x.kind !== 'error' && x.action?.targetIds?.length ? `${x.kind}|${x.text}|${[...x.action.targetIds].sort().join(',')}` : null;
+  const sameObjects = (a?: readonly string[], b?: readonly string[]) => [...(a ?? [])].sort().join(',') === [...(b ?? [])].sort().join(',');
   const rememberDismissed = (list: readonly ToastMessage[]) => {
     for (const x of list) {
       const key = noticeKey(x);
@@ -231,18 +232,19 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const objectIds = options?.objectIds?.length ? options.objectIds : undefined;
       set((state) => ({
         toastHistory: [
-          ...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind)),
+          ...state.toastHistory.filter((x) => !(x.text === text && x.kind === kind && sameObjects(x.objectIds, objectIds))),
           { id, text, kind, at: Date.now(), ...(actions.length > 0 ? { actions } : {}), ...(objectIds ? { objectIds } : {}) },
         ].slice(-TOAST_HISTORY_MAX),
       }));
       if (options?.historyOnly) return null;
       const key = noticeKey({ text, kind, action });
       if (key && dismissedNoticeKeys.has(key)) return null;
-      // Un solo emergente a la vista: el más reciente; el anterior ya está en el histórico. Excepción: uno con una acción
+      // Un solo emergente a la vista: el más reciente; el anterior ya está en el histórico. Excepción: un error o advertencia a la vista, y uno con una acción
       // vigente (Convertir en placas, Simplificar…) no lo desplaza un informativo o de éxito sin acción: ese va directo al
       // histórico. Sí lo desplazan errores, advertencias y otros mensajes con acción.
       const shown = get().toasts[0];
       const incomingPlain = kind !== 'error' && kind !== 'warning' && actions.length === 0;
+      if (shown && incomingPlain && (shown.kind === 'error' || shown.kind === 'warning')) return id;
       if (shown && incomingPlain && toastIsSticky([shown.action, shown.secondaryAction].filter((a): a is ToastAction => Boolean(a)), indexObjects(get().objects))) return id;
       set({ toasts: [{ id, text, kind, ...(action ? { action } : {}), ...(secondaryAction ? { secondaryAction } : {}), ...(objectIds ? { objectIds } : {}) }] });
       // El cierre automático de los informativos lo temporiza `ToastItem` (con pausa al pasar el cursor o el foco);
@@ -257,6 +259,10 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       // Una acción que dejó de ser aplicable (p. ej. «Deshacer» de un paso que ya no es el último) no se ejecuta.
       if (action.applicable && !action.applicable()) return;
       action.run();
+    },
+    resetMessages: () => {
+      dismissedNoticeKeys.clear();
+      set({ toasts: [], toastHistory: [] });
     },
     dismissAllToasts: () => {
       rememberDismissed(get().toasts);

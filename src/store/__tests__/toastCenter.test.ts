@@ -104,6 +104,41 @@ describe('centro de mensajes: store', () => {
     });
   });
 
+  it('un informativo sin acción no desplaza a un error o advertencia a la vista: va al histórico', () => {
+    store().addToast('falló', 'error');
+    store().addToast('listo', 'success');
+    store().addToast('dato', 'info');
+    expect(store().toasts.map((x) => x.text)).toEqual(['falló']);
+    store().addToast('cuidado', 'warning');
+    store().addToast('otro dato', 'info');
+    expect(store().toasts.map((x) => x.text)).toEqual(['cuidado']);
+    expect(store().toastHistory.map((x) => x.text)).toEqual(['falló', 'listo', 'dato', 'cuidado', 'otro dato']);
+    store().addToast('falló 2', 'error');
+    expect(store().toasts.map((x) => x.text)).toEqual(['falló 2']);
+  });
+
+  it('el histórico distingue piezas: mismo texto y tipo en piezas distintas son mensajes distintos', () => {
+    store().addToast('malla abierta', 'warning', undefined, { objectIds: ['a'] });
+    store().addToast('malla abierta', 'warning', undefined, { objectIds: ['b'] });
+    expect(store().toastHistory.map((x) => x.objectIds)).toEqual([['a'], ['b']]);
+    store().addToast('malla abierta', 'warning', undefined, { objectIds: ['a'] });
+    expect(store().toastHistory.map((x) => x.objectIds)).toEqual([['b'], ['a']]);
+  });
+
+  it('abrir o crear un proyecto vacía emergentes e histórico, y el aviso de la propia apertura sí queda', () => {
+    store().addToast('viejo', 'error');
+    store().addToast('viejo 2', 'info');
+    useKuraStore.setState({ engineReady: true, busyOperation: null, aiBusy: false } as never);
+    expect(store().newProject()).toBe(true);
+    expect(store().toastHistory.map((x) => x.text)).not.toContain('viejo');
+    expect(store().toasts.map((x) => x.text)).not.toContain('viejo');
+    store().addToast('viejo', 'error');
+    store().resetMessages();
+    store().addToast('nuevo', 'success');
+    expect(store().toastHistory.map((x) => x.text)).toEqual(['nuevo']);
+    expect(store().toasts.map((x) => x.text)).toEqual(['nuevo']);
+  });
+
   it('no guarda el histórico en el almacenamiento local', () => {
     store().addToast('secreto de sesión', 'error');
     const dump = JSON.stringify({ ...globalThis.localStorage });
