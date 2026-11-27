@@ -81,7 +81,7 @@ describe('Galería de Asistentes', () => {
     await user.keyboard('{ArrowRight}');
     expect(document.activeElement).toBe(cards()[1]);
     await user.keyboard('{End}');
-    expect(document.activeElement).toBe(cards()[3]);
+    expect(document.activeElement).toBe(cards()[4]);
     await user.keyboard('{Home}{Enter}');
     expect(document.querySelector('[data-field="w"]')).not.toBeNull();
   });
@@ -93,7 +93,7 @@ describe('Galería de Asistentes', () => {
     await user.click(screen.getByRole('button', { name: t('es', 'asis.cat.hogar') }));
     await user.click(cards()[0]!);
     act(() => showAssistantRecipe(null));
-    expect(cards()).toHaveLength(1);
+    expect(cards()).toHaveLength(2);
     expect(screen.getByRole('button', { name: t('es', 'asis.cat.hogar') }).getAttribute('aria-pressed')).toBe('true');
   });
 });
