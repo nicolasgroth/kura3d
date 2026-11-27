@@ -142,7 +142,11 @@ test.describe('patrón: encuadre de la vista previa', () => {
   });
 
   test('una fila larga de copias de una pieza chica entra entera en el encuadre y la cámara no se acerca sola', async ({ page }) => {
-    await abrirConR3f(page);
+    // El enganche a r3f depende de recursos ya cargados: si el primer intento no lo deja listo, se repite.
+    for (let i = 0; i < 3; i++) {
+      await abrirConR3f(page);
+      if (await page.evaluate(() => Boolean((window as any).__r3f))) break;
+    }
     await agregarForma(page, 'Cubo');
     await abrirDesdePaleta(page);
     await expect(page.getByTestId('pattern-summary')).toContainText('Se crearán');
