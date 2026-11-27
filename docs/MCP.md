@@ -193,7 +193,15 @@ kura_split_for_bed { "objectId": "<id>" }
 
 kura_validate_assembly { "groupId": "<id del estante>" }
 // → ok true, order [ { step 1, code "A1", direction "-z" }, { step 2, code "B1", direction "-x" } ]
+
+kura_get_assembly_instructions { "groupId": "<id del estante>" }
+// → steps [ { index 1, code "A1", base true, text "Place A1 as the base, resting on the table." },
+//           { index 2, code "B1", joins [ { partnerCode "A1", face "-x", method "dowel", count 2, diameterMm 8 } ],
+//             direction { axis "-x", vector [-1, 0, 0] }, warnings [], text "Join B1 to A1 by its left face: …" } ],
+//   materials { printedParts 2, magnets [], looseDowels [], glueJoints 0, text [ "2 printed parts: A1, B1", … ] }
 ```
+
+`kura_get_assembly_instructions` (solo lectura) arma los pasos de armado desde la pieza base (la que apoya en la mesa y, a igual altura, la de más volumen): cada paso agrega una pieza ya unida a lo armado, con la cara, el método (`dowel`, `loose-dowel`, `peg`, `dovetail`, `lap`, `magnet`, `glue`), la cantidad, la medida, la dirección de entrada (ejes del usuario, Z arriba) y avisos (`weak-joint`, `hold-piece`, `magnet-polarity`, `not-connected`, `blocked`). La lista de materiales cuenta los imanes sueltos: dos por cada posición (uno por pieza). Se calculan al pedirlas; no se guardan en el `.kura`.
 
 En una figura (estatua, busto) `strategy: "natural"` («Por las partes de la figura») pone los planos en los estrechamientos (cuello, cintura, tobillos) en vez de repartirlos parejo; usa los mismos cortes que la rejilla y completa con cortes rectos donde no alcanza. El resumen trae `strategy { kind "natural", naturalCuts, straightCuts, narrowings [ { axis, positionMm, kind "neck" | "step", used } ] }`. Los planos siguen alineados a los ejes y atraviesan todo el modelo.
 

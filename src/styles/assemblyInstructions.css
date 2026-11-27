@@ -1,0 +1,102 @@
+/**
+ * @file src/styles/assemblyInstructions.css
+ * @description Estilos del panel «Instrucciones de armado»: lista numerada de pasos con el paso activo marcado (borde y
+ * fondo, no solo color), foco visible, avisos con icono, descargas y lista de materiales; el texto largo se parte
+ * para no desbordar el panel derecho a 1024 px.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license AGPL-3.0-or-later
+ */
+
+.kura-asm-instr {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.kura-asm-instr-model {
+  margin: 0;
+  font-weight: 600;
+}
+
+.kura-asm-instr-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kura-asm-instr-steps {
+  margin: 0;
+  padding: 0 0 0 1.6em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kura-asm-instr-step {
+  padding: 4px 6px;
+  border: 1px solid var(--border-subtle);
+  border-left-width: 3px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  min-width: 0;
+}
+
+.kura-asm-instr-step[data-active] {
+  border-color: var(--accent-cyan);
+  border-left-width: 5px;
+}
+
+.kura-asm-instr-step-btn {
+  display: block;
+  width: 100%;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.kura-asm-instr-step-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.kura-asm-instr-line {
+  margin: 2px 0 0;
+}
+
+.kura-asm-instr-warnings {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kura-asm-instr-warnings li {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.kura-asm-instr-warnings svg {
+  flex: none;
+  margin-top: 2px;
+  color: #f59e0b;
+}
+
+.kura-asm-instr-subtitle {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+
+.kura-asm-instr-materials {
+  margin: 0;
+  padding-left: 1.2em;
+}

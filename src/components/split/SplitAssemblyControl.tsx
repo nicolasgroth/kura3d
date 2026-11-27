@@ -2,18 +2,21 @@
  * @file src/components/split/SplitAssemblyControl.tsx
  * @description Control "Armado" del grupo dividido de la pieza seleccionada: deslizador de 0 %
  * (armado) a 100 % (explosionado) con reproducir/pausar que anima ida y vuelta (solo visual), y los
- * botones "Preparar para imprimir" y "Volver a armar" (un paso de deshacer cada uno).
+ * botones "Preparar para imprimir" y "Volver a armar" (un paso de deshacer cada uno) y el acceso a las
+ * «Instrucciones de armado» (panel derecho) cuando las piezas traen sus uniones guardadas.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
  */
 
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { Boxes, Pause, Play, Printer } from 'lucide-react';
+import { Boxes, ListOrdered, Pause, Play, Printer } from 'lucide-react';
 import { t } from '../../i18n';
 import { tCount } from '../../utils/plural';
 import { splitArrangementOf, splitGroupOf, splitPlateCount } from '../../core/scene/splitGroups';
+import { actionName } from '../../store/actionLabels';
 import { useKuraStore } from '../../store/useKuraStore';
+import { openActionPanel } from '../shell/actionRunners';
 import { SplitLabelsToggle } from './SplitLabelsToggle';
 import { useSplitFrames } from './useSplitFrames';
 
@@ -146,6 +149,21 @@ export const SplitAssemblyControl: React.FC = () => {
           <span>{t(language, 'split.assembly.assemble')}</span>
         </button>
       </div>
+      {group.parts.some((o) => o.metadata.split.joints) && (
+        <button
+          type="button"
+          className="kura-btn kura-btn-sm"
+          title={t(language, 'asmInstr.openTip')}
+          data-testid="split-assembly-instructions"
+          onClick={() => {
+            setPlaying(false);
+            openActionPanel('assemblyInstructions');
+          }}
+        >
+          <ListOrdered size={13} aria-hidden="true" />
+          <span>{actionName(language, 'assemblyInstructions')}</span>
+        </button>
+      )}
       {!inPrintView && <p className="kura-cut-hint" data-testid="split-arrange-note">{t(language, 'viewMode.split.note')}</p>}
       <SplitLabelsToggle />
     </section>

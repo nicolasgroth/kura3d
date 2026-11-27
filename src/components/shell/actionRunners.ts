@@ -113,6 +113,9 @@ export function runAction(id: ActionId): void {
     case 'fitCheck':
       // Bajo pedido: el panel muestra las opciones y el usuario comprueba desde allí.
       return;
+    case 'assemblyInstructions':
+      // Solo lectura: el panel calcula los pasos del grupo de la selección.
+      return;
     case 'convert':
     case 'align':
       // Tienen submenú: se ejecutan con `runConvert` o `runAlign`.

@@ -56,6 +56,7 @@ export const ACTION_TIP_KEY: Partial<Record<ActionId, TranslationKey>> = {
   centerOnBed: 'ctx.centerOnBed.tip',
   fitCheck: 'fitCheck.ui.openTip',
   orient: 'orient.ui.openTip',
+  assemblyInstructions: 'asmInstr.openTip',
 };
 
 /**

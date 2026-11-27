@@ -20,7 +20,7 @@ import type { TranslationKey } from '../i18n';
 import type { KuraStoreState } from './storeTypes';
 
 export const ACTION_GROUPS = [
-  { id: 'prepare', items: ['hollow', 'splitForBed', 'fitToBed', 'orient', 'mold', 'project', 'modules'] },
+  { id: 'prepare', items: ['hollow', 'splitForBed', 'assemblyInstructions', 'fitToBed', 'orient', 'mold', 'project', 'modules'] },
   { id: 'mesh', items: ['repair', 'simplify', 'refine', 'smooth', 'texture', 'hull'] },
   { id: 'organize', items: ['splitColors', 'splitParts', 'group', 'ungroup', 'combine', 'union', 'applyHoles'] },
   { id: 'position', items: ['convert', 'dropToBed', 'centerOnBed', 'align'] },
@@ -72,6 +72,8 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
     return visible.some(isNegative) && visible.some(isSolid) ? ok : no('rediseno.reason.noSubtractions');
   }
   if (id === 'fitCheck') return fitCheckTargets(objects, selectedIds).ids.length >= 2 ? ok : no('fitCheck.ui.reason.needTwo');
+  // Instrucciones de armado: alguna pieza seleccionada es de una división con sus uniones guardadas.
+  if (id === 'assemblyInstructions') return picked.some((o) => o.metadata?.split?.joints) ? ok : no('asmInstr.reason.notSplit');
   if (!primary) return no('rediseno.reason.noSelection');
   switch (id) {
     case 'group':
@@ -109,10 +111,10 @@ export function actionAvailability(state: StateSlice, id: ActionId): ActionAvail
  * contenido en `components/contextPanel/panelRegistry.tsx`. Operan sobre un objeto seleccionado, salvo las de
  * `SCENE_PANEL_ACTIONS`.
  */
-export const PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['hollow', 'simplify', 'refine', 'smooth', 'texture', 'modules', 'validate', 'detect', 'fitCheck', 'orient']);
+export const PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['hollow', 'simplify', 'refine', 'smooth', 'texture', 'modules', 'validate', 'detect', 'fitCheck', 'orient', 'assemblyInstructions']);
 
 /** Acciones del panel que trabajan sobre la escena (varios objetos o todo lo visible), no sobre uno solo. */
-export const SCENE_PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['fitCheck']);
+export const SCENE_PANEL_ACTIONS: ReadonlySet<ActionId> = new Set<ActionId>(['fitCheck', 'assemblyInstructions']);
 
 export function actionHasPanel(id: ActionId): boolean {
   return PANEL_ACTIONS.has(id);
