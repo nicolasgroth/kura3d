@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { extentIntersectsViewport, placeFloatingBar, screenExtent } from '../floatingBarPlacement';
+import { extentIntersectsViewport, placeFloatingBar, screenExtent, unionExtent } from '../floatingBarPlacement';
 
 const viewport = { width: 1000, height: 600 };
 const bar = { width: 200, height: 40 };
@@ -113,5 +113,17 @@ describe('placeFloatingBar con zonas fijas (rótulo de la vista)', () => {
     const todo = { left: 0, right: 1000, top: 0, bottom: 600 };
     const p = placeFloatingBar({ extent: { left: 400, right: 600, top: 300, bottom: 450 }, bar, viewport, obstacles: [todo] });
     expect(p.side).toBe('above');
+  });
+});
+
+describe('unionExtent', () => {
+  it('une la caja del objeto con la huella del manipulador y la barra queda fuera de ambas', () => {
+    const obj = { left: 450, right: 550, top: 300, bottom: 360 };
+    const gizmo = { left: 400, right: 600, top: 250, bottom: 450 };
+    const u = unionExtent(obj, gizmo);
+    expect(u).toEqual({ left: 400, right: 600, top: 250, bottom: 450 });
+    const p = placeFloatingBar({ extent: u, bar, viewport });
+    expect(p.side).toBe('above');
+    expect(p.y + bar.height).toBeLessThanOrEqual(gizmo.top);
   });
 });

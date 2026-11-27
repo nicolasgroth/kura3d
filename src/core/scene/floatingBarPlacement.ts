@@ -56,6 +56,11 @@ export function screenExtent(points: readonly ScreenPoint[]): ScreenExtent | nul
   return { left, right, top, bottom };
 }
 
+/** Caja mínima que contiene a las dos. */
+export function unionExtent(a: ScreenExtent, b: ScreenExtent): ScreenExtent {
+  return { left: Math.min(a.left, b.left), right: Math.max(a.right, b.right), top: Math.min(a.top, b.top), bottom: Math.max(a.bottom, b.bottom) };
+}
+
 /** true si la caja se cruza con el visor (si no se ve nada del objeto, la barra no tiene a quÃ© anclarse). */
 export function extentIntersectsViewport(extent: ScreenExtent, viewport: { width: number; height: number }): boolean {
   return extent.right >= 0 && extent.left <= viewport.width && extent.bottom >= 0 && extent.top <= viewport.height;

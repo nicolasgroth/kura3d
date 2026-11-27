@@ -12,12 +12,13 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { extentIntersectsViewport, placeFloatingBar, screenExtent, type Obstacle, type ScreenPoint } from '../../core/scene/floatingBarPlacement';
+import { extentIntersectsViewport, placeFloatingBar, unionExtent, screenExtent, type Obstacle, type ScreenPoint } from '../../core/scene/floatingBarPlacement';
 import { FLOATING_BAR_REVEAL_DELAY_MS } from '../../store/floatingBarState';
 import { useGizmoDragStore } from '../../store/gizmoDragStore';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { floatingBarBridge } from './floatingBarBridge';
+import { findGizmoRoot, gizmoScreenObstacle } from './gizmoObstacle';
 import { useTopInsetCache } from './topInsetCache';
 
 const localBoxes = new WeakMap<object, THREE.Box3 | null>();
@@ -81,6 +82,7 @@ export const FloatingBarTracker = () => {
     [],
   );
   const last = useRef({ objects: null as unknown, selected: null as unknown, w: 0, h: 0, version: -1, matrix: new Float32Array(16), proj: new Float32Array(16), obstacle: '', busy: null as boolean | null, el: null as HTMLElement | null });
+  const gizmoRef = useRef<ReturnType<typeof findGizmoRoot>>(null);
   const busy = useRef({ pointer: false, drag: false, hidden: false, timer: 0 as unknown as ReturnType<typeof setTimeout> });
 
   // Ocultar mientras se arrastra (puntero sobre el lienzo o arrastre del manipulador / del objeto); reaparece con retardo.
@@ -131,7 +133,7 @@ export const FloatingBarTracker = () => {
   // Inset superior cacheado: se mide solo cuando cambia el tamaÃ±o del HUD o del visor, no en cada cuadro.
   const insetCache = useTopInsetCache();
 
-  useFrame(({ camera, size }) => {
+  useFrame(({ camera, size, scene }) => {
     const el = floatingBarBridge.el;
     if (!el) return;
     const b = busy.current;
@@ -155,7 +157,12 @@ export const FloatingBarTracker = () => {
     const pm = camera.projectionMatrix.elements;
     // Zonas fijas que la barra evita: el rÃ³tulo de la vista (Armado / Libre) con su deslizador Â«SeparaciÃ³nÂ».
     const obstacles = fixedObstacles(el.parentElement);
-    const obstacleKey = obstacles.map((o) => `${Math.round(o.left)},${Math.round(o.top)},${Math.round(o.right)},${Math.round(o.bottom)}`).join('|');
+    // El manipulador cuenta como parte de la selección: sus agarres (eje Y, planos) sobresalen de la caja del objeto
+    // y la barra debe quedar fuera de ellos. Su huella entra en la clave de «sin cambios» como una zona más.
+    if (!gizmoRef.current?.parent) gizmoRef.current = findGizmoRoot(scene);
+    const gizmoZone = gizmoScreenObstacle(gizmoRef.current, camera, { width: size.width, height: size.height });
+    const gizmoKey = gizmoZone ? `|g${Math.round(gizmoZone.left)},${Math.round(gizmoZone.top)},${Math.round(gizmoZone.right)},${Math.round(gizmoZone.bottom)}` : '';
+    const obstacleKey = obstacles.map((o) => `${Math.round(o.left)},${Math.round(o.top)},${Math.round(o.right)},${Math.round(o.bottom)}`).join('|') + gizmoKey;
     let same = l.obstacle === obstacleKey && l.objects === objects && l.selected === selectedIds && l.w === size.width && l.h === size.height && l.version === floatingBarBridge.version;
     for (let i = 0; same && i < 16; i += 1) if (l.matrix[i] !== mw[i] || l.proj[i] !== pm[i]) same = false;
     if (same && el.dataset.placed === 'true') return;
@@ -184,7 +191,8 @@ export const FloatingBarTracker = () => {
       pt.x = (v.x * 0.5 + 0.5) * size.width;
       pt.y = (-v.y * 0.5 + 0.5) * size.height;
     }
-    const extent = screenExtent(points);
+    const objectExtent = screenExtent(points);
+    const extent = objectExtent && gizmoZone ? unionExtent(objectExtent, gizmoZone) : objectExtent;
     const viewport = { width: size.width, height: size.height };
     if (!extent || !extentIntersectsViewport(extent, viewport)) {
       el.dataset.offscreen = 'true';
