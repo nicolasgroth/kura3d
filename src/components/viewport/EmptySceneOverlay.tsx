@@ -9,6 +9,7 @@
 import React from 'react';
 import { Box, FileUp, FolderOpen } from 'lucide-react';
 import { t } from '../../i18n';
+import { ASSISTANT_PREVIEW_KEY } from '../../store/assistantPreview';
 import { useKuraStore } from '../../store/useKuraStore';
 import { guardUnsavedChanges } from '../../utils/unsavedGuard';
 
@@ -21,6 +22,9 @@ export const EmptySceneOverlay: React.FC = () => {
   const emptyActionsBlocked = useKuraStore((s) =>
     !s.engineReady || s.projectBusy || Boolean(s.busyOperation) || s.aiBusy,
   );
+  // Con la vista previa de un asistente a la vista, la tarjeta no se dibuja encima del fantasma.
+  const assistantPreviewShown = useKuraStore((s) => s.operationPreview.key === ASSISTANT_PREVIEW_KEY);
+  if (assistantPreviewShown) return null;
 
   return (
     <section className="kura-empty-stage" aria-labelledby="kura-empty-stage-title">
