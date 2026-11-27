@@ -1107,3 +1107,38 @@ La primera entrega rompió seis recorridos que en `main` pasaban: la oferta de l
 Verificación del orquestador sobre 11ac59dd: `tsc` limpio, 4786 pruebas del programa y 220 del servidor MCP en verde. Recorridos: los 30 archivos que usan avisos se corrieron completos sobre la primera entrega (175 en verde, 8 en rojo; 1,4 h); tras las correcciones, el desarrollador repitió los que fallaban y los del centro de mensajes en verde. No se repitieron los 30 completos sobre el último commit. `qa23-arrastrar-asistentes:74` es inestable (falla a veces al cargar, también en `main`). `qa22-ajustes:85` tarda unos 162 s con tope de 180 s.
 
 Pendiente del lote: QA en navegador, capturas y guías, y decidir con el autor si los iconos se quedan en el pie del visor o van a la barra de estado.
+
+## 27-nov-2026 · Noche: cierre del centro de mensajes y octava ronda de placas
+
+**Centro de mensajes fusionado a `main` y subido** (`b4b2d065`; CI de `main` en verde por primera vez desde el 26-nov).
+
+| Paso | Agente | Modelo | Duración | Tokens | Resultado |
+|---|---|---|---|---|---|
+| QA en navegador | `qa` | Sonnet | 3 min | 117 k | Aprobado; 8 recorridos nuevos (`e2e/qa25-centro-mensajes.spec.ts`); observación menor: los contadores no usan `aria-live` |
+| Correcciones de la revisión externa | `dev-ui` | Sonnet | 15 min | 146 k | Hallazgos 2 a 5 corregidos, `ux7-avisos:30` al día, `e2e/centro-mensajes-pie.spec.ts` nuevo |
+| Evaluación de usabilidad a ciegas | `eval-usabilidad` | Opus | 7 min | 178 k | Placas 80, centro de mensajes 84 |
+
+Una revisión externa (entregada por otra sesión a pedido del autor) trajo 8 hallazgos sobre la rama. El autor aprobó corregir del 1 al 5 antes de fusionar:
+
+1. `src/core/scene/floatingBarPlacement.ts` tenía un byte Latin-1: era la causa de que el build de producción fallara en el CI de `main`. Recodificado, con una prueba en `repoRules.test.ts` que rechaza archivos que no sean UTF-8 (orquestador).
+2. A 1024 px con los dos paneles abiertos el pie del visor se partía en tres filas y el Consejo tapaba «Tamaño». Corregido; bajo 470 px de pie se oculta el nombre de la impresora (queda en el tooltip).
+3. Un informativo ya no desplaza a un error o advertencia a la vista: va directo al histórico.
+4. «Nuevo» y «Abrir proyecto» vacían el emergente, el histórico y el veto de avisos descartados.
+5. El histórico distingue piezas: mismo texto en piezas distintas son mensajes distintos.
+
+Pendientes de esa revisión (6 a 8, sin verificar en navegador): Esc con el panel abierto y la paleta o un diálogo encima; un aviso que caduca solo queda vetado como si el usuario lo hubiera cerrado; el panel no usa `ToastActionButton`; plural en hindi. Fuera del lote: 107 rutas absolutas `G:/proyectos` en `e2e/`.
+
+Verificación del orquestador: `tsc` y build limpios, 4790 pruebas del programa y 220 del servidor MCP en verde. Los 32 archivos de `e2e/` que usan avisos, sobre el código corregido: 189 en verde y 6 en rojo (1,2 h). De los 6: `qa24-iman:178` y `:721` son los pendientes del lote de motor; `qa22-ajustes:355`, `:663` y `:689` fallaron al cargar (`window.__s` no existe) y pasaron al repetirlos; `ux3-forma-avisos:14` dependía de que un informativo reemplazara a un error y se actualizó. Capturas: 26 recorridos de `e2e/docs/`; se pusieron al día `capturas-importar` y `capturas-simplificar` (este venía desactualizado desde que Enter solo hace la vista previa) y se agregó `capturas-mensajes` con la guía `docs/guia/mensajes.md`. Enlaces: 0 rotos.
+
+Efecto del emergente único que el autor debe decidir: al reparar una malla con un agujero grande, «Malla reparada» queda a la vista un instante y la reemplaza la nota «Se cerró 1 agujero grande…»; el resumen queda en el histórico.
+
+**Evaluación a ciegas de usabilidad (octava ronda de placas, primera del centro de mensajes): las dos bajo el mínimo** (sobre `b4b2d065`). Sin bloqueos duros.
+
+| Funcionalidad | R7 | R8 | Confirmado | Lo que más resta |
+|---|---|---|---|---|
+| Vistas y tira de placas | 84 | 80 | Crear, renombrar con rechazo de repetidos, mover por paleta y menú con «Deshacer», borrar con confirmación, «Solo esta», Armado y Libre, convertir un 3MF; la tira a 1024 px desplaza sin desbordar la página | Tras «Convertir en placas» la insignia dice P7 y la placa se llama «Placa 2», y las placas quedan numeradas 2, 7, 8; el foco cae a `body` tras «+ Placa» y tras «Deshacer»; un nombre de 60 caracteres deja la ficha en 443 px sin recorte; «Placa borrada» sin «Deshacer» y foco en otro botón de borrar; «Solo esta» y Armado no encuadran la cama |
+| Centro de mensajes | — | 84 | Un solo emergente; informativos al histórico a los 5,97 s con pausa al pasar el cursor o el foco; advertencias esperan; panel único y Esc devuelve el foco; «Reparar malla» desde el histórico; se va al borrar la pieza; proyecto nuevo parte vacío | Avisos que piden actuar llegan como información y nunca se ven emergentes («Repárala antes de imprimir», «quedó junto a la cama»); el foco cae a `body` al cerrar un mensaje o usar su acción; ancho fijo de 300 px que parte nombres de archivo; todos los «Quitar este mensaje» con el mismo nombre; con un modal abierto el emergente cambia de lugar |
+
+Los avisos sobre el visor ya no aparecen entre los descuentos de placas. No probado por el evaluador: mover una pieza arrastrándola entre camas, camas distintas por placa y «Repartir», lector de pantalla real.
+
+Placas lleva ocho rondas bajo el mínimo: según la regla 6 se consulta al autor antes de otra vuelta.
