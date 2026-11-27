@@ -22,7 +22,7 @@ Se reescribe al cerrar cada conversación del orquestador (regla 11 de «Control
 
 1. **Centro de mensajes (`feat/centro-mensajes`): falta QA, capturas y guías, y fusionar.**
    - Diseño del autor: un solo emergente; iconos de errores, advertencias e información con histórico por tipo. Regla agregada por el orquestador y aún no confirmada por él: un mensaje con acción vigente no caduca ni lo desplaza un informativo sin acción.
-   - Por confirmar con el autor: los iconos quedaron en el pie del visor junto a «Cama:» (no en la barra de estado de la ventana); el tipo «advertencia» solo lo usan hoy los avisos de malla abierta.
+   - Confirmado por el autor: los iconos se quedan en el pie del visor junto a «Cama:». El tipo «advertencia» solo lo usan hoy los avisos de malla abierta.
    - Antes de fusionar: correr sobre el último commit los 30 archivos de `e2e/` que usan avisos (tardan 1,4 h; lanzarlos en segundo plano y no esperar encima) y el skill `capturas`.
 2. **Reevaluar placas** después de fusionar el centro de mensajes (84; su descuento principal eran los avisos sobre el visor). Queda además: desborde de la tira a 1024 px sin indicación, nombres cortados, «Solo esta».
 3. **Imán** (`qa24-iman:178` y `:721`): la boca del hueco queda a 0,23 y 0,40 mm del punto de la vista previa. Lote de motor; sin causa todavía.
