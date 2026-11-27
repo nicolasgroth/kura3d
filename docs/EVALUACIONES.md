@@ -1045,3 +1045,37 @@ Los dos lotes sin navegador de esta tanda pasaron sus recorridos sin correccione
 
 Pruebas tras la integración: 4776 del programa y 220 del servidor MCP. Consumo de agentes de la noche completa: unos 2,1 millones de tokens en siete agentes con dato (falta el de patrones).
 
+## 27-nov-2026 · Evaluación a ciegas acotada de las seis funcionalidades de la noche
+
+Acordada con el autor: dos evaluadores (usabilidad y funcional), cada uno con las seis funcionalidades en una sola pasada; el de código queda para el cierre de versión. `main` en 09dc8794.
+
+| Funcionalidad | Usabilidad | Funcional | Resultado |
+|---|---|---|---|
+| Dividir con cortes a mano e inclinados | 72 | 84 | Bajo el mínimo en ambos |
+| Dividir por las partes de la figura | 72 | 80 | Bajo el mínimo en ambos |
+| Recipiente con tapa roscada y pareja de roscas | 80 | 90 | Bajo el mínimo en usabilidad |
+| Patrón lineal, rejilla, circular y espejo | 83 | 90 | Bajo el mínimo en usabilidad |
+| Acople de tubería | 82 | 89 | Bajo el mínimo en usabilidad |
+| Instrucciones de armado | 81 | 86 | Bajo el mínimo en usabilidad |
+
+Sin bloqueos duros en ninguno de los dos. Ninguna funcionalidad alcanza el mínimo de 85 en usabilidad; en funcional pasan cuatro de seis.
+
+Lo que más pesa:
+
+- **Dividir:** los planos de corte en Z no se dibujan en el visor; con planos que se cruzan desaparecen todos y el motivo queda lejos de las filas; una unión inclinada junto a otro plano X pasa a «para pegar» sin necesidad y sin aviso previo; espigas a 1,2–1,3 mm del borde calificadas «Firme»; aviso «el modelo es grande» en una caja de 12 triángulos.
+- **Partes de la figura:** no reconoce un estrechamiento largo y parejo (pesa con barra); en un eje se queda con la rejilla habiendo un mínimo local que cabe; no muestra dónde está el estrechamiento.
+- **Tapa roscada y acople:** el estado del ajuste queda fuera de vista al fondo del panel; Enter en un campo crea las piezas; nombres accesibles del diálogo de rosca ISO; texto con punto decimal en el acople; `kura_create_pipe_coupling` ignora parámetros desconocidos en silencio.
+- **Patrones:** a 1024 px se apilan dos paneles laterales; el glifo «✓» entra en los nombres accesibles; no avisa choques con otros objetos.
+- **Instrucciones:** el foco no vuelve al botón que abrió el panel; no se distingue la pieza nueva de la ya armada; con imanes la dirección de entrada no es la normal de la cara; al reimportar el 3MF se pierden los datos de división.
+
+Mediciones funcionales que respaldan las notas altas: holgura real de la tapa 0,305 mm (informada 0,31), acople roscado 0,300–0,310 mm y a presión 0,159 mm (informada 0,15), copias del patrón en la posición exacta, volumen de las piezas divididas igual al original menos los agujeros.
+
+| Agente | Modelo | Duración | Tokens |
+|---|---|---|---|
+| eval-usabilidad | Opus | 14 min | 222 k |
+| eval-funcional | Opus | 16 min | 221 k |
+
+**Corrida completa de recorridos (01:11–05:01):** 732 recorridos, 703 en verde y 29 en rojo; 6 eran inestables y 23 consistentes. De esos 23, 18 eran pruebas desactualizadas por cambios posteriores y se corrigieron; quedan 5 anotados en el tablero. Rendimiento: 66 de 66. A raíz de esto se agregó la regla 10 del flujo (análisis de impacto y pruebas afectadas en cada encargo).
+
+No se lanzaron correcciones: el autor pidió detenerse a revisar el consumo y el rumbo antes de seguir.
+

@@ -1,6 +1,6 @@
 # Tablero de Kurra Studio
 
-**Actualizado el 26 de noviembre de 2026, 22:20.** Muestra qué funciona hoy, qué le falta a cada función y qué viene. El historial de lotes, pruebas y evaluaciones está en otros archivos (ver el final).
+**Actualizado el 27 de noviembre de 2026.** Muestra qué funciona hoy, qué le falta a cada función y qué viene. El historial de lotes, pruebas y evaluaciones está en otros archivos (ver el final).
 
 ## En corto: hoy, 26 de noviembre
 
@@ -8,16 +8,16 @@
 
 **Pruebas en `main`:** 4776 del programa y 220 del servidor MCP, en verde. Recorridos de navegador de lo nuevo, todos en verde: patrones 23, Dividir a mano 2, partes de la figura 1, tapa roscada 3, acople de tubería 2, instrucciones de armado 2, arrastre 15, escala de grupo 2, Simplificar 21.
 
-En desarrollo ahora mismo: nada. Las seis funcionalidades de la noche están en `main`, **sin evaluar todavía**. Por cuidado del consumo semanal no se lanzaron más lotes; la evaluación a ciegas se acuerda con el autor antes de lanzarla.
+En desarrollo ahora mismo: nada. Las seis funcionalidades de la noche del 26 se evaluaron a ciegas el 27: ninguna llega al mínimo de 85 en usabilidad y dos tampoco en funcional (las dos variantes de Dividir). No se lanzaron correcciones: el autor pidió revisar el consumo y el rumbo antes de seguir.
 
 Lo que entró hoy y está en `main`:
 
-- **Dividir con cortes a mano e inclinados**, y conmutador para ver solo las piezas. Sin evaluar.
-- **Dividir por las partes de la figura** (cortes en los estrechamientos). Sin evaluar.
-- **Recipiente con tapa roscada** y **pareja de roscas que enrosca**, con comprobación de holgura. Sin evaluar.
-- **Patrón** lineal, en rejilla, circular y espejo. Sin evaluar.
-- **Acople de tubería** roscado o a presión. Sin evaluar.
-- **Instrucciones de armado** después de dividir, con descarga en Markdown y HTML. Sin evaluar.
+- **Dividir con cortes a mano e inclinados**, y conmutador para ver solo las piezas. Evaluado el 27-nov: usabilidad 72, funcional 84 (mínimo 85).
+- **Dividir por las partes de la figura** (cortes en los estrechamientos). Evaluado el 27-nov: usabilidad 72, funcional 80 (mínimo 85).
+- **Recipiente con tapa roscada** y **pareja de roscas que enrosca**, con comprobación de holgura. Evaluado el 27-nov: usabilidad 80, funcional 90 (mínimo 85).
+- **Patrón** lineal, en rejilla, circular y espejo. Evaluado el 27-nov: usabilidad 83, funcional 90 (mínimo 85).
+- **Acople de tubería** roscado o a presión. Evaluado el 27-nov: usabilidad 82, funcional 89 (mínimo 85).
+- **Instrucciones de armado** después de dividir, con descarga en Markdown y HTML. Evaluado el 27-nov: usabilidad 81, funcional 86 (mínimo 85).
 - **Corregido:** la barra flotante tapaba el agarre vertical al escalar un grupo; foco y encuadre en Simplificar; «Escena vacía» sobre la vista previa de un asistente; la cámara muestra todas las copias del patrón.
 - **Corregido:** con la vista inicial, arrastrar una pieza la movía en vertical en vez de sobre la cama.
 - **Tira de placas rediseñada:** el selector Imprimir / Armado / Libre y los controles de Armado viven en la tira; el visor queda libre a 1024 px.
@@ -77,9 +77,9 @@ Lo que ya puede usar cualquiera. Las guías con capturas están en `guia/`.
 - **Litofanías** planas y cilíndricas, y **cortadores** desde una imagen. [Generadores](guia/generadores.md)
 - **Moldes** de una pieza, de dos mitades, caja madre y núcleo con cavidad. [Generadores](guia/generadores.md)
 - **Roscas ISO M3 a M64** con paso y holgura según la norma: perno, tuerca y agujero roscado. [Generadores](guia/generadores.md)
-- **Pareja de roscas que enrosca:** en el diálogo de roscas, perno y tuerca (o agujero y perno) de una vez, con la holgura comprobada. *Sin evaluar.*
-- **Recipiente con tapa roscada** (Insertar › Asistentes): frasco y tapa con rosca gruesa imprimible sin soportes, holgura ajustable y aviso de si enrosca. *Sin evaluar.* [Recipiente con tapa roscada](guia/tapa-roscada.md)
-- **Acople de tubería** (Insertar › Asistentes): macho y hembra para unir tubos, roscado o a presión, con el paso interior libre y aviso de si encaja. *Sin evaluar.* [Acople de tubería](guia/acople-de-tuberia.md)
+- **Pareja de roscas que enrosca:** en el diálogo de roscas, perno y tuerca (o agujero y perno) de una vez, con la holgura comprobada. Evaluado el 27-nov: usabilidad 80, funcional 90 (mínimo 85).
+- **Recipiente con tapa roscada** (Insertar › Asistentes): frasco y tapa con rosca gruesa imprimible sin soportes, holgura ajustable y aviso de si enrosca. Evaluado el 27-nov: usabilidad 80, funcional 90 (mínimo 85). [Recipiente con tapa roscada](guia/tapa-roscada.md)
+- **Acople de tubería** (Insertar › Asistentes): macho y hembra para unir tubos, roscado o a presión, con el paso interior libre y aviso de si encaja. Evaluado el 27-nov: usabilidad 82, funcional 89 (mínimo 85). [Acople de tubería](guia/acople-de-tuberia.md)
 - **Asistentes** (Insertar › Asistentes): caja con tapa, llavero y placa de enchufe, con formulario, vista previa en el visor y «Editar con el asistente» para reabrir una pieza. [Asistentes](guia/asistentes.md)
 - **Alojamiento de imán** (Insertar): un clic sobre una cara deja el hueco para un imán redondo, cuadrado o rectangular, con holgura y preajustes propios. [Alojamiento de imán](guia/alojamiento-de-iman.md)
 - **Torreta para tornillo** (Insertar): un poste con agujero para tornillo directo o inserto roscado. [Torreta para tornillo](guia/torreta-para-tornillo.md)
@@ -94,15 +94,15 @@ Lo que ya puede usar cualquiera. Las guías con capturas están en `guia/`.
 - **Simplificar:** reduce triángulos sin pérdida, por tolerancia o por cantidad, con vista previa, informe y deshacer. Si el resultado estropearía la pieza, no lo aplica sin tu confirmación.
 - **Reparar malla:** el inspector dice si la malla está cerrada, muestra los bordes abiertos y un botón la repara. [Importar y reparar](guia/importar-y-reparar.md)
 - **Alinear y distribuir** objetos en la cama.
-- **Patrón** (Acciones › Posición › Patrón…): repite una pieza en fila, rejilla o alrededor de un eje, o la refleja, con vista previa. *Sin evaluar.* [Patrón](guia/patrones.md)
+- **Patrón** (Acciones › Posición › Patrón…): repite una pieza en fila, rejilla o alrededor de un eje, o la refleja, con vista previa. Evaluado el 27-nov: usabilidad 83, funcional 90 (mínimo 85). [Patrón](guia/patrones.md)
 - **Segmentación estructural:** detecta, colorea y extrae partes de un modelo.
 
 ### Dividir para imprimir y uniones
 
 - **Dividir para imprimir:** parte un modelo más grande que la cama en piezas con nombre (A1, B1…), uniones, marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza. [Dividir para imprimir](guia/dividir-para-imprimir.md)
-- **Cortes a mano e inclinados:** pones los planos donde quieras, los inclinas hasta 45° y puedes ver solo las piezas. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
-- **Cortes por las partes de la figura:** los planos van a los estrechamientos (cuello, cintura) en vez de la rejilla pareja. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
-- **Instrucciones de armado:** pasos en orden, con la unión de cada uno y la lista de materiales; se descargan en Markdown o HTML. *Sin evaluar.* [Dividir para imprimir](guia/dividir-para-imprimir.md)
+- **Cortes a mano e inclinados:** pones los planos donde quieras, los inclinas hasta 45° y puedes ver solo las piezas. Evaluado el 27-nov: usabilidad 72, funcional 84 (mínimo 85). [Dividir para imprimir](guia/dividir-para-imprimir.md)
+- **Cortes por las partes de la figura:** los planos van a los estrechamientos (cuello, cintura) en vez de la rejilla pareja. Evaluado el 27-nov: usabilidad 72, funcional 80 (mínimo 85). [Dividir para imprimir](guia/dividir-para-imprimir.md)
+- **Instrucciones de armado:** pasos en orden, con la unión de cada uno y la lista de materiales; se descargan en Markdown o HTML. Evaluado el 27-nov: usabilidad 81, funcional 86 (mínimo 85). [Dividir para imprimir](guia/dividir-para-imprimir.md)
 - **Corte por plano con conectores** (espiga, pasador, cola de milano), con holgura configurable. Al conservar una sola mitad, eliges dónde dejarla. [Cortar y ahuecar](guia/cortar-y-ahuecar.md)
 - **Uniones con imanes enfrentados** para una figura desmontable.
 - **Tamaño de conector automático** según la sección del corte, y un resumen que dice cuántas uniones quedan firmes, regulares, débiles o para pegar.
