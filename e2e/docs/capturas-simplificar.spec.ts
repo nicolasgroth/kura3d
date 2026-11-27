@@ -66,6 +66,10 @@ test('simplificar: resultado destructivo bloqueado', async ({ page }) => {
   // Desde la tanda de la noche del 26-nov se aplica la versión segura sola, con aviso y «Aplicar de todos modos».
   await expect(page.getByTestId('simplify-safe-applied')).toBeVisible({ timeout: 60_000 });
   await expect.poll(() => page.evaluate(() => (window as any).__s.getState().busyOperation), { timeout: 30_000 }).toBeNull();
+  // Enter en el campo solo hace la vista previa: «Simplificar» aplica la versión segura y deja «Aplicar de todos modos».
+  await page.getByTestId('simplify-run').click();
+  await expect(page.getByTestId('simplify-apply-anyway')).toBeVisible({ timeout: 60_000 });
+  await expect.poll(() => page.evaluate(() => (window as any).__s.getState().busyOperation), { timeout: 30_000 }).toBeNull();
   await sinAvisos(page);
   await page.getByTestId('simplify-apply-anyway').scrollIntoViewIfNeeded();
   await page.mouse.move(700, 120);

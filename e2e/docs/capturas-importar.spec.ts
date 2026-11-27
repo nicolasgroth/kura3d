@@ -38,7 +38,8 @@ test('importar-y-reparar', async ({ page }) => {
   await page.screenshot({ path: 'docs/guia/img/importar-y-reparar-03-malla-abierta.png' });
   await sinAvisos(page);
   await page.getByRole('button', { name: /Reparar malla/ }).first().click();
-  await expect(page.getByText(/Malla reparada/).first()).toBeVisible({ timeout: 20_000 });
+  // Un solo mensaje a la vista: tras «Malla reparada» llega la nota del agujero grande y el resumen queda en el histórico.
+  await expect(page.locator('.kura-toast', { hasText: /Malla reparada|Se cerró 1 agujero/ })).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(600);
   await page.mouse.move(720, 890);
   await page.screenshot({ path: 'docs/guia/img/importar-y-reparar-04-reparada.png' });

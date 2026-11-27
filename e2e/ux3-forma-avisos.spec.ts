@@ -37,11 +37,14 @@ test('emergente único: caduca solo a los 6 s, pausa con el cursor, errores pers
   // Al quitar el cursor se va solo.
   await page.mouse.move(5, 5);
   await expect(toasts).toHaveCount(0, { timeout: 12000 });
-  // Los errores permanecen hasta cerrarlos; uno informativo posterior lo reemplaza a la vista pero no lo borra.
+  // Los errores permanecen hasta cerrarlos; uno informativo posterior va directo al histórico sin quitarlo de la vista.
   await page.evaluate(() => (window as any).__s.getState().addToast('Algo falló', 'error'));
   await page.waitForTimeout(7000);
   await expect(page.getByText('Algo falló')).toBeVisible();
   await page.evaluate(() => (window as any).__s.getState().addToast('Otro dato', 'info'));
-  await expect(page.getByText('Algo falló')).toHaveCount(0);
+  await expect(toasts).toHaveCount(1);
+  await expect(toasts).toContainText('Algo falló');
+  await expect(page.getByText('Otro dato', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: '1 error' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /mensajes informativos$/ })).toBeVisible();
 });

@@ -27,6 +27,7 @@ Guías paso a paso, pensadas para quien imprime en 3D y no programa. Cada una ti
 | [Paso de cable](paso-de-cable.md) | Agujero pasante redondo u ovalado con chaflán; el largo se mide solo para atravesar la pared |
 | [Patrón](patrones.md) | Repetir una pieza en fila, rejilla o círculo, o reflejarla con copia, con vista previa y un solo paso de deshacer |
 | [Placas](placas.md) | Repartir piezas en varias camas: crear placas, repartir solas, vistas Imprimir / Armado / Libre, una cama por placa y ver cuál se pasa |
+| [Mensajes](mensajes.md) | Un solo mensaje a la vista; iconos de errores, advertencias e información con su histórico y sus botones |
 | [Exportar](exportar.md) | STL, 3MF con grupos y colores, selección o escena |
 | [Guardar y recuperar](guardar-y-recuperar.md) | Proyecto `.kura`, datos del proyecto (descripción, notas, autor) y borrador de recuperación |
 

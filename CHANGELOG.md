@@ -10,6 +10,10 @@ El proyecto sigue versionamiento pre-1.0 (`0.x.y`) durante su maduración hasta 
 
 ## [Sin publicar]
 
+- **Centro de mensajes.** Ya no se apilan avisos sobre el visor: hay un solo mensaje a la vista y los demás quedan en el histórico. Junto al rótulo de la cama aparecen iconos de errores, advertencias e información con su contador; cada uno abre el histórico de la sesión, con quitar uno a uno y «Vaciar». Los informativos se guardan solos a los 6 s; errores y advertencias esperan; un mensaje con un botón que todavía sirve no caduca ni lo quita un informativo. Un informativo tampoco quita de la vista a un error o una advertencia; al crear o abrir un proyecto el histórico parte vacío; dos piezas con el mismo aviso conservan cada una el suyo. Reemplaza al botón «Avisos» de la barra de estado. Guía nueva: «Mensajes».
+- **Corregido:** a 1024 px con los dos paneles abiertos, el pie del visor se partía en tres filas y el Consejo tapaba el tamaño de la selección.
+- **Corregido:** un archivo con codificación inválida hacía fallar el build de producción en la integración continua.
+- **Corregido:** los avisos tapaban botones de Ajustes a 1280×720; al volver de una acción con Esc el foco regresa a «Acciones».
 - **Acople de tubería** (Insertar › Asistentes): pareja macho y hembra para unir tubos o mangueras impresos, roscada o a presión, con el paso interior libre y un aviso que dice si enrosca o encaja y con cuánta holgura.
 - **Instrucciones de armado:** después de dividir, «Instrucciones de armado» lista los pasos en orden (qué pieza va con cuál, por qué cara, con qué unión y hacia dónde entra) y los materiales; al pulsar un paso se resaltan sus piezas. Se descargan como Markdown o como HTML para imprimir.
 - **Patrón:** la cámara se aleja sola para que entren todas las copias de la vista previa.
