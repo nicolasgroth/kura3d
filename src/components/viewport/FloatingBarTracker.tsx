@@ -66,11 +66,11 @@ function fixedObstacles(wrap: HTMLElement | null): Obstacle[] {
   const origin = wrap.getBoundingClientRect();
   const out: Obstacle[] = [];
   for (const sel of OBSTACLE_SELECTORS) {
-    const node = document.querySelector(sel);
-    if (!node) continue;
-    const r = node.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0) continue;
-    out.push({ left: r.left - origin.left, right: r.right - origin.left, top: r.top - origin.top, bottom: r.bottom - origin.top });
+    for (const node of document.querySelectorAll(sel)) {
+      const r = node.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      out.push({ left: r.left - origin.left, right: r.right - origin.left, top: r.top - origin.top, bottom: r.bottom - origin.top });
+    }
   }
   return out;
 }
@@ -157,8 +157,8 @@ export const FloatingBarTracker = () => {
     const pm = camera.projectionMatrix.elements;
     // Zonas fijas que la barra evita: el rótulo de la vista (Armado / Libre) con su deslizador «Separación».
     const obstacles = fixedObstacles(el.parentElement);
-    // El manipulador cuenta como parte de la selecci�n: sus agarres (eje Y, planos) sobresalen de la caja del objeto
-    // y la barra debe quedar fuera de ellos. Su huella entra en la clave de �sin cambios� como una zona m�s.
+    // El manipulador cuenta como parte de la selección: sus agarres (eje Y, planos) sobresalen de la caja del objeto
+    // y la barra debe quedar fuera de ellos. Su huella entra en la clave de «sin cambios» como una zona más.
     if (!gizmoRef.current?.parent) gizmoRef.current = findGizmoRoot(scene);
     const gizmoZone = gizmoScreenObstacle(gizmoRef.current, camera, { width: size.width, height: size.height });
     const gizmoKey = gizmoZone ? `|g${Math.round(gizmoZone.left)},${Math.round(gizmoZone.top)},${Math.round(gizmoZone.right)},${Math.round(gizmoZone.bottom)}` : '';

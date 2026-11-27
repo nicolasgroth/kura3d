@@ -50,7 +50,7 @@ Siguientes funcionalidades, en este orden:
 5. Tiradores en las caras para estirar una pieza.
 6. Mejoras de pintura (cursor de área, borde duro o suave, relleno con tolerancia).
 
-Pendientes chicos anotados: deslizadores en las formas básicas del inspector, conmutador «Ver lo pedido» en Simplificar, alojamientos rectangulares dibujados como círculos en la guía de armado, «Ajustar a la impresora» y «Cama de Placa N» todavía como diálogos.
+Pendientes chicos anotados: cinco recorridos antiguos siguen en rojo tras la corrida completa del 27-nov (menú del fondo en «Sin cama», avisos sobre la barra flotante con el manipulador de escala, dos tolerancias de colocación del imán y el foco al volver de una acción con Esc); deslizadores en las formas básicas del inspector, conmutador «Ver lo pedido» en Simplificar, alojamientos rectangulares dibujados como círculos en la guía de armado, «Ajustar a la impresora» y «Cama de Placa N» todavía como diálogos.
 
 Sin fecha: instalador con actualización desde la app y firma de instaladores; revisar qué código de OrcaSlicer conviene aprovechar ahora que la licencia lo permite.
 

@@ -19,7 +19,7 @@ const esquemaDe = async (page: Page, e: 'light' | 'dark') => {
   await page.evaluate((x) => (window as any).__s.getState().setColorScheme(x), e);
 };
 
-test('Simplificar: Enter en «Triángulos finales» ejecuta; 500.000 con separador y editable; título claro', async ({ page }) => {
+test('Simplificar: Enter en «Triángulos finales» lanza la vista previa y el botón aplica; 500.000 con separador y editable; título claro', async ({ page }) => {
   test.setTimeout(150_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   const errs = await abrir(page);
@@ -61,7 +61,11 @@ test('Simplificar: Enter en «Triángulos finales» ejecuta; 500.000 con separad
   await page.keyboard.press('Control+a');
   await page.keyboard.type(String(Math.max(40, Math.floor(t0 / 2))));
   console.log('QA25E valor antes de Enter:', JSON.stringify(await campo.inputValue()));
+  // Enter lanza la vista previa (no modifica la pieza); aplicar exige el botón.
   await page.keyboard.press('Enter');
+  await expect(page.getByTestId('simplify-preview-computing')).toHaveCount(0, { timeout: 60_000 });
+  expect(await pasos(page)).toBe(p0);
+  await page.getByTestId('simplify-run').click();
   await expect.poll(() => pasos(page), { timeout: 60_000 }).toBe(p0 + 1);
   await libre(page);
   const t1 = await tris();

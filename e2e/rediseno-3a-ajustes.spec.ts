@@ -111,7 +111,7 @@ test('Agregar: menú lateral con primitivas, teclado completo y Esc devuelve el 
   await expect(menu).toBeVisible();
   const items = menu.getByRole('menuitem');
   // «Agregar» e «Insertar» comparten catálogo: las 9 primitivas y luego generadores, asistentes e inserciones.
-  const catalogo = ['Cubo', 'Cilindro', 'Disco', 'Tubo hueco', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Texto 3D', 'Importar SVG', 'Imagen → 3D', 'Rosca ISO (M3–M64)', 'Cubo de calibración 30 mm', 'Asistentes', 'Alojamiento de imán', 'Torreta para tornillo'];
+  const catalogo = ['Cubo', 'Cilindro', 'Disco', 'Tubo hueco', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Texto 3D', 'Importar SVG', 'Imagen → 3D', 'Rosca ISO (M3–M64)', 'Cubo de calibración 30 mm', 'Asistentes', 'Alojamiento de imán', 'Torreta para tornillo', 'Colgar en el muro', 'Paso de cable'];
   await expect(items).toHaveCount(catalogo.length);
   expect(await items.evaluateAll((els) => els.map((e) => (e.textContent || '').trim()))).toEqual(catalogo);
   for (const n of ['Cubo', 'Cilindro', 'Disco', 'Tubo hueco', 'Esfera', 'Cono', 'Toroide', 'Prisma', 'Texto 3D']) {

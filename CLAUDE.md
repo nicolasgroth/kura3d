@@ -64,6 +64,7 @@ Reglas:
 7. Al cerrar una versión: evaluación global de todas las funcionalidades activas y, opcionalmente, **evaluador externo** con Codex CLI (`codex exec`, solo lectura) como tercera opinión de otro proveedor.
 8. Cada cierre actualiza `docs/FUNCIONALIDADES.md`, `docs/EVALUACIONES.md` y `CHANGELOG.md`.
 9. **Documentación pública al día.** Es un flujo propio, no un extra: toda funcionalidad que llega a `main` y cambia lo que ve o hace el usuario actualiza en el mismo lote su guía en `docs/guia/` (paso a paso con capturas o animación generadas desde la app web, nunca armadas a mano), el `README.md` (su sección «Qué funciona hoy» lista lo ya implementado y habilitado, y «En camino» lo que falta: se actualiza en cada cierre, nunca se deja para después), y `docs/MCP.md` si cambia una herramienta `kura_*` o las reglas de uso del servidor MCP. Una captura que ya no coincide con la interfaz es un fallo de QA.
+10. **Pruebas afectadas.** Todo encargo que modifica algo incluye un paso explícito: buscar en `e2e/` y en `__tests__` los textos, selectores, conteos y comportamientos que el cambio toca (aunque sean de otra área), correr esos recorridos y actualizarlos en el mismo lote. El informe del dev lista qué pruebas revisó y cuáles actualizó. Antes de escribir código, el encargo ya trae el análisis de impacto: qué otras funciones comparten los componentes, textos o comportamientos tocados.
 
 Uso de tokens: da a cada agente solo las rutas y el criterio de su lote; pídele informes breves; no lances evaluadores para cambios mecánicos.
 

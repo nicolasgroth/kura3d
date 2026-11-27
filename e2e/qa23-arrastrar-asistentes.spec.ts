@@ -69,13 +69,16 @@ test.describe('A. arrastrar para mover', () => {
     ['frontal', [0, 40, 500] as P3],
     ['casi rasante', [0, 22, 500] as P3],
   ] as const) {
-    test(`vista ${nombre}: el objeto elevado no sale disparado ni cambia de altura`, async ({ page }) => {
+    // Desde arriba se arrastra sobre la cama (la altura no cambia); casi de frente, sobre el plano
+    // vertical que mira a la cámara (la profundidad no cambia). Ver dragPlaneChoice.ts.
+    test(`vista ${nombre}: el objeto elevado no sale disparado ni se va del plano de arrastre`, async ({ page }) => {
       const [a] = await escena(page, [[0, 80, 0]]);
       await sel(page, [a]);
       await vista(page, cam);
       await arrastrar(page, [0, 80, 0], 60, 30);
       const p = await pos(page, a);
-      expect(p[1]).toBeCloseTo(80, 5);
+      if (nombre === 'cenital') expect(p[1]).toBeCloseTo(80, 5);
+      else expect(p[2]).toBeCloseTo(0, 5);
       expect(Math.hypot(p[0], p[2])).toBeLessThan(2100);
       expect(Number.isFinite(p[0]) && Number.isFinite(p[2])).toBe(true);
     });
@@ -218,7 +221,7 @@ test.describe('B. asistentes', () => {
     await abrirAsistentes(page);
     await expect(page.locator('#kura-asis-first')).toBeFocused();
     for (const n of ['Caja con tapa', 'Llavero con texto', 'Placa de enchufe']) await expect(page.getByRole('button', { name: new RegExp(n) })).toBeVisible();
-    await page.getByRole('button', { name: /Llavero/ }).click();
+    await page.getByRole('button', { name: /Llavero con texto/ }).click();
     await expect(page.getByLabel('Texto', { exact: false }).first()).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('list', { name: 'Asistentes disponibles' })).toBeVisible();
@@ -328,7 +331,7 @@ test.describe('B. asistentes', () => {
     await abrir(page);
     await abrirAsistentes(page);
     await page.getByRole('button', { name: /Caja con tapa/ }).click();
-    const ancho = page.getByLabel('Ancho interior');
+    const ancho = page.getByRole('spinbutton', { name: 'Ancho interior', exact: true });
     await ancho.fill('5');
     await ancho.press('Tab');
     await page.screenshot({ path: `${SHOTS}/fuera-de-rango.png` });
@@ -373,7 +376,7 @@ test.describe('B. asistentes', () => {
     await abrir(page);
     await abrirAsistentes(page);
     await page.getByRole('button', { name: /Caja con tapa/ }).click();
-    await page.getByLabel('Alto interior').press('Enter');
+    await page.getByRole('spinbutton', { name: 'Alto interior', exact: true }).press('Enter');
     await esperarCreado(page, 2);
     await expect(page.getByRole('list', { name: 'Asistentes disponibles' })).toHaveCount(0);
     const toasts = await page.locator('[role="status"], [role="alert"]').allInnerTexts();

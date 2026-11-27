@@ -31,9 +31,10 @@ test('clic al centro de la fila selecciona y no oculta; botones a la derecha al 
   // Sin cursor encima (ratón lejos), los botones de una fila no seleccionada no ocupan la fila; la fila
   // seleccionada los muestra (ux7); al pasar el cursor quedan al borde derecho.
   await page.mouse.move(700, 450);
-  const ojo = cubo.getByRole('button', { name: /Ocultar/ });
+  // Con el panel angosto (hasta 340 px) la fila deja solo «…», que reúne ojo, candado y demás (sceneTreeBadge.css).
+  const ojo = cubo.getByRole('button', { name: /Más acciones/ });
   await expect(ojo).toBeVisible();
-  await expect(fila(page, /Esfera/).getByRole('button', { name: /Ocultar/ })).toBeHidden();
+  await expect(fila(page, /Esfera/).getByRole('button', { name: /Más acciones/ })).toBeHidden();
   await cubo.hover({ position: { x: 20, y: caja.height / 2 } });
   await expect(ojo).toBeVisible();
   const ojoCaja = (await ojo.boundingBox())!;
@@ -42,6 +43,7 @@ test('clic al centro de la fila selecciona y no oculta; botones a la derecha al 
 
   // Ocultar con el botón: el ojo tachado queda visible aunque el cursor se vaya.
   await ojo.click();
+  await page.getByRole('menuitem', { name: /^Ocultar/ }).first().click();
   await page.mouse.move(700, 450);
   await expect(cubo.getByRole('button', { name: /Mostrar/ })).toBeVisible();
   expect(errs).toEqual([]);

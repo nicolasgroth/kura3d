@@ -17,7 +17,7 @@ test('F4 repite la última acción hecha con la tecla L', async ({ page }) => {
   // Una acción repetible anterior (Agrupar) que no debe repetirse.
   await page.evaluate((ids) => (window as any).__s.getState().groupObjects(ids), [b, c]);
   await page.evaluate((id) => (window as any).__s.getState().setSelection([id]), a);
-  await page.locator('canvas').first().hover();
+  await page.locator('canvas').first().hover({ position: { x: 30, y: 330 }, force: true });
   await page.keyboard.press('l');
   await expect.poll(() => page.evaluate((id) => (window as any).__s.getState().objects.find((o: any) => o.id === id).position[1], a)).toBeLessThan(15);
 

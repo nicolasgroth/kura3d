@@ -33,7 +33,7 @@ async function escanear(page: Page, coma: boolean): Promise<string[]> {
       const txt = n.textContent ?? '';
       const p = n.parentElement;
       if (!p || !visible(p) || p.closest('.kura-brand') || /^(SCRIPT|STYLE|CODE)$/.test(p.tagName)) continue;
-      if (malo.test(sinMiles(txt)) && !/v?\d+\.\d+\.\d+/.test(txt)) fallos.push(`texto: ${txt.trim().slice(0, 80)}`);
+      if (malo.test(sinMiles(txt)) && !/v?\d+\.\d+\.\d+/.test(txt) && !/A?GPL-\d\.\d/.test(txt)) fallos.push(`texto: ${txt.trim().slice(0, 80)}`);
     }
     return fallos;
   }, coma);

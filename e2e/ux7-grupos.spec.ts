@@ -51,7 +51,7 @@ test('Ctrl+G deja seleccionado el grupo nuevo y F2 lo renombra', async ({ page }
 
   // Botones de fila visibles con la fila seleccionada (sin pasar el cursor).
   await page.mouse.move(800, 500);
-  const ojo = page.getByRole('treeitem', { name: /Mi grupo/ }).getByRole('button', { name: /Ocultar/ });
+  const ojo = page.getByRole('treeitem', { name: /Mi grupo/ }).getByRole('button', { name: /Más acciones/ });
   await expect(ojo).toBeVisible();
 });
 
@@ -67,7 +67,7 @@ test('botones de fila con el foco de teclado, tooltip en nombres largos y ayuda 
   await page.mouse.move(800, 500);
   // La fila activa (foco de teclado, no seleccionada) muestra sus botones.
   const activa = page.locator('.kura-tree-row.is-active-option');
-  await expect(activa.getByRole('button', { name: /Ocultar/ })).toBeVisible();
+  await expect(activa.getByRole('button', { name: /Más acciones/ })).toBeVisible();
 
   const larga = page.getByRole('treeitem', { name: /Soporte de pared/ });
   await expect(larga).toHaveAttribute('title', 'Soporte de pared con un nombre larguísimo para probar el recorte');

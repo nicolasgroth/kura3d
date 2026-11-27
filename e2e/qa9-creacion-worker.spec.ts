@@ -28,12 +28,12 @@ test('SVG: válido crea sólido; roto, vacío y texto plano dan error y no crean
   const bad = ['<svg xmlns="http://www.w3.org/2000/svg"><path d="M5 5 L', '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>', 'esto no es un svg'];
   await agregarForma(page, 'Importar SVG');
   for (const code of bad) {
-    await page.locator('textarea:visible').fill(code);
+    await page.locator('#svg-code').fill(code);
     await page.getByRole('button', { name: 'Extruir SVG en 3D' }).click();
     await expect(page.getByText(/No se encontraron contornos vectoriales válidos/).first()).toBeVisible();
     expect(await objs(page)).toBe('0');
   }
-  await page.locator('textarea:visible').fill(ok);
+  await page.locator('#svg-code').fill(ok);
   await page.getByRole('button', { name: 'Extruir SVG en 3D' }).click();
   await expect(page.getByText(/Importado correctamente/).first()).toBeVisible();
   expect(await objs(page)).toBe('1');
