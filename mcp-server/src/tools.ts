@@ -39,6 +39,7 @@ import { registerPatternTools } from './patternTools.js';
 import { isMirrorPlaneRequest, MIRROR_PLANES } from '../../src/core/bus/patternSchema';
 import { MIRROR_BASES, PATTERN_RANGES } from '../../src/core/scene/patterns';
 import { registerProjectInfoTools } from './projectInfoTools.js';
+import { registerAssemblyInstructionsTools } from './assemblyInstructionsTools.js';
 import type { ObjectRole } from '../../src/types/kura';
 import { HeadlessUnsupportedError, type KuraHeadlessEngine } from './headlessEngine.js';
 import { HeadlessCommandError } from './headlessSupport.js';
@@ -365,6 +366,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerPlateTools(server, ctx);
   registerPatternTools(server, ctx);
   registerProjectInfoTools(server, ctx);
+  registerAssemblyInstructionsTools(server, ctx);
 
   // 3. Transformación de objetos
   server.registerTool(

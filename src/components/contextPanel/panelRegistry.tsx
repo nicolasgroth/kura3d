@@ -22,6 +22,7 @@ import { PrintCheckPanel } from '../inspector/PrintCheckPanel';
 import { StructureDetectionPanel } from '../inspector/StructureDetectionPanel';
 import { TexturePanel } from '../inspector/TexturePanel';
 import { OrientPanel } from '../orient/OrientPanel';
+import { AssemblyInstructionsPanel } from '../split/AssemblyInstructionsPanel';
 
 export interface PanelContentEntry {
   /** Título del panel (y del anuncio). */
@@ -43,6 +44,7 @@ const PANEL_CONTENT = new Map<ActionId, PanelContentEntry>([
   ['detect', { title: 'panel.title.detect', render: (p) => <StructureDetectionPanel {...p} /> }],
   ['fitCheck', { title: 'fitCheck.ui.title', renderScene: () => <FitCheckPanel /> }],
   ['orient', { title: 'orient.ui.title', render: (p) => <OrientPanel primary={p.primary} /> }],
+  ['assemblyInstructions', { title: 'rediseno.action.assemblyInstructions', renderScene: () => <AssemblyInstructionsPanel /> }],
 ]);
 
 /** Registra (o reemplaza) el contenido de una acción del panel. */

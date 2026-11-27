@@ -217,7 +217,7 @@ describe('TRUST-02 · solo lectura como fuente única', () => {
       expect(tool.annotations?.readOnlyHint, tool.name).toBe(COMMAND_ACCESS[command] === 'read');
     }
     expect([...READ_COMMANDS].sort()).toEqual(
-      ['analyze_printability', 'capture_viewport', 'check_fit', 'check_screw_fit', 'describe_recipe', 'detect_structures', 'diagnose_mesh', 'get_project_info', 'get_scene_state', 'list_plates', 'list_recipes', 'measure_capacity', 'measure_distance', 'measure_object', 'orient_for_print', 'validate_assembly', 'validate_recipe'].sort()
+      ['analyze_printability', 'capture_viewport', 'check_fit', 'check_screw_fit', 'describe_recipe', 'detect_structures', 'diagnose_mesh', 'get_assembly_instructions', 'get_project_info', 'get_scene_state', 'list_plates', 'list_recipes', 'measure_capacity', 'measure_distance', 'measure_object', 'orient_for_print', 'validate_assembly', 'validate_recipe'].sort()
     );
   });
 

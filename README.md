@@ -92,6 +92,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 
 **Preparación para imprimir**
 - **Dividir para imprimir:** parte un modelo más grande que tu cama en piezas con código (A1, B1…), uniones (conectores o, en revisión, imanes enfrentados para que quede desmontable), marcas de pareja, animación de armado, «Preparar para imprimir» por placas y exportación de un archivo por pieza. Los cortes pueden ir en rejilla, **por las partes de la figura** (en los estrechamientos) o **a mano**, con planos inclinados (los dos últimos, en revisión).
+- **Instrucciones de armado** (en revisión): tras dividir, pasos numerados desde la pieza base (qué pieza va con cuál, por qué cara, con cuántas espigas, imanes o pegamento y en qué dirección entra), avisos de unión débil o pieza que hay que sostener y lista de materiales; se leen en la app (cada paso resalta sus piezas) y se descargan en Markdown o HTML imprimible ([guía](docs/guia/dividir-para-imprimir.md#instrucciones-de-armado)).
 - **Firmeza de las uniones** (en revisión): antes de dividir, el resumen dice cuántas uniones quedan firmes, regulares, débiles o para pegar, con el motivo y cómo corregirlas.
 - Pintura 3D por caras para impresión multicolor, con separación por color.
 - Detección de estructuras para separar un modelo en partes.

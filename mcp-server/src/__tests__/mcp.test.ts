@@ -66,6 +66,7 @@ const EXPECTED_TOOLS = [
   'kura_extract_structure',
   'kura_mirror_object',
   'kura_validate_assembly',
+  'kura_get_assembly_instructions',
   'kura_measure_distance',
   'kura_measure_object',
   'kura_measure_capacity',

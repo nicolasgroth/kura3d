@@ -21,6 +21,7 @@ import {
   Group,
   Layers,
   LayoutGrid,
+  ListOrdered,
   Copy,
   Merge,
   Minimize2,
@@ -86,6 +87,7 @@ const ICONS: Record<ActionId, React.ReactNode> = {
   detect: <ScanSearch size={14} aria-hidden="true" />,
   fitCheck: <Ruler size={14} aria-hidden="true" />,
   orient: <Rotate3d size={14} aria-hidden="true" />,
+  assemblyInstructions: <ListOrdered size={14} aria-hidden="true" />,
 };
 
 const GROUP_ICONS: Record<ActionGroupId, React.ReactNode> = {

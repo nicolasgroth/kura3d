@@ -52,6 +52,7 @@ export type KuraCommandName =
   | 'extract_structure'
   | 'mirror_object'
   | 'validate_assembly'
+  | 'get_assembly_instructions'
   | 'measure_distance'
   | 'measure_object'
   | 'measure_capacity'

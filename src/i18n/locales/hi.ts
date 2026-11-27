@@ -66,6 +66,7 @@ import { ACERCA_HI } from './acercaDe';
 import { IMAN_HI } from './iman';
 import { IMAN_UI3_HI } from './imanUi3';
 import { TORRETA_HI } from './torreta';
+import { INSTRUCCIONES_ARMADO_HI } from './instruccionesArmado';
 import { BORDES_HI } from './bordesPrimitivas';
 import { UX7_HI } from './ux7';
 import { UX8_HI } from './ux8';
@@ -157,6 +158,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   ...REDISENO3B_HI,
   ...UX8_MENU_HI,
   ...TORRETA_HI,
+  ...INSTRUCCIONES_ARMADO_HI,
   // Marca y shell principal
   'app.tagline': 'नेटिव और वेब 3D मॉडलिंग व 3D प्रिंटिंग स्टूडियो',
   'app.docTitle': 'Kurra Studio v0.5.0 — नेटिव 3D मॉडलिंग स्टूडियो',

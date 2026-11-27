@@ -41,6 +41,7 @@ import { mirrorWithPlane, PATTERN_HANDLERS } from './patternCommands';
 import { isMirrorPlaneRequest } from '../core/bus/patternSchema';
 import { PLATE_HANDLERS } from './plateCommands';
 import { PROJECT_INFO_HANDLERS } from './projectInfoCommands';
+import { ASSEMBLY_INSTRUCTIONS_HANDLERS } from './assemblyInstructionsCommands';
 import { userWarning } from '../core/scene/userEngineMessages';
 import { localizeEngineWarning, type EngineWarning } from '../engine/engineErrors';
 import type { OperationErrorTracker } from './operationErrors';
@@ -122,6 +123,7 @@ const HANDLERS: Record<KuraCommandRequest['command'], Handler> = {
   ...PATTERN_HANDLERS,
   ...PLATE_HANDLERS,
   ...PROJECT_INFO_HANDLERS,
+  ...ASSEMBLY_INSTRUCTIONS_HANDLERS,
   get_scene_state: (_p, { get }) => {
     const s = get();
     return {
