@@ -66,6 +66,7 @@ const EXPECTED_TOOLS = [
   'kura_extract_structure',
   'kura_mirror_object',
   'kura_validate_assembly',
+  'kura_get_assembly_instructions',
   'kura_measure_distance',
   'kura_measure_object',
   'kura_measure_capacity',
@@ -142,8 +143,8 @@ describe('Kurra Studio MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(73);
-    expect(toolNames).toHaveLength(73);
+    expect(EXPECTED_TOOLS).toHaveLength(74);
+    expect(toolNames).toHaveLength(74);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }

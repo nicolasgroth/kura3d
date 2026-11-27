@@ -27,6 +27,8 @@ export const COMMAND_ACCESS: Readonly<Record<KuraCommandName, CommandAccess>> = 
   detect_structures: 'read',
   // Revalida el armado de un grupo dividido; no cambia la escena.
   validate_assembly: 'read',
+  // Instrucciones de armado de un grupo dividido: se calculan, no cambian la escena.
+  get_assembly_instructions: 'read',
   measure_distance: 'read',
   measure_object: 'read',
   measure_capacity: 'read',
@@ -169,6 +171,7 @@ export const TOOL_COMMANDS: Readonly<Record<string, KuraCommandName>> = Object.f
   kura_extract_structure: 'extract_structure',
   kura_mirror_object: 'mirror_object',
   kura_validate_assembly: 'validate_assembly',
+  kura_get_assembly_instructions: 'get_assembly_instructions',
   kura_measure_distance: 'measure_distance',
   kura_measure_object: 'measure_object',
   kura_measure_capacity: 'measure_capacity',
