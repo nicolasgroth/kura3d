@@ -16,12 +16,16 @@ export interface ScrewFitSummary {
   readonly status: 'ok' | 'tight' | 'interference';
   readonly minClearanceMm: number;
   readonly maxInterferenceMm3: number;
+  /** `press`: acople a presión («Encaja…» en vez de «Enrosca…»). */
+  readonly joint?: 'thread' | 'press';
 }
 
 export function screwFitText(fit: ScrewFitSummary, lang: LanguageCode): string {
+  const press = fit.joint === 'press';
   if (fit.status === 'interference') {
-    return t(lang, 'screwFit.interference', { mm3: formatLocaleNumber(lang, fit.maxInterferenceMm3, { maxFrac: fit.maxInterferenceMm3 < 10 ? 2 : 0 }) });
+    return t(lang, press ? 'pressFit.interference' : 'screwFit.interference', { mm3: formatLocaleNumber(lang, fit.maxInterferenceMm3, { maxFrac: fit.maxInterferenceMm3 < 10 ? 2 : 0 }) });
   }
   const mm = formatLocaleNumber(lang, fit.minClearanceMm, { maxFrac: 2, minFrac: 2 });
+  if (press) return t(lang, fit.status === 'ok' ? 'pressFit.ok' : 'pressFit.tight', { mm });
   return t(lang, fit.status === 'ok' ? 'screwFit.ok' : 'screwFit.tight', { mm });
 }

@@ -1,6 +1,6 @@
 # Asistentes
 
-Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kurra Studio arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen cuatro: **Caja con tapa**, **Recipiente con tapa roscada** (ver [su guía](tapa-roscada.md)), **Llavero con texto** y **Placa de enchufe**. Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
+Un asistente crea una pieza completa a partir de unas pocas preguntas: eliges las medidas, y Kurra Studio arma la pieza (o varias, como una caja y su tapa) lista para revisar, dividir o exportar. Hoy vienen cinco: **Caja con tapa**, **Recipiente con tapa roscada** (ver [su guía](tapa-roscada.md)), **Llavero con texto**, **Placa de enchufe** y **Acople de tubería** (ver [su guía](acople-de-tuberia.md)). Cada uno está hecho con una *receta*, un archivo de datos (sin código) que describe sus preguntas, sus reglas y los pasos para construir la pieza.
 
 Los asistentes solo preparan la geometría. No laminan ni generan G-code.
 

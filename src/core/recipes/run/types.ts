@@ -41,6 +41,11 @@ export interface RecipeScrewFitCheck {
   readonly fits: boolean;
   readonly minClearanceMm: number;
   readonly maxInterferenceMm3: number;
+  /** Solo en el acople de tubería: unión medida (`press` mide el encaje con la hembra a tope, sin hélice). */
+  readonly joint?: 'thread' | 'press';
+  /** Solo en el acople de tubería: pared más delgada (mm) y si queda bajo el mínimo imprimible (1,2 mm). */
+  readonly minWallMm?: number;
+  readonly thinWall?: boolean;
 }
 
 /** Aviso o resultado de un chequeo de la receta (`checks`). */

@@ -78,6 +78,7 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 - **Roscas ISO M3–M64** con paso y holgura automáticos según la norma.
 - **Asistentes**, con galería de miniaturas y deslizadores (en revisión): crea una caja con tapa, un llavero o una placa de enchufe respondiendo unas preguntas, con reglas en vivo y un solo paso de deshacer (**Insertar › Asistentes**).
 - **Recipiente con tapa roscada** (en revisión): asistente de frasco con tapa que enrosca, rosca de paso grueso imprimible sin soportes, holgura radial y axial ajustable y comprobación de que la tapa enrosca (holgura mínima medida) antes de crear; el diálogo de roscas ISO crea además la pareja perno + tuerca o agujero + perno ([guía](docs/guia/tapa-roscada.md)).
+- **Acople de tubería** (en revisión): asistente de pareja macho/hembra para unir dos tubos o mangueras impresos, roscada (perfil imprimible sin soportes) o a presión (espiga cónica con tope y boca ensanchada), con el paso interior libre de punta a punta, tramo liso para pegar y comprobación de la holgura medida antes de crear ([guía](docs/guia/acople-de-tuberia.md)).
 - **Alojamiento de imán**: un clic sobre una cara deja el hueco para un imán redondo, cuadrado o rectangular, con holgura, opción oculta y aviso de pared mínima; tus medidas se guardan como preajustes (**Insertar › Alojamiento de imán**).
 - **Torreta para tornillo** (en revisión): un clic sobre una cara deja un poste con agujero para tornillo directo o inserto roscado (tabla de medidas M2 a M5 por verificar), con avisos de pared, agujero que atraviesa y choques; al aplicar las restas queda una sola pieza (**Insertar › Torreta para tornillo**).
 - **Colocar agregados sin ratón** (en revisión): imán, torreta, colgar en el muro y paso de cable traen un bloque con selector de cara y un botón que los deja en el centro de esa cara; en caras curvas siguen la superficie. La torreta suma tornillo directo M5 (por verificar).
@@ -117,13 +118,13 @@ Pantalla mínima: **1024 px** de ancho; bajo eso la app avisa y sigue funcionand
 **Inteligencia artificial (opcional)**
 - Asistente local sin conexión que entiende órdenes simples en español e inglés.
 - Proveedores externos: Anthropic, OpenAI, Gemini, Ollama y **cualquier API compatible con OpenAI** (DeepSeek, Qwen, OpenRouter, LM Studio). En escritorio las claves se guardan en el llavero del sistema.
-- **Servidor MCP** con 73 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
+- **Servidor MCP** con 74 herramientas `kura_*` para que un agente externo opere el mismo motor de la app, con token obligatorio, modo solo lectura y carpeta de exportación acotada. Guía de uso, seguridad y ejemplos en [docs/MCP.md](docs/MCP.md); detalle técnico en [mcp-server/README.md](mcp-server/README.md).
 
 ## Guías
 
 Paso a paso con capturas, para quien imprime y no programa: [**índice de guías**](docs/guia/README.md).
 
-[Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Objetos de referencia](docs/guia/objetos-de-referencia.md) · [Comprobar encaje](docs/guia/comprobar-encaje.md) · [Orientar para imprimir](docs/guia/orientar-para-imprimir.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Asistentes](docs/guia/asistentes.md) · [Patrón](docs/guia/patrones.md) · [Recipiente con tapa roscada](docs/guia/tapa-roscada.md) · [Alojamiento de imán](docs/guia/alojamiento-de-iman.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md) · [Ajustar a la impresora](docs/guia/ajustar-a-la-impresora.md) · [Torreta para tornillo](docs/guia/torreta-para-tornillo.md) · [Colgar en el muro](docs/guia/colgar-en-el-muro.md) · [Paso de cable](docs/guia/paso-de-cable.md) · [Placas](docs/guia/placas.md)
+[Primeros pasos](docs/guia/primeros-pasos.md) · [Importar y reparar](docs/guia/importar-y-reparar.md) · [Dividir para imprimir](docs/guia/dividir-para-imprimir.md) · [Cortar y ahuecar](docs/guia/cortar-y-ahuecar.md) · [Sólidos negativos y restas](docs/guia/solidos-negativos-y-restas.md) · [Objetos de referencia](docs/guia/objetos-de-referencia.md) · [Comprobar encaje](docs/guia/comprobar-encaje.md) · [Orientar para imprimir](docs/guia/orientar-para-imprimir.md) · [Grupos y escena](docs/guia/grupos-y-escena.md) · [Medir](docs/guia/medir.md) · [Colores y pintura](docs/guia/colores-y-pintura.md) · [Generadores](docs/guia/generadores.md) · [Asistentes](docs/guia/asistentes.md) · [Patrón](docs/guia/patrones.md) · [Recipiente con tapa roscada](docs/guia/tapa-roscada.md) · [Acople de tubería](docs/guia/acople-de-tuberia.md) · [Alojamiento de imán](docs/guia/alojamiento-de-iman.md) · [Exportar](docs/guia/exportar.md) · [Guardar y recuperar](docs/guia/guardar-y-recuperar.md) · [Servidor MCP](docs/MCP.md) · [Ajustar a la impresora](docs/guia/ajustar-a-la-impresora.md) · [Torreta para tornillo](docs/guia/torreta-para-tornillo.md) · [Colgar en el muro](docs/guia/colgar-en-el-muro.md) · [Paso de cable](docs/guia/paso-de-cable.md) · [Placas](docs/guia/placas.md)
 
 ## En camino
 
@@ -133,11 +134,11 @@ Lo que falta, en el orden del [roadmap](docs/ROADMAP.md). El detalle está en el
 1. Cerrar la revisión de lo marcado «(en revisión)» arriba.
 2. Deslizadores también en las formas básicas del inspector.
 3. **3MF con bandejas** verificado en Bambu Studio, y **multimaterial** en los cinco laminadores.
-4. Encajes: acoples de tubería, clips y biblioteca de conectores.
+4. Encajes: clips y biblioteca de conectores.
 
 **Más adelante**
 - Dividir: uniones vinculadas, cortes que sigan una curva.
-- Encajes: acoples de tubería, clips y biblioteca de conectores.
+- Encajes: clips y biblioteca de conectores.
 - Edición: instancias, tiradores en las caras, modificadores no destructivos.
 - **Estudio configurable:** paneles móviles, pestañas de proyecto, atajos editables y línea de comandos.
 - Tutorial interactivo e instrucciones de armado.

@@ -20,6 +20,7 @@ import { plainArgs } from '../args';
 import type { RecipeScrewFitCheck } from '../types';
 import type { WorkScene } from '../workScene';
 import { guarded, positionFromUser, type OpRunner } from './opSupport';
+import { couplingFitCheck, isCouplingRef } from './pipeCouplingOp';
 
 const PARTS = new WeakMap<SceneObject, { part: ScrewContainerPart; spec: ScrewContainerOptions }>();
 
@@ -37,6 +38,8 @@ export const screwContainerOp: OpRunner = async (call) => {
 /** Chequeo `screw_fit` (índice `k` en `checks`) sobre los objetos de la escena de trabajo. */
 export async function screwFitCheck(scene: WorkScene, refs: readonly string[], k: number, lang: LanguageCode): Promise<RecipeScrewFitCheck> {
   const at = joinPath(joinPath('checks', k), 'refs');
+  // El acople de tubería usa el mismo chequeo con [macho, hembra].
+  if (refs.length > 0 && isCouplingRef(scene, refs[0], joinPath(at, 0))) return couplingFitCheck(scene, refs, k, lang);
   const info = refs.map((ref, j) => {
     const objects = scene.get(ref, joinPath(at, j));
     const found = objects.length === 1 ? PARTS.get(objects[0]) : undefined;

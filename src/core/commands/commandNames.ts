@@ -42,6 +42,7 @@ export type KuraCommandName =
   | 'create_thread'
   | 'create_thread_pair'
   | 'create_screw_container'
+  | 'create_pipe_coupling'
   | 'check_screw_fit'
   | 'convex_hull'
   | 'align_objects'
