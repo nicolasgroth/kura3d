@@ -1079,3 +1079,31 @@ Mediciones funcionales que respaldan las notas altas: holgura real de la tapa 0,
 
 No se lanzaron correcciones: el autor pidió detenerse a revisar el consumo y el rumbo antes de seguir.
 
+
+## 27-nov-2026 · Tarde: reevaluación de placas y Simplificar, recorridos en rojo y centro de mensajes (sin QA todavía)
+
+**Reevaluación a ciegas de usabilidad (séptima ronda): placas 84, Simplificar 82; siguen bajo el mínimo** (Opus · 10 min · 166 k; sobre 269fce58). Sin bloqueos duros.
+
+| Funcionalidad | R6 | R7 | Confirmado | Lo que más resta |
+|---|---|---|---|---|
+| Vistas y tira de placas | 84 | 84 | Convertir, renombrar con rechazo de repetidos, mover por menú, paleta y arrastre con aviso y «Deshacer», vistas Armado y Libre | Los avisos persistentes tapan el visor y se dibujan sobre la paleta; a 1024 px la tira desborda sin indicarlo y los nombres siguen cortados («1egro.stl»); «Solo esta» deja las piezas de las otras placas flotando sin cama; Armado no reencuadra |
+| Simplificar | 72 | 82 | Abre desde menú, paleta e inspector; vista previa, aplicar, «Aplicar de todos modos» y deshacer correctos | Por tolerancia no es monótono (ocarina: 4 mm deja 9.790 triángulos y 15 mm deja 15.390); el texto de la versión segura confunde y trae una minúscula tras punto; la paleta la lista bajo «Operaciones Manifold 3D»; el título del grupo se corta al desplazar el informe |
+
+No probado por el evaluador: el aviso de malla abierta con «Reparar malla» dentro de Simplificar.
+
+**Los cinco recorridos en rojo, clasificados por el orquestador** (corridos sobre 269fce58):
+
+| Recorrido | Causa | Estado |
+|---|---|---|
+| `qa22-ajustes:458` | Defecto real: la pila de avisos tapaba cuatro botones a 1280×720 | Corregido en `feat/centro-mensajes` |
+| `rediseno-panel-contexto:65` | Defecto real, visible solo en desarrollo: con el doble montaje del modo estricto de React, `usePanelFocusReturn` perdía el control de origen | Corregido en `feat/centro-mensajes` |
+| `qa19-vista-sin-cama` | Prueba desactualizada: el punto (420, 560) cae ahora sobre la píldora de Consejo; el menú del fondo funciona | Prueba corregida en `feat/centro-mensajes` |
+| `qa24-iman:178` y `:721` | Sin causa todavía: la boca del hueco queda a 0,23 y 0,40 mm del punto de la vista previa (topes 0,15 y 0,3) | Pendiente, lote de motor |
+
+**Centro de mensajes** (`feat/centro-mensajes`, diseño del autor; Sonnet · tres vueltas, 61 + 38 + 21 min · 357 k; sin fusionar). Un solo mensaje emergente; iconos de errores, advertencias e información con contador en el pie del visor, junto a «Cama:»; panel con el histórico por tipo, quitar uno a uno y «Vaciar»; los informativos pasan solos al histórico a los 6 s; errores y advertencias esperan al usuario; los ligados a una pieza se van al borrarla o reparar su malla; histórico solo de la sesión. Reemplaza al botón «Avisos (n)» de la barra de estado.
+
+La primera entrega rompió seis recorridos que en `main` pasaban: la oferta de la importación («Convertir en placas», «Simplificar…») quedaba reemplazada por un informativo posterior o caducaba. Regla agregada por el orquestador: un mensaje con acción vigente no caduca ni lo desplaza un informativo sin acción (ese va directo al histórico); sí lo desplazan un error, una advertencia u otro mensaje con acción. Los avisos con «Deshacer» conservan los 9 s de antes del lote.
+
+Verificación del orquestador sobre 11ac59dd: `tsc` limpio, 4786 pruebas del programa y 220 del servidor MCP en verde. Recorridos: los 30 archivos que usan avisos se corrieron completos sobre la primera entrega (175 en verde, 8 en rojo; 1,4 h); tras las correcciones, el desarrollador repitió los que fallaban y los del centro de mensajes en verde. No se repitieron los 30 completos sobre el último commit. `qa23-arrastrar-asistentes:74` es inestable (falla a veces al cargar, también en `main`). `qa22-ajustes:85` tarda unos 162 s con tope de 180 s.
+
+Pendiente del lote: QA en navegador, capturas y guías, y decidir con el autor si los iconos se quedan en el pie del visor o van a la barra de estado.

@@ -8,7 +8,7 @@
 
 **Pruebas en `main`:** 4776 del programa y 220 del servidor MCP, en verde. Recorridos de navegador de lo nuevo, todos en verde: patrones 23, Dividir a mano 2, partes de la figura 1, tapa roscada 3, acople de tubería 2, instrucciones de armado 2, arrastre 15, escala de grupo 2, Simplificar 21.
 
-En desarrollo ahora mismo (27-nov): centro de mensajes (un solo mensaje emergente e iconos de errores, advertencias e información con su histórico), rama `feat/centro-mensajes`. Las seis funcionalidades de la noche del 26 se evaluaron a ciegas el 27: ninguna llega al mínimo de 85 en usabilidad y dos tampoco en funcional (las dos variantes de Dividir). No se lanzaron correcciones: el autor pidió revisar el consumo y el rumbo antes de seguir.
+Desarrollado y pendiente de QA (27-nov): centro de mensajes (un solo mensaje emergente e iconos de errores, advertencias e información con su histórico), rama `feat/centro-mensajes`, sin fusionar. Las seis funcionalidades de la noche del 26 se evaluaron a ciegas el 27: ninguna llega al mínimo de 85 en usabilidad y dos tampoco en funcional (las dos variantes de Dividir). No se lanzaron correcciones: el autor pidió revisar el consumo y el rumbo antes de seguir.
 
 Lo que entró hoy y está en `main`:
 
