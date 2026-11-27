@@ -917,6 +917,7 @@
               "hollow_object",
               "create_thread",
               "create_screw_container",
+              "create_pipe_coupling",
               "import_svg",
               "plane_cut",
               "combine_objects",

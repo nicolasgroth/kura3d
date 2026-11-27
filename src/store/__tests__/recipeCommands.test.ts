@@ -23,11 +23,11 @@ describe('bus: recetas', () => {
     expect(isReadCommand('run_recipe')).toBe(false);
   });
 
-  it('lista las cuatro incorporadas y describe una en el idioma pedido', async () => {
+  it('lista las cinco incorporadas y describe una en el idioma pedido', async () => {
     const list = await run('list_recipes', { language: 'en' });
     expect(list.ok).toBe(true);
     expect((list.result as { recipes: { id: string; title: string }[] }).recipes.map((r) => r.id))
-      .toEqual(['kura.caja-tapa', 'kura.tapa-roscada', 'kura.llavero', 'kura.placa-enchufe']);
+      .toEqual(['kura.caja-tapa', 'kura.tapa-roscada', 'kura.llavero', 'kura.placa-enchufe', 'kura.acople-tuberia']);
     const described = await run('describe_recipe', { recipeId: 'kura.caja-tapa', language: 'en' });
     const recipe = described.result as { title: string; params: { id: string; label: string; min?: number; max?: number }[] };
     expect(recipe.title).toBe('Box with lid');

@@ -27,6 +27,7 @@ import { registerMeasureTools } from './measureTools.js';
 import { registerRepairTools } from './repairTools.js';
 import { registerFitCheckTools } from './fitCheckTools.js';
 import { registerScrewFitTools } from './screwFitTools.js';
+import { registerPipeCouplingTools } from './pipeCouplingTools.js';
 import { registerRoleTools, roleSchema } from './roleTools.js';
 import { registerRecipeTools } from './recipeTools.js';
 import { registerSmoothOrientTools } from './smoothOrientTools.js';
@@ -354,6 +355,7 @@ export function registerKuraTools(mcpServer: McpServer, ctx: KuraToolContext): v
   registerRepairTools(server, ctx);
   registerFitCheckTools(server, ctx);
   registerScrewFitTools(server, ctx);
+  registerPipeCouplingTools(server, ctx);
   registerRoleTools(server, ctx);
   registerRecipeTools(server, ctx);
   registerSmoothOrientTools(server, ctx);

@@ -74,4 +74,4 @@ El diálogo de roscas (**Insertar › Rosca ISO (M3–M64)**) también crea la *
 - **La vista previa dice *pausada***: pulsa **Actualizar**. Con recipientes muy grandes la comprobación tarda más.
 - **La tapa quedó apretada al imprimir**: sube la holgura radial 0,05–0,1 mm y vuelve a crear con **Editar con el asistente**.
 
-Anterior: [Asistentes](asistentes.md) · Siguiente: [Alojamiento de imán](alojamiento-de-iman.md) · [Índice](README.md)
+Anterior: [Asistentes](asistentes.md) · Siguiente: [Acople de tubería](acople-de-tuberia.md) · [Índice](README.md)

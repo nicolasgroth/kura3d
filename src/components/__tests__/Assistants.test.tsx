@@ -50,7 +50,7 @@ describe('Asistentes: lista', () => {
     act(() => openAssistants());
     const list = screen.getByRole('list', { name: t('es', 'asis.listLabel') });
     const items = within(list).getAllByRole('button');
-    expect(items).toHaveLength(4);
+    expect(items).toHaveLength(5);
     const caja = within(list).getByRole('button', { name: /Caja con tapa/ });
     expect(caja.textContent).toContain('Caja de medidas interiores');
     expect(caja.textContent).not.toMatch(/variante/);

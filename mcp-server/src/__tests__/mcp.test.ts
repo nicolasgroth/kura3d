@@ -71,6 +71,7 @@ const EXPECTED_TOOLS = [
   'kura_measure_capacity',
   'kura_check_fit',
   'kura_create_screw_container',
+  'kura_create_pipe_coupling',
   'kura_create_thread_pair',
   'kura_check_screw_fit',
   'kura_smooth_mesh',
@@ -142,8 +143,8 @@ describe('Kurra Studio MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(73);
-    expect(toolNames).toHaveLength(73);
+    expect(EXPECTED_TOOLS).toHaveLength(74);
+    expect(toolNames).toHaveLength(74);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }
