@@ -6,7 +6,7 @@
  * @license AGPL-3.0-or-later
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { AlertTriangle, Boxes } from 'lucide-react';
 import '../../styles/splitUx.css';
 import '../../styles/plateHud.css';
@@ -22,9 +22,12 @@ import { BedHiddenChip } from './BedHiddenChip';
 import { ViewModeBedChip } from '../viewmode/ViewModeBedChip';
 import { FitOutOfBoundsButton } from '../fitToBed/FitOutOfBoundsButton';
 import { ToastCenter } from '../ToastCenter';
+import { useHudBottomHeight } from './useHudBottomHeight';
 
 /** HUD inferior en una sola línea. */
 export const ViewportHudBottom: React.FC = () => {
+  const hudRef = useRef<HTMLDivElement>(null);
+  useHudBottomHeight(hudRef);
   const language = useKuraStore((s) => s.language);
   const unitSystem = useKuraStore((s) => s.unitSystem);
   const objects = useKuraStore((s) => s.objects);
@@ -71,7 +74,7 @@ export const ViewportHudBottom: React.FC = () => {
   }, [selectedObj, selectedIds, objects, unitSystem, language]);
 
   return (
-    <div className="kura-hud-bottom">
+    <div className="kura-hud-bottom" ref={hudRef}>
       <div className="kura-hud-card kura-hud-pill-nowrap">
         <span className="kura-field-label">
           {t(language, 'viewport.dimensionsPrefix')}:

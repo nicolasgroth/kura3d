@@ -10,7 +10,9 @@
 
 .kura-hud-bottom-end {
   display: inline-flex;
-  flex-wrap: wrap;
+  /* Los iconos se quedan junto a «Cama:»: la tarjeta de la cama cede espacio (el nombre se abrevia) en vez de
+     empujarlos a otra fila. */
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
@@ -179,4 +181,30 @@
 /* Con el panel abierto el pie del visor queda por encima de la píldora de Consejo. */
 .kura-hud-bottom:has(.kura-toast-center-panel) {
   z-index: 60;
+}
+
+.kura-hud-bottom-end > .kura-bed-card {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.kura-hud-bottom-end > .kura-toast-center {
+  flex: 0 0 auto;
+}
+
+/* Con poco ancho (dos paneles abiertos a 1024 px) el nombre de la impresora cede su sitio: quedan las medidas
+   completas y los iconos; el nombre sigue en el `title` de la insignia. */
+.kura-hud-bottom {
+  container-type: inline-size;
+}
+
+@container (max-width: 470px) {
+  .kura-hud-bottom-end > .kura-bed-card .kura-bed-name {
+    display: none;
+  }
+}
+
+/* La píldora de Consejo se apoya sobre la altura real del pie (publicada por `useHudBottomHeight`). */
+.kura-viewport-wrap .kura-protip-wrap {
+  bottom: calc(12px + var(--kura-hud-bottom-h, 56px) + 6px);
 }

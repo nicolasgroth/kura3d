@@ -1,7 +1,8 @@
 /**
  * @file e2e/ux7-avisos.spec.ts
- * @description Avisos con acción que no se pierden: «Escalar ×100 / Otra unidad…» pasa solo al histórico del centro de
- * mensajes (icono de información) a los 6 s y su acción sigue operable desde el panel; tras aplicarla, el botón queda
+ * @description Avisos con acción que no se pierden: «Escalar ×100 / Otra unidad…» sigue a la vista pasados 6 s (un
+ * mensaje con acción vigente no caduca), el usuario lo cierra con «Cerrar» y pasa al histórico del centro de
+ * mensajes (icono de información), donde su acción sigue operable; tras aplicarla, el botón queda
  * deshabilitado con el motivo; si el objeto ya no existe, también. «Deshacer» en el histórico vale solo mientras no
  * haya otro cambio. El panel queda dentro de la ventana, con el texto ajustado, a 1440 y 1024 px.
  * Ejecuta con `KURA_URL=… npx playwright test e2e/ux7-avisos.spec.ts`.
@@ -27,16 +28,20 @@ async function abrirHistorial(page: Page) {
   await expect(historial(page)).toBeVisible();
 }
 
-test('el aviso de unidades pasa solo al histórico y su acción sigue operable hasta aplicarse', async ({ page }) => {
+test('el aviso de unidades no caduca solo; al cerrarlo pasa al histórico y su acción sigue operable hasta aplicarse', async ({ page }) => {
   test.setTimeout(90000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await abrir(page);
   await importarStl(page, 'diminuto.stl', stlCubes([[0, 0, 0]], 0.9));
   const aviso = page.locator('.kura-toast', { hasText: 'mide 0,9 mm' }).first();
   await expect(aviso).toBeVisible({ timeout: 30000 });
-  // Pasa solo al histórico a los 6 s (pausa con el cursor encima: se aparta primero).
+  // Con acción vigente no caduca: pasados 6 s (con el cursor apartado) sigue a la vista.
   await page.mouse.move(5, 5);
-  await expect(aviso).toBeHidden({ timeout: 12000 });
+  await page.waitForTimeout(7000);
+  await expect(aviso).toBeVisible();
+  // El usuario lo cierra y queda en el histórico.
+  await aviso.getByRole('button', { name: 'Cerrar' }).click();
+  await expect(aviso).toBeHidden();
   await abrirHistorial(page);
   const entrada = historial(page).locator('li', { hasText: 'mide 0,9 mm' });
   await expect(entrada.getByRole('button', { name: 'Escalar ×100' })).toBeEnabled();

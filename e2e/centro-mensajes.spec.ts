@@ -30,7 +30,7 @@ for (const [w, h] of [[1024, 768], [1440, 900]] as const) {
         // Sin mensajes no hay iconos.
         await expect(page.getByTestId('toast-center')).toHaveCount(0);
 
-        // Cinco avisos seguidos: solo el último a la vista, sin «N avisos más» ni «Cerrar todos».
+        // Cinco avisos seguidos: solo uno a la vista (el último informativo no desplaza al error que espera), sin «N avisos más» ni «Cerrar todos».
         await page.evaluate(() => {
           const s = (window as any).__s.getState();
           s.addToast('Pieza duplicada', 'info');
@@ -40,7 +40,7 @@ for (const [w, h] of [[1024, 768], [1440, 900]] as const) {
           s.addToast('Último informativo', 'info');
         });
         await expect(page.locator('.kura-toast')).toHaveCount(1);
-        await expect(page.locator('.kura-toast')).toContainText('Último informativo');
+        await expect(page.locator('.kura-toast')).toContainText('No se pudo importar el archivo');
         await expect(page.getByRole('button', { name: /más|Cerrar todos|Mostrar menos/ })).toHaveCount(0);
 
         // Tres iconos con nombre accesible en texto; el color no es la única señal.
@@ -165,4 +165,24 @@ test('un mensaje con acción vigente no caduca ni lo desplaza un informativo; un
   await expect(emergente).toContainText('Algo falló');
   await icono(page, '3 mensajes informativos').click();
   await expect(page.getByRole('dialog', { name: 'Información' }).locator('li', { hasText: 'Oferta con acción' }).getByRole('button', { name: 'Hacer algo' })).toBeEnabled();
+});
+
+test('un informativo o de éxito sin acción no desplaza a un error o advertencia a la vista: va al histórico', async ({ page }) => {
+  await abrir(page);
+  await page.evaluate(() => {
+    const s = (window as any).__s.getState();
+    s.addToast('Algo falló', 'error');
+    s.addToast('Dato posterior', 'info');
+    s.addToast('Éxito posterior', 'success');
+  });
+  const emergente = page.locator('.kura-toast');
+  await expect(emergente).toHaveCount(1);
+  await expect(emergente).toContainText('Algo falló');
+  await expect(icono(page, '2 mensajes informativos')).toBeVisible();
+  // Una advertencia sí desplaza al error; un informativo posterior tampoco desplaza a la advertencia.
+  await toast(page, 'Cuidado', 'warning');
+  await expect(emergente).toContainText('Cuidado');
+  await toast(page, 'Otro dato', 'info');
+  await expect(emergente).toContainText('Cuidado');
+  await expect(icono(page, '3 mensajes informativos')).toBeVisible();
 });
