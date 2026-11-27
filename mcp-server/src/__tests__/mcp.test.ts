@@ -144,8 +144,8 @@ describe('Kurra Studio MCP Server', () => {
     const toolList = await client.listTools();
     const toolNames = toolList.tools.map((t) => t.name);
 
-    expect(EXPECTED_TOOLS).toHaveLength(74);
-    expect(toolNames).toHaveLength(74);
+    expect(EXPECTED_TOOLS).toHaveLength(75);
+    expect(toolNames).toHaveLength(75);
     for (const expected of EXPECTED_TOOLS) {
       expect(toolNames).toContain(expected);
     }

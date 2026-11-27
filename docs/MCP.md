@@ -62,7 +62,7 @@ Ejemplos de configuración para Claude Desktop, Codex CLI y Antigravity están e
 La tabla se genera desde el servidor real (`npm run docs:mcp`), así que siempre coincide con lo que recibe el agente. Las descripciones están en inglés porque son las que el cliente MCP entrega al modelo. Los parámetros marcados con `*` son obligatorios; el esquema completo de cada herramienta lo entrega el servidor al cliente.
 
 <!-- TABLA-HERRAMIENTAS:INICIO -->
-<!-- Generada por `npm run docs:mcp` desde el servidor real (74 herramientas). No la edites a mano. -->
+<!-- Generada por `npm run docs:mcp` desde el servidor real (75 herramientas). No la edites a mano. -->
 
 | Herramienta | Acceso | Qué hace | Parámetros principales (`*` = obligatorio) |
 | :--- | :--- | :--- | :--- |
