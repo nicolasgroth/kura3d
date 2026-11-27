@@ -142,3 +142,27 @@ test('la acción de un mensaje sigue operable desde el panel y los mensajes de u
   await page.evaluate((i) => (window as any).__s.getState().deleteObjects([i]), id);
   await expect(icono(page, '1 advertencia')).toBeVisible();
 });
+
+test('un mensaje con acción vigente no caduca ni lo desplaza un informativo; un error sí lo desplaza', async ({ page }) => {
+  test.setTimeout(60000);
+  await abrir(page);
+  await page.evaluate(() => {
+    const s = (window as any).__s.getState();
+    s.addToast('Oferta con acción', 'info', { label: 'Hacer algo', run: () => undefined, applicable: () => true });
+    s.addToast('Informativo posterior', 'info');
+    s.addToast('Éxito posterior', 'success');
+  });
+  const emergente = page.locator('.kura-toast');
+  await expect(emergente).toHaveCount(1);
+  await expect(emergente).toContainText('Oferta con acción');
+  await expect(icono(page, '3 mensajes informativos')).toBeVisible();
+  // No caduca a los 6 s.
+  await page.mouse.move(5, 5);
+  await page.waitForTimeout(7500);
+  await expect(emergente).toContainText('Oferta con acción');
+  // Un error sí la desplaza; la oferta queda en el histórico con su acción operable.
+  await toast(page, 'Algo falló', 'error');
+  await expect(emergente).toContainText('Algo falló');
+  await icono(page, '3 mensajes informativos').click();
+  await expect(page.getByRole('dialog', { name: 'Información' }).locator('li', { hasText: 'Oferta con acción' }).getByRole('button', { name: 'Hacer algo' })).toBeEnabled();
+});

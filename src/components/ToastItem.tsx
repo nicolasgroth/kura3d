@@ -1,7 +1,7 @@
 /**
  * @file src/components/ToastItem.tsx
  * @description El emergente del centro de mensajes: informativos y de éxito pasan solos al histórico a los 6 s, con el
- * temporizador en pausa mientras el cursor o el foco están sobre el aviso; errores y advertencias esperan a que el
+ * temporizador en pausa mientras el cursor o el foco están sobre el aviso; errores, advertencias y mensajes con acción vigente esperan a que el
  * usuario los cierre. Todo emergente se cierra con el botón o con Escape estando enfocado, y no se pierde: queda en el
  * histórico de su tipo (iconos de la barra de estado).
  * @author Nicolás Groth <ngroth@gmail.com>
@@ -9,12 +9,13 @@
  * @license AGPL-3.0-or-later
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { t } from '../i18n';
 import type { LanguageCode } from '../types/kura';
 import type { ToastAction, ToastMessage } from '../store/storeTypes';
 import { useKuraStore } from '../store/useKuraStore';
+import { indexObjects, toastIsSticky } from '../store/toastActionState';
 import { ToastActionButton } from './ToastActionButton';
 
 /** Tiempo a la vista de un informativo o de éxito antes de pasar solo al histórico. */
@@ -33,10 +34,17 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
   const [paused, setPaused] = useState(false);
   const remaining = useRef(TOAST_AUTO_MS);
   const isError = toast.kind === 'error';
-  // Se suscribe al historial de deshacer para reevaluar la validez de «Deshacer» (ver `actionLive`).
-  useKuraStore((s) => s.past);
+  const objects = useKuraStore((s) => s.objects);
+  // `past` entra para reevaluar la validez de «Deshacer» (ver `actionLive`).
+  const past = useKuraStore((s) => s.past);
   const runToastAction = useKuraStore((s) => s.runToastAction);
-  const sticky = staysUntilClosed(toast);
+  // Un mensaje con una acción vigente tampoco caduca solo: espera a que se use, se cierre o la acción deje de valer.
+  const actionSticky = useMemo(
+    () => toastIsSticky([toast.action, toast.secondaryAction].filter((a): a is ToastAction => Boolean(a)), indexObjects(objects)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [toast.action, toast.secondaryAction, objects, past],
+  );
+  const sticky = staysUntilClosed(toast) || actionSticky;
 
   // Una acción que ya no es aplicable (su paso se deshizo por otra vía o el historial avanzó) deja de ofrecerse:
   // «Deshacer» nunca debe revertir otra cosa.

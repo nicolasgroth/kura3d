@@ -72,6 +72,38 @@ describe('centro de mensajes: store', () => {
     expect(store().toastHistory).toHaveLength(0);
   });
 
+  describe('emergente con acción vigente', () => {
+    const accion = (live = true) => ({ label: 'Convertir en placas', run: () => undefined, applicable: () => live });
+
+    it('un informativo o de éxito sin acción no lo desplaza: va directo al histórico', () => {
+      store().addToast('oferta', 'info', accion());
+      expect(store().addToast('otro', 'info')).not.toBeNull();
+      store().addToast('listo', 'success');
+      expect(store().toasts.map((x) => x.text)).toEqual(['oferta']);
+      expect(store().toastHistory.map((x) => x.text)).toEqual(['oferta', 'otro', 'listo']);
+    });
+
+    it('un error, una advertencia u otro mensaje con acción sí lo desplazan', () => {
+      store().addToast('oferta', 'info', accion());
+      store().addToast('falló', 'error');
+      expect(store().toasts.map((x) => x.text)).toEqual(['falló']);
+      store().addToast('oferta 2', 'info', accion());
+      store().addToast('aviso', 'warning');
+      expect(store().toasts.map((x) => x.text)).toEqual(['aviso']);
+      store().addToast('oferta 3', 'info', accion());
+      store().addToast('oferta 4', 'info', accion());
+      expect(store().toasts.map((x) => x.text)).toEqual(['oferta 4']);
+    });
+
+    it('si la acción ya no vale, un informativo sí lo reemplaza', () => {
+      let live = true;
+      store().addToast('oferta', 'info', { label: 'x', run: () => undefined, applicable: () => live });
+      live = false;
+      store().addToast('otro', 'info');
+      expect(store().toasts.map((x) => x.text)).toEqual(['otro']);
+    });
+  });
+
   it('no guarda el histórico en el almacenamiento local', () => {
     store().addToast('secreto de sesión', 'error');
     const dump = JSON.stringify({ ...globalThis.localStorage });

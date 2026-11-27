@@ -33,7 +33,7 @@ import type { StoreContext } from '../storeContext';
 import { takeSecondaryAction } from '../toastEnhancers';
 import { findBedProfile, loadUserBedProfiles } from '../bedProfiles';
 import type { KuraStoreState, ToastAction, ToastMessage } from '../storeTypes';
-import { indexObjects, snapshotWatch } from '../toastActionState';
+import { indexObjects, snapshotWatch, toastIsSticky } from '../toastActionState';
 import { TOAST_HISTORY_MAX, toastBucket } from '../toastCenter';
 import { projectPanelPinOf } from '../panelContext';
 import { actionHasPanel } from '../actionsCatalog';
@@ -238,7 +238,12 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       if (options?.historyOnly) return null;
       const key = noticeKey({ text, kind, action });
       if (key && dismissedNoticeKeys.has(key)) return null;
-      // Un solo emergente a la vista: el más reciente. El anterior ya está en el histórico.
+      // Un solo emergente a la vista: el más reciente; el anterior ya está en el histórico. Excepción: uno con una acción
+      // vigente (Convertir en placas, Simplificar…) no lo desplaza un informativo o de éxito sin acción: ese va directo al
+      // histórico. Sí lo desplazan errores, advertencias y otros mensajes con acción.
+      const shown = get().toasts[0];
+      const incomingPlain = kind !== 'error' && kind !== 'warning' && actions.length === 0;
+      if (shown && incomingPlain && toastIsSticky([shown.action, shown.secondaryAction].filter((a): a is ToastAction => Boolean(a)), indexObjects(get().objects))) return id;
       set({ toasts: [{ id, text, kind, ...(action ? { action } : {}), ...(secondaryAction ? { secondaryAction } : {}), ...(objectIds ? { objectIds } : {}) }] });
       // El cierre automático de los informativos lo temporiza `ToastItem` (con pausa al pasar el cursor o el foco);
       // errores y advertencias esperan a que el usuario los cierre.
