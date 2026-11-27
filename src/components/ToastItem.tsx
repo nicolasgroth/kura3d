@@ -20,6 +20,8 @@ import { ToastActionButton } from './ToastActionButton';
 
 /** Tiempo a la vista de un informativo o de éxito antes de pasar solo al histórico. */
 export const TOAST_AUTO_MS = 6000;
+/** Un mensaje con una acción transitoria («Deshacer») conserva más tiempo para usarla. */
+export const TOAST_ACTION_MS = 9000;
 
 interface Props {
   toast: ToastMessage;
@@ -32,7 +34,7 @@ const staysUntilClosed = (toast: ToastMessage) => toast.kind === 'error' || toas
 
 export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss }) => {
   const [paused, setPaused] = useState(false);
-  const remaining = useRef(TOAST_AUTO_MS);
+  const remaining = useRef(toast.action || toast.secondaryAction ? TOAST_ACTION_MS : TOAST_AUTO_MS);
   const isError = toast.kind === 'error';
   const objects = useKuraStore((s) => s.objects);
   // `past` entra para reevaluar la validez de «Deshacer» (ver `actionLive`).

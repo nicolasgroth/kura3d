@@ -135,7 +135,7 @@ describe('panel Repartir en placas: lógica', () => {
     expect(await applyPlateArrange()).toBe(true);
     expect(store().layout).toBe('print');
     expect(store().toasts.some((x) => x.text.includes(t('es', 'plates.arrangeDlg.toast.switched')))).toBe(false);
-    const list = store().toasts.find((x) => x.text.startsWith('No cupieron'));
+    const list = store().toastHistory.find((x) => x.text.startsWith('No cupieron'));
     expect(list?.text).toContain(store().objects.find((o) => o.id === big.id)!.name);
     expect(list?.text).toContain('es más grande que la cama');
   });
