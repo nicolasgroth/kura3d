@@ -30,7 +30,7 @@ En el resumen del objeto (panel derecho), la sección *Geometría y métricas* m
 
 1. Si la malla tiene agujeros, al importar aparece un aviso con el número de **bordes libres** y el botón **Reparar malla**.
 2. Pulsa **Reparar malla**. También está en el menú del objeto (clic derecho › **Malla › Reparar malla**), en la paleta `Ctrl+K` y en **Acciones › Malla › Reparar malla**.
-3. Kurra Studio cierra los agujeros, quita caras duplicadas y corrige las normales. El aviso resume lo hecho («Malla reparada: 1 agujero cerrado · triángulos: 10 → 12») con un botón **Ver detalles**. Si hubo que cerrar un agujero grande, el mensaje que queda a la vista es esa nota, y el resumen pasa al histórico de información (ver [Mensajes](mensajes.md)).
+3. Kurra Studio cierra los agujeros, quita caras duplicadas y corrige las normales. El aviso resume lo hecho («Malla reparada: 1 agujero cerrado · triángulos: 10 → 12») con un botón **Ver detalles**. Si hubo que cerrar un agujero grande, queda a la vista una advertencia que te pide revisar la forma, y el resumen pasa al histórico de información (ver [Mensajes](mensajes.md)).
 
 ![Un cubo al que le falta una cara: aviso de malla abierta con el botón Reparar malla](img/importar-y-reparar-03-malla-abierta.png)
 

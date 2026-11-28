@@ -11,8 +11,8 @@ Cuando pasa algo, aparece **un mensaje** abajo, sobre el visor. Nunca hay más d
 Cuánto dura a la vista depende de qué es:
 
 - **Información** (por ejemplo «Placa 2 creada»): se guarda sola en el histórico a los 6 segundos. Si dejas el cursor encima, espera.
-- **Advertencias y errores:** se quedan hasta que los cierras con **Cerrar**. Un mensaje informativo que llegue mientras tanto va directo al histórico.
-- **Mensajes con un botón** (como **Reparar malla**, **Convertir en placas** o **Simplificar…**): no se cierran solos mientras el botón sirva, y un mensaje informativo que llegue después no los quita de la vista: ese va directo al histórico. Sí los reemplaza un error, una advertencia u otro mensaje con botón.
+- **Advertencias y errores:** se quedan hasta que los cierras con **Cerrar**. Un mensaje informativo que llegue mientras tanto va directo al histórico. Todo aviso que te pide revisar o hacer algo («repárala antes de imprimir», «revisa que la forma sea la esperada», «la pieza quedó junto a la cama») es una advertencia.
+- **Mensajes con un botón** (como **Reparar malla**, **Convertir en placas** o **Simplificar…**): no se cierran solos mientras el botón sirva, y un mensaje informativo que llegue después no los quita de la vista: ese va directo al histórico. Sí los reemplaza un error, una advertencia con botón u otro mensaje con botón. Una advertencia sin botón no los reemplaza: va directo al histórico y enciende el icono de advertencias.
 - **Mensajes con Deshacer:** quedan 9 segundos a la vista.
 
 Cerrar un mensaje no lo borra: pasa al histórico de su tipo.
@@ -28,8 +28,8 @@ Abajo a la derecha del visor, junto al rótulo **Cama:**, aparecen hasta tres ic
 1. Pulsa uno de los iconos (o llega a él con **Tab** y pulsa **Enter**).
 2. Se abre un panel con los mensajes de ese tipo, del más nuevo al más antiguo.
 3. Si un mensaje traía un botón y todavía sirve, lo tienes ahí mismo: puedes **Reparar malla** o **Deshacer** desde el panel.
-4. **Quitar este mensaje** (el botón de cada fila) saca uno; **Vaciar** saca todos los de ese tipo.
-5. **Esc** cierra el panel y el foco vuelve al icono.
+4. El botón de quitar de cada fila (**Quitar este mensaje**) saca uno; **Vaciar** saca todos los de ese tipo.
+5. **Esc** cierra el panel y el foco vuelve al icono. Si encima hay un diálogo o la paleta de comandos, **Esc** cierra primero eso.
 
 ![El panel de Advertencias con el mensaje de la malla abierta, su botón Reparar malla y Vaciar](img/mensajes-03-panel.png)
 

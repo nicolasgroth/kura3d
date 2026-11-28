@@ -1142,3 +1142,29 @@ Efecto del emergente único que el autor debe decidir: al reparar una malla con 
 Los avisos sobre el visor ya no aparecen entre los descuentos de placas. No probado por el evaluador: mover una pieza arrastrándola entre camas, camas distintas por placa y «Repartir», lector de pantalla real.
 
 Placas lleva ocho rondas bajo el mínimo: según la regla 6 se consulta al autor antes de otra vuelta.
+
+## 28-nov-2026 · Madrugada: usabilidad del centro de mensajes y de placas
+
+Lote `fix/usabilidad-mensajes-placas`, pedido por el autor para cerrar la noche. Tres encargos de interfaz en fila, una QA conjunta y dos evaluaciones a ciegas.
+
+| Paso | Agente | Modelo | Duración | Tokens | Resultado |
+|---|---|---|---|---|---|
+| Centro de mensajes: foco, clasificación, ancho, nombres, modal, Esc, veto, pulido | `dev-ui` | Sonnet | 49 min | 226 k | 8 objetivos; llegó a su tope |
+| Placas: nombres al convertir, foco, fichas, «Deshacer» al borrar, encuadre, paleta | `dev-ui` | Sonnet | 46 min | 204 k | 6 objetivos; se cortó por un token vencido y se reanudó en el mismo agente |
+| QA conjunta | `qa` | Sonnet | 24 min | 171 k | Rechazado: 2 mayores y 2 menores; `e2e/qa26-mensajes-placas.spec.ts` |
+| Evaluación a ciegas de las dos | `eval-usabilidad` | Opus | 10 min | 177 k | Centro de mensajes 87, placas 84 |
+| Placas a 1024 px y oferta de convertir | `dev-ui` | Sonnet | 30 min | 174 k | 3 objetivos |
+| Evaluación a ciegas de placas | `eval-usabilidad` | Opus | 7 min | 151 k | Placas 83 |
+
+Fallos de QA, corregidos por el orquestador y confirmados con las pruebas de QA (42 de 42): un nombre de archivo largo sin espacios sacaba «Reparar malla» y «Cerrar» fuera del emergente; un error nacido con un diálogo abierto quedaba detrás del velo a 1024 y 1280 px; Enter sobre «Convertir en placas» entraba al grupo en vez de pulsar el botón. Queda abierto el menor: tras Ctrl+Z de «Convertir en placas» el foco cae a `body`.
+
+Decisiones tomadas por el orquestador sin consulta previa (el autor pidió seguir sin frenar; puede revertirlas): pasan a advertencia los avisos del motor que piden actuar (`src/store/engineWarningKind.ts`: orientación mezclada, agujeros grandes cerrados, agujeros sin cerrar, soldadura implícita, ahuecado que se cruza, tres de dividir por color) y «No había espacio libre en la cama»; el emergente crece hasta 480 px; una advertencia sin botón no desplaza a un emergente con acción vigente no transitoria; las placas creadas al convertir se numeran seguidas y no heredan el número del laminador; «Repartir» y «Convertir grupos en placas» pasan a la categoría «Placas» de la paleta.
+
+| Funcionalidad | R8 | R9 | R10 | Lo que más resta |
+|---|---|---|---|---|
+| Centro de mensajes | 84 | 87 | — | Un informativo que va directo al histórico por haber una advertencia a la vista no da señal visible; «…imprime una placa a la vez» sigue como información; la advertencia de orientación mezclada no trae «Reparar malla»; el panel no tiene botón de cierre visible; «Vaciar» sin deshacer |
+| Vistas y tira de placas | 80 | 84 | 83 | R9: tira con muchas placas a 1024 px, rótulo de cama cortado y oferta de convertir tapada (los tres corregidos antes de R10). R10: con el estado «Fuera de volumen» la ficha activa corta su nombre a «Pla…» a 1366 px; el aviso «No cabe en la cama…» queda como columna palabra por palabra a 1024 px, tapa la barra de selección y sigue en Armado y Libre; «Solo esta» no encuadra la placa activa tras borrar ni al cambiar de ficha; en fichas compactas el estado es solo icono y su `title` no lo nombra; Tab hace dos paradas por placa; Armado y Libre se ven iguales |
+
+Sin bloqueos duros. El centro de mensajes pasa el mínimo. Placas no: cada evaluador nuevo confirma corregido lo anterior y encuentra defectos distintos (84, 80, 84, 83 en cuatro rondas), así que la nota no converge con vueltas de corrección sueltas. Se fusiona lo corregido porque es mejora neta y se consulta al autor (regla 6).
+
+Verificación del orquestador sobre el código final: `tsc` y build limpios, 4802 pruebas del programa y 220 del servidor MCP en verde. Recorridos afectados de avisos y placas (45 archivos, 1,9 h): 357 en verde y 8 en rojo. De los 8: `qa24-iman:178` y `:721` siguen pendientes del lote de motor; `qa22-ajustes:618` y `:637` y `ux7-encuadre:51` fallaron al cargar (`window.__s` no existe) y pasaron al repetirlos; los tres de `pulido7-avisos:48` eran un defecto real introducido al corregir lo de QA (un informativo se dibujaba sobre el diálogo de Atajos): ahora solo un error o una advertencia se dibuja sobre el velo cuando no hay sitio libre, y un informativo queda detrás. Repetidos junto con `qa26-mensajes-placas` y `centro-mensajes-usab`: 52 de 52. Capturas: 41 recorridos de `e2e/docs/` en verde, revisadas a ojo; enlaces: 0 rotos. Las evaluaciones se hicieron antes de este último ajuste.

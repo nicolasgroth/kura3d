@@ -8,7 +8,7 @@
 
 **Pruebas en `main`:** 4776 del programa y 220 del servidor MCP, en verde. Recorridos de navegador de lo nuevo, todos en verde: patrones 23, Dividir a mano 2, partes de la figura 1, tapa roscada 3, acople de tubería 2, instrucciones de armado 2, arrastre 15, escala de grupo 2, Simplificar 21.
 
-En corrección (27-nov, QA aprobada, fusionado a `main`, usabilidad 84 bajo el mínimo): centro de mensajes (un solo mensaje emergente e iconos de errores, advertencias e información con su histórico). Placas bajó a 80 en su octava ronda. Las seis funcionalidades de la noche del 26 se evaluaron a ciegas el 27: ninguna llega al mínimo de 85 en usabilidad y dos tampoco en funcional (las dos variantes de Dividir). No se lanzaron correcciones: el autor pidió revisar el consumo y el rumbo antes de seguir.
+Cerrado (28-nov, usabilidad 87): centro de mensajes (un solo mensaje emergente e iconos de errores, advertencias e información con su histórico). En corrección: placas, 83 en su décima ronda tras dos lotes de usabilidad fusionados el 28-nov; espera decisión del autor. Las seis funcionalidades de la noche del 26 se evaluaron a ciegas el 27: ninguna llega al mínimo de 85 en usabilidad y dos tampoco en funcional (las dos variantes de Dividir). No se lanzaron correcciones: el autor pidió revisar el consumo y el rumbo antes de seguir.
 
 Lo que entró hoy y está en `main`:
 

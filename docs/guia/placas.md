@@ -27,8 +27,8 @@ Crear una placa es un paso de deshacer (**Ctrl+Z**): al deshacer la segunda vuel
 
 - **Hacer activa una placa:** pulsa su ficha. Si su cama estaba fuera de vista, el visor la trae.
 - **Renombrar:** doble clic en la ficha, o enfócala con **Tab** y pulsa **F2**. Escribe el nombre y confirma con **Enter**; **Esc** cancela. Si el nombre ya lo usa otra placa, se rechaza y la placa conserva el suyo. Es un paso de deshacer.
-- **Solo esta** (solo en Imprimir): muestra únicamente la cama de la placa activa. Vuelve a pulsarlo para ver todas.
-- **Borrar:** la papelera borra la placa activa. Si tiene piezas, Kurra Studio te pregunta primero y dice a qué placa pasan (en el mismo lugar relativo). El botón de cancelar del aviso no cambia nada, y **Ctrl+Z** la restaura.
+- **Solo esta** (solo en Imprimir): muestra únicamente la cama de la placa activa y la encuadra en el visor. Vuelve a pulsarlo para ver todas.
+- **Borrar:** la papelera borra la placa activa. Si tiene piezas, Kurra Studio te pregunta primero y dice a qué placa pasan (en el mismo lugar relativo). El botón de cancelar del aviso no cambia nada. Después de borrar, el mensaje trae **Deshacer**, y **Ctrl+Z** también la restaura.
 
 El estado nunca depende solo del color: lleva texto y un icono.
 
@@ -98,7 +98,7 @@ Desde entonces, **Fuera de volumen**, **Repartir**, **Ajustar a la impresora**, 
 
 ## Placas que vienen de un laminador
 
-Al importar un 3MF que trae varias placas, cada una queda en su propio **grupo**. Kurra Studio te ofrece **Convertir en placas** para dejarlas como placas reales, cada grupo centrado en su cama. También lo encuentras en **Acciones › Convertir grupos en placas** (en la vista Imprimir): sirve con los grupos que selecciones o con grupos llamados «Placa 1», «Placa 2»… Los grupos con piezas bloqueadas o sin piezas sólidas no se convierten, y el aviso dice cuáles. Los grupos de origen se disuelven al convertirlos (las piezas quedan sueltas en su placa). Es un solo paso de deshacer.
+Al importar un 3MF que trae varias placas, cada una queda en su propio **grupo**. Kurra Studio te ofrece **Convertir en placas** para dejarlas como placas reales, cada grupo centrado en su cama. También lo encuentras en **Acciones › Convertir grupos en placas** (en la vista Imprimir): sirve con los grupos que selecciones o con grupos llamados «Placa 1», «Placa 2»… Las placas creadas desde esos grupos se numeran seguidas («Placa 2», «Placa 3»…, sin saltos aunque el laminador las llamara «Placa 7» u «Placa 8») y quedan en el orden de origen; un grupo con nombre propio conserva su nombre. Los grupos con piezas bloqueadas o sin piezas sólidas no se convierten, y el aviso dice cuáles. Los grupos de origen se disuelven al convertirlos (las piezas quedan sueltas en su placa). Es un solo paso de deshacer.
 
 ## Lo que cae en cada placa
 

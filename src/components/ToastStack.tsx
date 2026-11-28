@@ -34,8 +34,9 @@ const ZONE_MIN_WIDTH = 901;
  * Dónde va la pila con un diálogo modal abierto. Se queda en su lugar habitual (esquina inferior izquierda del visor,
  * donde el usuario ya la busca y sin tapar la tira de placas ni el pie). Si ahí no pisa al diálogo, se pinta sobre el
  * velo para que un error que nace dentro del diálogo se lea y se pueda cerrar; si lo pisaría, sigue en la misma columna
- * justo debajo (o encima) del diálogo y, si tampoco cabe, baja al borde inferior de la ventana, también sobre el velo:
- * un error que no se puede leer ni cerrar es peor que uno que pisa una esquina del diálogo.
+ * justo debajo (o encima) del diálogo. Si tampoco cabe: un error o una advertencia baja al borde inferior de la ventana,
+ * también sobre el velo (uno que no se puede leer ni cerrar es peor que uno que pisa una esquina del diálogo); un
+ * informativo queda detrás del velo y nunca tapa el diálogo.
  */
 interface ModalPlacement {
   above: boolean;
@@ -44,7 +45,7 @@ interface ModalPlacement {
   maxWidth: number;
 }
 
-function placeWithModal(modal: HTMLElement, size: { width: number; height: number }): ModalPlacement {
+function placeWithModal(modal: HTMLElement, size: { width: number; height: number }, critical: boolean): ModalPlacement {
   const zone = document.querySelector('.kura-viewport-wrap');
   // Sin zona de avisos (pruebas) o en pantallas angostas, donde los avisos van arriba, se usa la esquina de la ventana.
   const z = zone && window.innerWidth >= ZONE_MIN_WIDTH ? zone.getBoundingClientRect() : null;
@@ -58,7 +59,9 @@ function placeWithModal(modal: HTMLElement, size: { width: number; height: numbe
   // El lugar habitual cae sobre el diálogo: sigue en la misma columna pero justo debajo (o encima) de él, si cabe.
   if (m.bottom + GAP + size.height + GAP <= window.innerHeight) return { above: true, left, bottom: window.innerHeight - (m.bottom + GAP + size.height), maxWidth };
   if (m.top - GAP - size.height >= GAP) return { above: true, left, bottom: window.innerHeight - (m.top - GAP), maxWidth };
-  return { above: true, left, bottom: GAP, maxWidth };
+  // Sin sitio libre: un error o una advertencia se dibuja igual sobre el velo, al borde inferior, aunque pise una esquina
+  // del diálogo; un informativo queda detrás del velo (ya está en el histórico) y no tapa el diálogo.
+  return critical ? { above: true, left, bottom: GAP, maxWidth } : { above: false, left, bottom, maxWidth };
 }
 
 export const ToastStack: React.FC = () => {
@@ -69,6 +72,8 @@ export const ToastStack: React.FC = () => {
   const modal = useTopModal();
   const stackRef = useRef<HTMLDivElement | null>(null);
   const toastCount = toasts.length;
+  const shownKind = toasts[0]?.kind;
+  const critical = shownKind === 'error' || shownKind === 'warning';
   // Con un modal abierto la pila conserva su lugar habitual: sobre el velo si no pisa al diálogo, junto a él o al borde inferior si lo pisaría.
   const [placement, setPlacement] = useState<ModalPlacement | null>(null);
   const inModal = modal !== null && placement !== null && placement.above;
@@ -79,7 +84,7 @@ export const ToastStack: React.FC = () => {
     if (!modal) return undefined;
     const measure = () => {
       const el = stackRef.current;
-      const next = placeWithModal(modal, { width: el?.offsetWidth || 480, height: el?.offsetHeight || 160 });
+      const next = placeWithModal(modal, { width: el?.offsetWidth || 480, height: el?.offsetHeight || 160 }, critical);
       setPlacement((prev) => (prev && prev.above === next.above && prev.left === next.left && prev.bottom === next.bottom && prev.maxWidth === next.maxWidth ? prev : next));
     };
     measure();
@@ -90,7 +95,7 @@ export const ToastStack: React.FC = () => {
       window.clearTimeout(later);
       window.removeEventListener('resize', measure);
     };
-  }, [modal, toastCount]);
+  }, [modal, toastCount, critical, toasts[0]?.id]);
 
   // Con un diálogo modal abierto los avisos se pintan dentro de él como popover: así quedan en la capa
   // superior, por encima del velo. Cada aviso nuevo vuelve a mostrarlo para ponerlo al frente.
