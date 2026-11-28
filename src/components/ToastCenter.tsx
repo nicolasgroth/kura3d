@@ -58,8 +58,10 @@ export const ToastCenter: React.FC = () => {
   // Red de seguridad: si el elemento con foco dentro del centro desaparece (un icono sin mensajes, una fila quitada
   // al resolverse su pieza), el foco no queda en `<body>`: pasa al visor.
   const hadFocus = useRef(false);
+  /** Hay un traslado de foco explícito en curso (tras usar una acción del panel): la red de seguridad espera. */
+  const focusPending = useRef(false);
   useEffect(() => {
-    if (hadFocus.current && focusIsLost()) {
+    if (hadFocus.current && !focusPending.current && focusIsLost()) {
       hadFocus.current = false;
       focusViewer();
     }
@@ -150,7 +152,9 @@ export const ToastCenter: React.FC = () => {
             setOpen(null);
             // El foco va al icono del tipo; si la acción lo deja sin mensajes, la red de seguridad lo pasa al visor.
             // Solo si el foco se perdió: una acción que ya llevó el foco a otro control («Ver detalles») lo conserva.
+            focusPending.current = true;
             requestAnimationFrame(() => requestAnimationFrame(() => {
+              focusPending.current = false;
               if (focusIsLost()) focusTrigger(open);
             }));
           }}
