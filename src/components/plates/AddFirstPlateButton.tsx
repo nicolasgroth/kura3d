@@ -12,6 +12,7 @@ import React from 'react';
 import { t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import '../../styles/plateStrip.css';
+import { requestChipFocus } from './plateChipFocus';
 
 export const AddFirstPlateButton: React.FC = () => {
   const language = useKuraStore((s) => s.language);
@@ -23,7 +24,7 @@ export const AddFirstPlateButton: React.FC = () => {
     <button
       type="button"
       className="kura-plate-first"
-      onClick={() => createPlate()}
+      onClick={() => { if (createPlate()) requestChipFocus(); }}
       disabled={busy}
       title={t(language, 'plates.addFirst.tip')}
       data-testid="plate-add-first"

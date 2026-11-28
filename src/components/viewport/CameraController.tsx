@@ -203,11 +203,12 @@ export const CameraController: React.FC<{
     }
 
     // Placas: crear una deja a la vista todas las camas (con sus piezas); activar una fuera del encuadre la trae.
-    if (preset === 'plates' || preset === 'activePlate') {
+    // `activePlateFit` (Solo esta, vuelta a Imprimir): encuadra siempre la cama activa, no solo si quedó fuera de vista.
+    if (preset === 'plates' || preset === 'activePlate' || preset === 'activePlateFit') {
       const state = useKuraStore.getState();
       const beds = plateBedsBox(state, preset === 'plates' ? 'visible' : 'active');
       const box = preset === 'plates' ? unionBox(beds, boxForObjects(cur.filter((o) => o.visible !== false))) : beds;
-      if (box) frameBox(box, preset === 'plates' ? 'fit' : 'ensure');
+      if (box) frameBox(box, preset === 'activePlate' ? 'ensure' : 'fit');
       return;
     }
 

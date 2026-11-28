@@ -92,7 +92,7 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
     const movable = state.objects.filter((o) => state.selectedIds.includes(o.id) && assignable(o));
     const printOnly = plateToolBlockReason(state.layout);
     const unavailable = printOnly ? { unavailable: t(language, printOnly) } : movable.length === 0 ? { unavailable: t(language, 'plates.move.reason') } : {};
-    const category = t(language, 'rediseno.actions.group.position');
+    const category = t(language, 'plates.palette.group');
     const base = { category, keywords: 'moveToPlate placa plate mover move', kind: 'local' as const, icon, ...unavailable };
     // No se ofrece la placa donde ya está toda la selección (mover no haría nada).
     for (const p of plates.filter((pl) => movable.length === 0 || !movable.every((o) => o.plateRef === pl.id))) out.push({ ...base, id: `action-moveToPlate-${p.id}`, label: `${name}: ${p.name}`, run: () => runMoveToPlate(p.id) });
@@ -102,7 +102,7 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
   const picked = state.selectedIds.length ? state.objects.filter((o) => state.selectedIds.includes(o.id)) : state.objects;
   const spreadable = spreadCandidates(picked, []).length >= 2;
   out.push({
-    id: 'action-spreadPlates', label: spreadPlatesName(language), category: t(language, 'rediseno.actions.group.position'),
+    id: 'action-spreadPlates', label: spreadPlatesName(language), category: t(language, 'plates.palette.group'),
     keywords: 'spreadPlates onePerObject placa plate repartir spread cada objeto each object', kind: 'local' as const, icon,
     ...(spreadable ? {} : { unavailable: t(language, 'plates.spread.reason') }), run: () => runSpreadOnePlatePerObject(),
   });
@@ -110,7 +110,7 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
   const arrangeable = state.objects.some((o) => o.visible && assignable(o) && !o.metadata?.addon);
   const arrangeUnavailable = state.busyOperation ? 'rediseno.reason.busy' : arrangeable ? null : 'plates.arrange.toast.nothing';
   out.push({
-    id: 'action-arrangeOnPlates', label: arrangePlatesName(language), category: t(language, 'rediseno.actions.group.position'),
+    id: 'action-arrangeOnPlates', label: arrangePlatesName(language), category: t(language, 'plates.palette.group'),
     keywords: 'arrangeOnPlates repartir distribuir placas empaquetar arrange pack plates nest', kind: 'local', icon,
     ...(arrangeUnavailable ? { unavailable: t(language, arrangeUnavailable) } : {}),
     run: () => void openPlateArrangePanel(),
@@ -127,7 +127,7 @@ export function actionPaletteItems(language: LanguageCode, state: StateSlice, ex
   const convertible = groupsToConvert(state.objects, state.groups ?? [], state.selectedIds).length > 0;
   const convertUnavailable = state.layout !== 'print' ? 'plates.convert.assembly' : convertible ? null : 'plates.convert.none';
   out.push({
-    id: 'action-convertGroupsToPlates', label: t(language, 'plates.convert.action'), category: t(language, 'rediseno.actions.group.position'),
+    id: 'action-convertGroupsToPlates', label: t(language, 'plates.convert.action'), category: t(language, 'plates.palette.group'),
     keywords: 'convertGroupsToPlates convertir grupos placas convert groups plates slicer laminador bambu orca', kind: 'local', icon,
     ...(convertUnavailable ? { unavailable: t(language, convertUnavailable) } : {}),
     run: () => void useKuraStore.getState().convertGroupsToPlates(),

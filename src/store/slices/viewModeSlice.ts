@@ -12,7 +12,17 @@
 
 import { layoutOfViewMode, viewModeOf, type ViewMode } from '../../core/scene/viewMode';
 import type { StoreContext } from '../storeContext';
-import type { KuraStoreState } from '../storeTypes';
+import type { CameraPresetType, KuraStoreState } from '../storeTypes';
+
+/**
+ * Encuadre al cambiar de disposición: la cámara no se queda pegada a la pieza seleccionada. Armado encuadra la figura
+ * entera; Imprimir encuadra la cama activa con «Solo esta», todas las camas con varias placas o, si no, la escena.
+ */
+export function framingAfterLayoutChange(state: Pick<KuraStoreState, 'plateSolo' | 'plates'>, to: 'print' | 'assembly'): CameraPresetType {
+  if (to === 'assembly') return 'scene';
+  if (state.plateSolo && state.plates.length >= 2) return 'activePlateFit';
+  return state.plates.length >= 2 ? 'plates' : 'scene';
+}
 
 export type ViewModeResult = 'changed' | 'same' | 'busy' | 'stroke';
 
@@ -52,6 +62,7 @@ export function createViewModeSlice(ctx: StoreContext): Partial<KuraStoreState> 
       if (state.layout !== wantedLayout && !state.setLayout(wantedLayout)) return 'busy';
       // La separación visual solo existe fuera de Imprimir.
       set({ freeView: mode === 'free', ...(mode === 'print' ? { figureExplode: null } : {}) });
+      if (state.layout !== wantedLayout) get().requestCameraPreset(framingAfterLayoutChange(get(), wantedLayout));
       return 'changed';
     },
 

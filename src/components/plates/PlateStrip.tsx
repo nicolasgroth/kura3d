@@ -21,6 +21,11 @@ import { askDecision } from '../../utils/confirmDialog';
 import '../../styles/plateStrip.css';
 import '../../styles/viewMode.css';
 import '../../styles/plateBed.css';
+import '../../styles/plateStripFit.css';
+import { undoToastAction } from '../../store/toastActionState';
+import { focusViewer } from '../toastFocus';
+import { consumeChipFocusRequest, focusActiveChip, requestChipFocus } from './plateChipFocus';
+import { useListOverflow } from './useListOverflow';
 import { viewModeOf } from '../../core/scene/viewMode';
 import { ViewModeExplode } from '../viewmode/ViewModeExplode';
 import { ViewModeSelector } from '../viewmode/ViewModeSelector';
@@ -110,11 +115,20 @@ export const PlateStrip: React.FC = () => {
   );
   const active = chips.find((c) => c.active) ?? chips[0];
   const multi = plates.length >= MIN_PLATES_FOR_STRIP && Boolean(active);
+  const overflow = useListOverflow(listRef, [multi, view, chips.length, language]);
 
   // La ficha activa siempre queda a la vista (con muchas placas la lista se desplaza).
   useEffect(() => {
     listRef.current?.querySelector<HTMLElement>('[data-active="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
   }, [active?.id, chips.length]);
+
+  // Tras crear o borrar una placa el botón usado desaparece o cambia de nombre: el foco va a la ficha activa.
+  useEffect(() => {
+    if (!consumeChipFocusRequest()) return undefined;
+    // Si la tira dejó de existir (quedó una sola placa), el foco va al visor.
+    const frame = requestAnimationFrame(() => (multi ? focusActiveChip(listRef.current, focusViewer) : focusViewer()));
+    return () => cancelAnimationFrame(frame);
+  }, [multi, active?.id, chips.length]);
 
   // Con una sola placa (o ninguna) la tira es corta: el selector de vista y «+ Placa». Con la escena vacía no se
   // dibuja nada (no hay qué alternar ni qué repartir); en Armado y Libre sí, para poder volver a Imprimir.
@@ -160,7 +174,12 @@ export const PlateStrip: React.FC = () => {
     const to = store().removePlate(active.id);
     if (to) {
       const targetName = store().plates.find((p) => p.id === to)?.name ?? target.name;
-      store().addToast(t(language, 'plates.toast.removed', { name: active.name, target: targetName }), 'info');
+      requestChipFocus();
+      store().addToast(
+        t(language, 'plates.toast.removed', { name: active.name, target: targetName }),
+        'info',
+        undoToastAction(t(language, 'toast.undo'), () => store().past, () => store().undo(), false, true),
+      );
     }
   };
 
@@ -181,7 +200,7 @@ export const PlateStrip: React.FC = () => {
       {view === 'free' && <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.free')}</span>}
       {view === 'print' && multi && active && (
       <>
-      <div className="kura-plate-list" ref={listRef} onKeyDown={moveFocus}>
+      <div className="kura-plate-list" ref={listRef} onKeyDown={moveFocus} data-more-start={overflow.start || undefined} data-more-end={overflow.end || undefined}>
         {chips.map((chip) => {
           const pieces = t(language, 'plates.chip.pieces', { count: chip.count });
           const status = t(language, STATUS_KEY[chip.status]);
@@ -239,7 +258,7 @@ export const PlateStrip: React.FC = () => {
         <button
           type="button"
           className="kura-plate-btn"
-          onClick={() => store().createPlate()}
+          onClick={() => { if (store().createPlate()) requestChipFocus(); }}
           disabled={busy}
           aria-label={t(language, 'plates.add')}
           title={t(language, 'plates.add.tip')}

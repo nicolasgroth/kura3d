@@ -39,6 +39,12 @@ export interface ConvertGroupsOptions {
   nameFor: (n: number) => string;
   /** Grupos convertidos que se disuelven al convertir (los que representaban placas del laminador). */
   dissolve?: (group: SceneGroup) => boolean;
+  /**
+   * Grupos cuyo nombre no es del usuario sino del laminador («Placa 2», «Plate_7»): la placa creada no lo hereda, recibe
+   * el siguiente «Placa N» correlativo y se crea ordenada por el número del laminador. Sin esta opción, la placa
+   * toma el nombre del grupo (con número único) y el orden es el de `groupIds`.
+   */
+  autoNamed?: (group: SceneGroup) => boolean;
 }
 
 export interface ConvertGroupsResult {
@@ -66,19 +72,32 @@ export function plateNamedGroups(groups: readonly SceneGroup[], isPlateName: (na
   return groups.filter((g) => g.parentId === undefined && isPlateName(g.name.trim())).map((g) => g.id);
 }
 
+const trailingNumber = (name: string): number => {
+  const m = /(\d+)\s*$/.exec(name.trim());
+  return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
+};
+
+/** Los trabajos de nombre del laminador ocupan sus mismos huecos, ordenados por su número (orden de origen). */
+function sortAutoNamed(jobs: Array<{ group: SceneGroup; auto: boolean }>): void {
+  const slots = jobs.flatMap((j, i) => (j.auto ? [i] : []));
+  const sorted = slots.map((i) => jobs[i]).sort((a, b) => trailingNumber(a.group.name) - trailingNumber(b.group.name));
+  slots.forEach((slot, k) => { jobs[slot] = sorted[k]; });
+}
+
 export function convertGroupsToPlates(scene: ConvertGroupsScene, groupIds: readonly string[], opts: ConvertGroupsOptions): ConvertGroupsResult | null {
   const roots = rootGroupIds(scene.groups, groupIds);
   const byGroup = groupMap(scene.groups);
   const byId = new Map(scene.objects.map((o) => [o.id, o]));
   const skipped = groupIds.filter((id) => !roots.includes(id));
-  const jobs: Array<{ group: SceneGroup; members: SceneObject[] }> = [];
+  const jobs: Array<{ group: SceneGroup; members: SceneObject[]; auto: boolean }> = [];
   for (const gid of roots) {
     const group = byGroup.get(gid)!;
     const members = descendantObjectIds(scene.objects, scene.groups, gid).map((id) => byId.get(id)!).filter(Boolean);
     const solids = members.filter((o) => o.role === 'solid');
     if (solids.length === 0 || members.some((o) => o.locked || effectiveLocked(byGroup, o))) skipped.push(gid);
-    else jobs.push({ group, members });
+    else jobs.push({ group, members, auto: opts.autoNamed?.(group) === true });
   }
+  sortAutoNamed(jobs);
   if (jobs.length === 0) return null;
 
   const converting = new Set(jobs.flatMap((j) => j.members.map((o) => o.id)));
@@ -102,7 +121,11 @@ export function convertGroupsToPlates(scene: ConvertGroupsScene, groupIds: reado
       skipped.push(...jobs.slice(k).map((j) => j.group.id));
       break;
     }
-    const name = uniquePlateName(plates, job.group.name.trim().slice(0, MAX_PLATE_NAME) || opts.nameFor(plates.length + 1));
+    // Los grupos que solo repiten el número del laminador reciben el siguiente nombre correlativo (sin saltos como
+    // «Placa 2», «Placa 7», «Placa 8»); el menor libre desde la posición de la placa conserva la regla de no repetir
+    // un nombre visible de la tira.
+    const own = job.group.name.trim().slice(0, MAX_PLATE_NAME);
+    const name = uniquePlateName(plates, job.auto || !own ? opts.nameFor(plates.length + 1) : own);
     const plate: ScenePlate = { id: opts.makeId(), name, origin };
     plates = [...plates, plate];
     created.push(plate.id);

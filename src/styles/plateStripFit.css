@@ -1,0 +1,43 @@
+/**
+ * @file src/styles/plateStripFit.css
+ * @description Ficha de placa de ancho acotado (nombre largo recortado con elipsis) y degradado en el borde por donde la lista de fichas continúa.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license AGPL-3.0-or-later
+ */
+
+/* La ficha no pasa de 220 px: el nombre cede (elipsis) y el número de piezas y el estado se conservan. */
+.kura-plate-strip .kura-plate-chip-main {
+  max-width: 220px;
+  box-sizing: border-box;
+}
+
+.kura-plate-strip .kura-plate-chip-name {
+  flex: 0 1 auto;
+  min-width: 3ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kura-plate-strip .kura-plate-chip-count,
+.kura-plate-strip .kura-plate-chip-status,
+.kura-plate-strip .kura-plate-chip-bed {
+  flex: none;
+}
+
+/* Hay más fichas por el lado marcado: el borde se difumina (lo oculto no parece que no exista). */
+.kura-plate-list[data-more-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+.kura-plate-list[data-more-start="true"] {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+}
+
+.kura-plate-list[data-more-start="true"][data-more-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}

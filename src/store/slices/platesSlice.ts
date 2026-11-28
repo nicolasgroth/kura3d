@@ -111,6 +111,7 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
           projectBed: projectBed(state), makeId: () => makeId('plate'), nameFor: plateName,
           // Los grupos de placa del laminador (los del aviso de importación o con nombre de placa) no sobreviven a la conversión.
           dissolve: (g) => options?.dissolve === true || isPlateGroupName(g.name),
+          autoNamed: (g) => isPlateGroupName(g.name),
         })
         : null;
       if (!result) {
@@ -155,7 +156,10 @@ export function createPlatesSlice(ctx: StoreContext): Partial<KuraStoreState> {
     },
 
     setPlateSolo: (solo) => {
-      if (get().plateSolo !== solo) set({ plateSolo: solo });
+      if (get().plateSolo === solo) return;
+      set({ plateSolo: solo });
+      // La cámara no se queda pegada a la pieza: «Solo esta» encuadra la cama activa; al quitarlo, todas las camas.
+      get().requestCameraPreset(solo ? 'activePlateFit' : 'plates');
     },
 
     moveToPlate: (plateId, ids) => {

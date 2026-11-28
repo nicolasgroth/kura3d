@@ -66,6 +66,7 @@ const PLATES_VIEW_TABLE = {
     '“{name}” प्लेट हटाई गई; उसके हिस्से “{target}” में चले गए।',
     '已删除打印板“{name}”;其零件已移到“{target}”。',
   ],
+  'plates.palette.group': ['Placas', 'Plates', 'Platten', 'Plateaux', 'प्लेटें', '打印板'],
   'plates.toast.created': ['{name} creada', '{name} created', '{name} erstellt', '{name} créé', '{name} बनाई गई', '已创建{name}'],
   'plates.badge.label': ['Placa: {name}', 'Plate: {name}', 'Platte: {name}', 'Plateau : {name}', 'प्लेट: {name}', '打印板:{name}'],
   'plates.badge.tip': ['Esta pieza está en «{name}»', 'This part is on “{name}”', 'Dieses Teil liegt auf „{name}“', 'Cette pièce est sur « {name} »', 'यह हिस्सा “{name}” पर है', '此零件位于“{name}”'],

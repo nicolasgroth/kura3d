@@ -75,6 +75,33 @@ describe('convertir grupos en placas', () => {
     expect((fc.minZ + fc.maxZ) / 2).toBeCloseTo(res.scene.plates[1].origin[1]);
   });
 
+  it('los grupos con número del laminador reciben nombres correlativos y se ordenan por ese número', () => {
+    n = 0;
+    const isSlicer = (g: SceneGroup) => /^Placa \d+$/.test(g.name);
+    const scene = {
+      objects: [box('a', [0, 0, 0], 'g8'), box('b', [300, 0, 0], 'g2'), box('c', [600, 0, 0], 'g7')],
+      plates: [], groups: [group('g8', 'Placa 8'), group('g2', 'Placa 2'), group('g7', 'Placa 7')],
+    };
+    const res = convertGroupsToPlates(scene, ['g8', 'g2', 'g7'], { ...opts, autoNamed: isSlicer })!;
+    expect(res.scene.plates.map((p) => p.name)).toEqual(['Placa 1', 'Placa 2', 'Placa 3']);
+    // Orden de origen: 2, 7, 8.
+    expect(res.scene.objects.find((o) => o.id === 'b')!.plateRef).toBe(res.created[0]);
+    expect(res.scene.objects.find((o) => o.id === 'c')!.plateRef).toBe(res.created[1]);
+    expect(res.scene.objects.find((o) => o.id === 'a')!.plateRef).toBe(res.created[2]);
+  });
+
+  it('con placas previas el nombre nuevo sigue a la cuenta sin repetir uno visible', () => {
+    n = 0;
+    const isSlicer = (g: SceneGroup) => /^Placa \d+$/.test(g.name);
+    const scene = {
+      objects: [box('x', [0, 0, 0], undefined, { plateRef: 'p1' }), box('a', [300, 0, 0], 'g7'), box('b', [600, 0, 0], 'g9'), box('c', [900, 0, 0], 'Mío')],
+      plates: [{ id: 'p1', name: 'Placa 1', origin: [0, 0] as [number, number] }, { id: 'p2', name: 'Placa 3', origin: [300, 0] as [number, number] }],
+      groups: [group('g7', 'Placa 7'), group('g9', 'Placa 9')],
+    };
+    const res = convertGroupsToPlates(scene, ['g7', 'g9'], { ...opts, autoNamed: isSlicer })!;
+    expect(res.scene.plates.map((p) => p.name)).toEqual(['Placa 1', 'Placa 3', 'Placa 4', 'Placa 5']);
+  });
+
   it('el nombre del grupo no repite el de una placa existente (siguiente número libre)', () => {
     n = 0;
     const scene = { objects: [box('suelta', [0, 0, 0]), box('a', [500, 0, 0], 'g1')], plates: [], groups: [group('g1', 'Placa 1')] };
