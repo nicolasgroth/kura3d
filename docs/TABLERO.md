@@ -8,7 +8,7 @@
 
 **Pruebas en `main`:** 4776 del programa y 220 del servidor MCP, en verde. Recorridos de navegador de lo nuevo, todos en verde: patrones 23, Dividir a mano 2, partes de la figura 1, tapa roscada 3, acople de tubería 2, instrucciones de armado 2, arrastre 15, escala de grupo 2, Simplificar 21.
 
-Cerrado (28-nov, usabilidad 87): centro de mensajes (un solo mensaje emergente e iconos de errores, advertencias e información con su histórico). En revisión por decisión del autor (28-nov): placas, 83 en su décima ronda tras dos lotes de usabilidad. Corregido el 28-nov: el desfase entre vista previa y hueco creado en los agregados (imán). Simplificar: monótono por tolerancia desde el 28-nov; usabilidad 80 y funcional 84, sigue en corrección. Las seis funcionalidades de la noche del 26 se evaluaron a ciegas el 27: ninguna llega al mínimo de 85 en usabilidad y dos tampoco en funcional (las dos variantes de Dividir). No se lanzaron correcciones: el autor pidió revisar el consumo y el rumbo antes de seguir.
+Cerrado (28-nov, usabilidad 87): centro de mensajes (un solo mensaje emergente e iconos de errores, advertencias e información con su histórico). En revisión por decisión del autor (28-nov): placas, 83 en su décima ronda tras dos lotes de usabilidad. Corregido el 28-nov: el desfase entre vista previa y hueco creado en los agregados (imán). Simplificar: monótono por tolerancia desde el 28-nov; usabilidad **86** desde el 28-nov en la tarde (sobre el mínimo, tras dos rondas del lote de usabilidad) y funcional 84, pendiente de un lote de motor. Las seis funcionalidades de la noche del 26 se evaluaron a ciegas el 27: ninguna llega al mínimo de 85 en usabilidad y dos tampoco en funcional (las dos variantes de Dividir). No se lanzaron correcciones: el autor pidió revisar el consumo y el rumbo antes de seguir.
 
 Lo que entró hoy y está en `main`:
 
@@ -186,7 +186,7 @@ Funciones que ya se usan y lo que les falta, en una línea cada una.
 | Segmentación estructural | Dividir el archivo en partes |
 | Pintura 3D | Pincel lento en mallas grandes |
 | Análisis de imprimibilidad | Revisar la versión reescrita |
-| Simplificar | Conmutador «Ver lo pedido»; reevaluar tras los cuatro defectos corregidos el 26-nov |
+| Simplificar | Usabilidad 86 (28-nov). Para subir: foco al cerrar el panel, «Escape restaura» al valor de partida, informe más compacto. Funcional 84: lote de motor pendiente |
 | Asistentes | Recetas guardables por el usuario (en Planificada); revisión de la galería |
 | Chat IA y proveedores | Previsualizar antes de aplicar; que no encoja el visor; adjuntar imágenes |
 | Servidor MCP | Modo propuesta y permisos por operación (en Planificada); revisión funcional |

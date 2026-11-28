@@ -1,13 +1,14 @@
 # Nota de traspaso entre sesiones
 
-Se reescribe al cerrar cada conversación del orquestador (regla 11 de «Control de agentes» en `CLAUDE.md`). Última actualización: 28 de noviembre de 2026, mediodía.
+Se reescribe al cerrar cada conversación del orquestador (regla 11 de «Control de agentes» en `CLAUDE.md`). Última actualización: 28 de noviembre de 2026, tarde.
 
 ## Estado
 
-- El repositorio está en **`main`**, igual a GitHub. Sin agentes, sin servidores, sin worktrees, sin ramas de trabajo. `CLAUDE.md` tiene un cambio sin confirmar en la regla 11 que hizo el autor: no tocarlo.
+- El repositorio está en **`main`**, igual a GitHub. Sin agentes, sin servidores, sin worktrees, sin ramas de trabajo. El cambio de la regla 11 de `CLAUDE.md` quedó en el commit `712176cc`, hecho desde otra sesión durante el lote de Simplificar; entró a `main` con ese lote.
 - En `main`: `tsc` y build limpios, 4812 pruebas del programa y 220 del servidor MCP en verde.
 - Cerrado entre el 27 y el 28: **centro de mensajes (87)**, **imán** (el desfase entre vista previa y hueco) y la monotonía de **Simplificar por tolerancia**.
-- Bajo el mínimo: **placas 83** (en revisión por decisión del autor) y **Simplificar: usabilidad 80, funcional 84**.
+- Cerrado el 28 en la tarde: **usabilidad de Simplificar, 86** (lote `fix/simplificar-usabilidad`, dos rondas; 4 agentes, cerca de 822 k tokens).
+- Bajo el mínimo: **placas 83** (en revisión por decisión del autor) y **Simplificar funcional 84** (sin reevaluar).
 - Consumo del 27 en la noche al 28 a mediodía, solo agentes: cerca de 2,3 millones de tokens en 13 agentes (QA 117 k + 171 k; interfaz 146 k + 226 k + 204 k + 174 k; motor 164 k + 289 k; evaluación 178 k + 177 k + 151 k + 162 k + 180 k), más un orquestador de sesión muy larga. Muy por encima del tope de 6 puntos por día, con acuerdo del autor («sigue con todo hoy», «sigue con la cola»). La semana reinicia el 3-dic a las 01:00 UTC.
 - Detalle: `docs/EVALUACIONES.md`, secciones «27-nov-2026 · Noche», «28-nov-2026 · Madrugada» y «28-nov-2026 · Mañana».
 
@@ -36,10 +37,12 @@ Se tomaron la madrugada del 28 para no frenar; todas se pueden revertir:
 - Enter con el foco en un botón ya no entra a un grupo.
 - `cmd.cat.operations` de la paleta pasó de «Operaciones Manifold 3D» a «Operaciones de forma».
 - Simplificar: una tolerancia mayor que la pieza ya no da `MESH_EMPTY`; se usa el mejor peldaño válido (cambia el resultado de `kura_simplify_mesh` en ese caso).
+- Simplificar con malla abierta (28-nov, tarde): no se bloquea. El aviso al abrir el panel explica que el motor intentará cerrarla soldando vértices y recomienda «Reparar malla». Bloquear habría cambiado el comportamiento.
+- Simplificar: una desviación real muy chica no se muestra como cero (0,001 mm queda «0,001 mm», excepción a la regla de 2 decimales); un cambio de volumen ínfimo se muestra «menos de 0,1 %».
 
 ## Lo que sigue, en orden
 
-1. **Simplificar, usabilidad (80).** Lote de interfaz: tras editar «Triángulos finales», Tab salta a «Arista objetivo» de Refinar y con Enter se ejecuta «Refinar» sin querer; el foco cae a `body` tras «Aplicar de todos modos» y tras «Reparar malla» lanzado desde el panel; el informe de la versión segura mezcla números de lo pedido y de lo aplicado (separar en un bloque «Lo pedido daría…»); avisos en pasado en la vista previa; sin avance real durante el cálculo; la malla abierta se avisa recién al pedir la vista previa; decimales desparejos; el mensaje no dice que se aplicó la versión segura.
+1. **Simplificar, usabilidad: cerrado en 86.** Para subir a 90, si el autor lo pide: al cerrar con Esc o «Volver» el foco no vuelve al control que abrió el panel (desde la paleta queda en «Agregar»; desde Geometría, en el otro «Simplificar…» fuera de pantalla); «Escape restaura» no vuelve al valor de partida; el resumen rechaza lo pedido por cerrar agujeros y la versión segura también cierra uno; «Detalle técnico: Not manifold» sin traducir; el campo Tolerancia conserva la coma al cambiar de idioma; el encabezado fijo tapa la casilla de aristas al desplazar; informe de unas 20 líneas en 296 px; el modo no se recuerda entre aperturas (vive en estado local; hay que guardarlo en `RightInspector`).
 2. **Simplificar, funcional (84, sin reevaluar tras corregir el colapso de la escalera).** Lote de motor chico: «Por cantidad» marca la meta como alcanzada aunque quede muy por debajo y sigue buscando por bisección, que supone una monotonía que Manifold no tiene; por tolerancia se estanca sin avisar (sugerir «Por cantidad»); no se cuentan los cuerpos antes y después. Decisión del autor pendiente: cambiar a meshoptimizer (MIT), monótono y rápido, que evitaría las 13 llamadas pero exige revalidar que el sólido quede cerrado.
 3. **Placas (83), en revisión.** Si el autor la retoma: con «Fuera de volumen» la ficha activa corta su nombre a «Pla…» a 1366 px; el aviso «No cabe en la cama…» queda como columna angosta a 1024 px, tapa la barra de selección y sigue en Armado y Libre; «Solo esta» no encuadra la placa activa tras borrar ni al cambiar de ficha; en fichas compactas el estado es solo icono y su `title` no lo nombra; Tab hace dos paradas por placa; Armado y Libre se ven iguales; convertir en placas no trae «Deshacer» en su mensaje. Las notas de cuatro rondas (84, 80, 84, 83) no convergen con vueltas sueltas: conviene evaluar con dos evaluadores sobre la misma versión.
 4. **Centro de mensajes, para subir de 87:** un informativo que va directo al histórico no da señal visible; «…imprime una placa a la vez» sigue como información; la advertencia de orientación mezclada no trae «Reparar malla»; el panel no tiene botón de cierre visible; «Vaciar» sin deshacer. Menor de QA abierto: tras Ctrl+Z de «Convertir en placas» el foco cae a `body`.

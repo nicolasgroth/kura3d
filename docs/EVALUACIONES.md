@@ -1191,3 +1191,29 @@ Costos aceptados por el autor al fusionar: «Por tolerancia» hace hasta 13 llam
 Sin bloqueos duros. El funcional confirmó con mediciones: monotonía en 6 series (dos modelos reales), todo resultado cerrado y manifold, volumen informado igual al medido, versión segura dentro de sus límites, «sin pérdida» exacto, y MCP igual al motor. Tiempo en 253.000 triángulos: 2,7 s a 0,02 mm y 7,5 s a 10 mm.
 
 Corregido después de evaluar, por el orquestador (`fix/simplificar-escalera-colapso`): los peldaños que vacían la pieza ya no cuentan y se usa el mejor de los válidos, con prueba de monotonía en una pieza chica; se actualizaron las dos pruebas que esperaban `MESH_EMPTY` (`commandResultGuards.test.ts` y `headlessEngineErrors.test.ts`); la guía dice que la tolerancia no acota la desviación y corrige el ejemplo de la esfera de 512 triángulos. `tsc` y build limpios, 4812 pruebas del programa y 220 del servidor MCP en verde. No reevaluado tras esta corrección. Queda abierto todo lo de usabilidad.
+
+## 28-nov-2026 · Tarde: usabilidad de Simplificar (80 → 86)
+
+Lote `fix/simplificar-usabilidad`, con plan y diseño breve aprobados por el autor antes de lanzar agentes. Un agente a la vez.
+
+**Ronda 1** (`dev-ui`, Sonnet · 17 min · 266 k). Los ocho puntos del traspaso: Tab y Enter (los botones pasan a `aria-disabled` con un texto de estado, así un valor inválido ya no saca a «Vista previa» del orden de Tab; Enter en un campo pide la vista previa y en «Arista objetivo» no hace nada); foco tras «Aplicar de todos modos» y tras «Reparar malla»; informe de la versión segura en dos bloques («Se aplicó (versión segura)» y «Lo pedido daría…»); avisos de la vista previa en condicional; avance por pasos también al aplicar (el motor ya informaba los peldaños: no se tocó); aviso de malla abierta al abrir el panel; una regla de decimales (`src/i18n/simplifyNumbers.ts`: mm con 2, % con 1); el mensaje dice que se aplicó la versión segura.
+
+**QA en navegador** (`qa`, Sonnet · 26 min · 142 k): aprobado sin fallos. Recorrido nuevo `e2e/qa-simplificar-usabilidad.spec.ts` (6 casos). No cubrió en navegador: avance con modelo grande, decimales, caso bloqueado sin versión segura, temas, paleta.
+
+**Evaluación a ciegas, ronda 1** (sobre `ac164ec4`):
+
+| Evaluador | Modelo | Duración | Tokens | Antes | Nota | Lo que más resta |
+|---|---|---|---|---|---|---|
+| Usabilidad | Opus | 9 min | 163 k | 80 | 82 | Con malla abierta el aviso decía «repárala antes de simplificar» pero igual aplicaba; la desviación medida supera la tolerancia que la ayuda prometía como máximo (0,10 mm pedidos, 1,48 mm medidos); Esc en un campo inválido manda el foco a `body`; «Por cantidad» no dice si se cumplió el objetivo; informes viejos a la vista tras cambiar un valor; «Volumen: -0,00001 %»; a 1024×768 los botones quedan bajo el informe |
+
+**Ronda 2** (mismo `dev-ui`, reanudado · 11 min · 351 k acumulados entre las dos rondas). Aviso de malla abierta honesto (el motor intenta cerrarla soldando vértices a 1e-4 mm; si no lo logra, no aplica nada: no se cambió el comportamiento, solo el texto); la ayuda ya no promete un máximo y el informe advierte cuando la desviación medida supera la tolerancia; Esc y Enter con valor inválido dejan el foco en el campo; línea de objetivo cumplido o no en «Por cantidad» y validación si el objetivo supera los triángulos actuales; cambiar modo o valor retira el informe anterior y el «Se deshizo…»; «Vista previa cancelada»; «menos de 0,1 %» y «sin cambio»; signo menos tipográfico; «Sin pérdida» no muestra tolerancia; pie de acciones fijo; un solo anuncio en vivo por resultado.
+
+Verificación del orquestador sobre `3d822917`: `tsc` limpio, 4841 pruebas del programa y 220 del servidor MCP en verde; 32 de 32 en los recorridos de Simplificar (`qa-simplificar-usabilidad`, `simplificar-titulo-fijo`, `defectos-n26`, `qa25b`, `qa25h`, `qa25j`, `qa25f`; 17,7 min). Sin segunda pasada de QA con agente.
+
+**Evaluación a ciegas, ronda 2** (evaluador nuevo, sobre `3d822917`):
+
+| Evaluador | Modelo | Duración | Tokens | Antes | Nota | Lo que más resta |
+|---|---|---|---|---|---|---|
+| Usabilidad | Opus | 8 min | 166 k | 82 | 86 | Al cerrar con Esc o «Volver» el foco no vuelve al control que abrió el panel (desde la paleta queda en «Agregar»; desde Geometría, en el otro «Simplificar…» fuera de pantalla); «Escape restaura» no vuelve al valor de partida (500 sobre 0,5 deja 50); el resumen rechaza lo pedido porque «se cerraban agujeros» y la versión segura también cierra uno; «Detalle técnico: Not manifold» sin traducir; el campo Tolerancia conserva la coma tras cambiar a inglés; el encabezado fijo tapa la casilla de aristas al desplazar; informe de unas 20 líneas en 296 px; el modo no se recuerda entre aperturas; tras rehacer el panel queda sin mensaje |
+
+Sin bloqueos duros. Simplificar pasa el mínimo de usabilidad (86; meta 90). Funcional sigue en 84 sin reevaluar (lote de motor pendiente). Consumo del lote: 4 agentes, cerca de 822 k tokens (interfaz 351 k, QA 142 k, evaluación 163 k + 166 k).
