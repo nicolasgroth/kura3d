@@ -34,7 +34,9 @@ export function registerSimplifyTools(server: Pick<McpServer, 'registerTool'>, c
         'original: one undo step (none with dryRun). Modes: "lossless" simplifies at ' + LOSSLESS_LIMITS.toleranceMm + ' mm and applies only if the ' +
         'genus (through holes) is unchanged, |volume change| < ' + LOSSLESS_LIMITS.maxVolumePct + ' % and the sampled deviation < ' +
         LOSSLESS_LIMITS.maxDeviationMm + ' mm; "tolerance" (default) uses toleranceMm (default ' + OD.simplify.toleranceMm +
-        ' mm; the tolerance does NOT bound the real deviation); "target" searches the tolerance (bisection, capped iterations ' +
+        ' mm; it is a ceiling: the engine tries a fixed 1-2-5 ladder of tolerances up to it and applies the one that leaves the ' +
+        'fewest triangles, so a larger tolerance never leaves more triangles, and the returned toleranceMm is the one actually ' +
+        'used, which may be lower than requested; the tolerance does NOT bound the real deviation); "target" searches the tolerance (bisection, capped iterations ' +
         'and time) that leaves targetTriangles or targetPercent of the current triangles, and returns what it reached if it ' +
         'cannot; if the closest result loses through holes, it prefers the best one that keeps them within ' +
         Math.round(SWL.genusSlackRel * 100) + ' % above the target (target.genusPreserved). Genus is summed per body. If ' +
