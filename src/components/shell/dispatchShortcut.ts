@@ -33,6 +33,7 @@ export function readShortcutContext(target: EventTarget | null): ShortcutContext
     commandPaletteOpen: state.commandPaletteOpen,
     modalOpen: typeof document !== 'undefined' && document.querySelector('dialog[open]:modal') !== null,
     typingTarget: tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || Boolean(el?.isContentEditable),
+    controlTarget: Boolean(el?.closest?.('button, a[href], summary, [role="button"], [role="menuitem"], [role="option"], [role="tab"]')),
     zen: state.uiDensity === 'zen',
     inGroup: Boolean(state.groupContextId),
     hasGroups: state.groups.length > 0,

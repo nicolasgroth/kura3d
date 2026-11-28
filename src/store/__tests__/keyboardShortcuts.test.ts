@@ -120,6 +120,8 @@ describe('anular el carácter', () => {
 
   it('Enter entra al grupo sin anular de antemano (lo decide el store)', () => {
     expect(resolveShortcut(ev('Enter'), ctx({ hasGroups: true, selectedCount: 2 }))).toEqual({ action: { type: 'enterGroup' }, preventDefault: false });
+    // Con el foco en un botón, Enter es del botón (p. ej. «Convertir en placas» de un mensaje): no entra al grupo.
+    expect(resolveShortcut(ev('Enter'), ctx({ hasGroups: true, selectedCount: 2, controlTarget: true })).action).toBeNull();
     expect(action(ev('Enter'), ctx({ hasGroups: true, selectedCount: 1 }))).toBeNull();
   });
 

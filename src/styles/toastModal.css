@@ -2,7 +2,7 @@
  * @file src/styles/toastModal.css
  * @description Avisos con un diálogo modal abierto: la pila conserva su lugar habitual (esquina inferior izquierda
  * del visor). Si ahí no pisa al diálogo va dentro del <dialog> como popover (capa superior, sobre el velo) para que se
- * lea y se cierre; si lo pisaría, queda detrás del velo en el mismo sitio y nunca se dibuja sobre el diálogo.
+ * lea y se cierre; si lo pisaría, va debajo o encima del diálogo y, si no cabe, al borde inferior de la ventana, siempre sobre el velo.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later

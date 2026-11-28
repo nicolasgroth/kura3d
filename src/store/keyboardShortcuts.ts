@@ -32,6 +32,8 @@ export interface ShortcutContext {
   modalOpen: boolean;
   /** El foco está en un campo de texto (input, textarea, select o contenteditable). */
   typingTarget: boolean;
+  /** El foco está en un control que Enter activa (botón, enlace): Enter es suyo y no entra a un grupo. */
+  controlTarget?: boolean;
   zen: boolean;
   /** Se entró a un grupo (Escape sale). */
   inGroup: boolean;
@@ -135,7 +137,7 @@ export function resolveShortcut(e: ShortcutEvent, ctx: ShortcutContext): Shortcu
   if (mod && e.shiftKey && !e.altKey && key === 'enter') return e.repeat ? SWALLOW : act({ type: 'toggleZen' });
 
   if (e.key === 'Escape' && !mod && !e.shiftKey && ctx.inGroup) return act({ type: 'exitGroup' });
-  if (e.key === 'Enter' && !mod && !e.shiftKey && !e.altKey && ctx.hasGroups && ctx.selectedCount > 1) {
+  if (e.key === 'Enter' && !mod && !e.shiftKey && !e.altKey && ctx.hasGroups && ctx.selectedCount > 1 && !ctx.controlTarget) {
     return { action: { type: 'enterGroup' }, preventDefault: false };
   }
   if (e.key === 'Escape' && !mod && ctx.zen) return act({ type: 'toggleZen' });

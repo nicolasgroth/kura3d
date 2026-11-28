@@ -58,6 +58,9 @@
 }
 
 .kura-toast > span {
+  /* `min-width: 0` deja que el texto ceda dentro de la fila: sin él, una palabra larga (un nombre de archivo sin
+     espacios) empuja los botones fuera del aviso. */
+  min-width: 0;
   overflow-wrap: break-word;
 }
 
