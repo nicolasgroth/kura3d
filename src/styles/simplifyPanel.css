@@ -79,11 +79,27 @@
   border-top: 0;
 }
 
+/*
+ * Título fijo arriba mientras se desplaza su grupo (el informe de Simplificar es largo): nunca queda a medio ver bajo
+ * el encabezado del panel. Fondo opaco para que lo que pasa por debajo no se lea a través.
+ */
 .kura-mesh-group-title {
+  position: sticky;
+  /* Pegado al borde visible del área desplazable: se descuenta su relleno superior (10 px en `.kura-scroll-area`). */
+  top: -10px;
+  z-index: 1;
   margin: 0;
+  padding: 4px 0;
+  /* El fondo de la tarjeta (`.kura-card`) en la que vive el panel. */
+  background: var(--bg-elevated);
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+/* Lo que se trae a la vista dentro de un grupo (informe, foco de un campo) queda bajo el título fijo, no tapado. */
+.kura-mesh-group :is(.kura-simplify-report, input, select, button) {
+  scroll-margin-top: 32px;
 }
 
 /* La acción principal del panel ocupa el resto del ancho y no se confunde con «Vista previa» (secundario). */
