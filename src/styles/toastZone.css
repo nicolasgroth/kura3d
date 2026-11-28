@@ -19,14 +19,16 @@
     top: auto;
     z-index: 35;
     align-items: flex-start;
-    max-width: min(300px, calc(100% - 24px));
+    max-width: min(480px, calc(100% - 24px));
     max-height: 60%;
     overflow: visible;
     pointer-events: none;
   }
 
   .kura-viewport-wrap > .kura-toast-stack:not(.kura-toast-stack-modal) .kura-toast {
-    width: 300px;
+    /* Ancho según el contenido hasta ~480 px; el texto parte en espacios y solo corta una palabra que no cabe. */
+    width: fit-content;
+    min-width: min(260px, 100%);
     max-width: 100%;
     padding: 7px 10px;
   }

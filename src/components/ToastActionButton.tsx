@@ -20,17 +20,31 @@ export function focusWhenMounted(selector: string, tries = 0): void {
   });
 }
 
-export const ToastActionButton: React.FC<{ action: ToastAction; className: string; onRun: () => void }> = ({ action, className, onRun }) => {
+interface ButtonProps {
+  action: ToastAction;
+  className: string;
+  onRun: () => void;
+  /** Acción no disponible: queda deshabilitada y `reason` (tooltip y descripción) explica por qué. */
+  disabled?: boolean;
+  reason?: string | null;
+  /** Id de un texto visible que ya muestra el motivo; si se pasa, el botón lo usa como descripción. */
+  reasonId?: string;
+}
+
+export const ToastActionButton: React.FC<ButtonProps> = ({ action, className, onRun, disabled = false, reason = null, reasonId }) => {
   const descId = useId();
-  const { name, description } = toastActionA11y(action);
+  const a11y = toastActionA11y(action);
+  const { name } = a11y;
+  const description = reason ?? a11y.description;
   return (
     <>
       <button
         type="button"
         className={className}
         aria-label={name}
-        aria-describedby={description ? descId : undefined}
+        aria-describedby={reason && reasonId ? reasonId : description ? descId : undefined}
         title={description}
+        disabled={disabled}
         onClick={() => {
           onRun();
           if (action.focusAfter) focusWhenMounted(action.focusAfter);
@@ -38,7 +52,7 @@ export const ToastActionButton: React.FC<{ action: ToastAction; className: strin
       >
         {action.label}
       </button>
-      {description && <span id={descId} className="sr-only">{description}</span>}
+      {description && !(reason && reasonId) && <span id={descId} className="sr-only">{description}</span>}
     </>
   );
 };

@@ -58,7 +58,7 @@
 }
 
 .kura-toast > span {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .kura-toast.success {

@@ -22,18 +22,42 @@ import { useTopModal } from './useTopModal';
 import { ToastItem } from './ToastItem';
 import { useToastClearance } from './useToastClearance';
 
-/** Holgura entre la pila y el diálogo o el borde de la ventana (px). */
+/** Holgura entre la pila y el diálogo (px). */
 const GAP = 8;
+/** Misma zona que `toastZone.css`: esquina inferior izquierda del visor, a 12 px del borde y 148 px del fondo. */
+const ZONE_LEFT = 12;
+const ZONE_BOTTOM = 148;
+/** Debajo de este ancho de ventana los avisos van arriba (`toastNarrow.css`) y no se suben sobre el velo. */
+const ZONE_MIN_WIDTH = 901;
 
-/** Dónde va la pila con un diálogo modal abierto: en la franja libre bajo/sobre el diálogo, o detrás del velo. */
-type ModalSlot = 'bottom' | 'top' | 'behind';
+/**
+ * Dónde va la pila con un diálogo modal abierto. Se queda en su lugar habitual (esquina inferior izquierda del visor,
+ * donde el usuario ya la busca y sin tapar la tira de placas ni el pie). Si ahí no pisa al diálogo, se pinta sobre el
+ * velo para que un error que nace dentro del diálogo se lea y se pueda cerrar; si lo pisaría, sigue en la misma columna
+ * justo debajo (o encima) del diálogo y, si tampoco cabe, queda detrás del velo en el mismo sitio. Nunca tapa el diálogo.
+ */
+interface ModalPlacement {
+  above: boolean;
+  left: number;
+  bottom: number;
+  maxWidth: number;
+}
 
-function pickSlot(modal: HTMLElement, stackHeight: number): ModalSlot {
-  const r = modal.getBoundingClientRect();
-  const need = stackHeight + 2 * GAP;
-  if (window.innerHeight - r.bottom >= need) return 'bottom';
-  if (r.top >= need) return 'top';
-  return 'behind';
+function placeWithModal(modal: HTMLElement, size: { width: number; height: number }): ModalPlacement {
+  const zone = document.querySelector('.kura-viewport-wrap');
+  // Sin zona de avisos (pruebas) o en pantallas angostas, donde los avisos van arriba, se usa la esquina de la ventana.
+  const z = zone && window.innerWidth >= ZONE_MIN_WIDTH ? zone.getBoundingClientRect() : null;
+  const left = z ? z.left + ZONE_LEFT : ZONE_LEFT;
+  const bottom = z ? window.innerHeight - z.bottom + ZONE_BOTTOM : 16;
+  const maxWidth = Math.max(0, (z ? z.width : window.innerWidth) - 2 * ZONE_LEFT);
+  const m = modal.getBoundingClientRect();
+  const box = { left, right: left + Math.min(size.width, maxWidth, 480), bottom: window.innerHeight - bottom, top: window.innerHeight - bottom - size.height };
+  const overlaps = box.left < m.right + GAP && box.right > m.left - GAP && box.top < m.bottom + GAP && box.bottom > m.top - GAP;
+  if (!overlaps) return { above: true, left, bottom, maxWidth };
+  // El lugar habitual cae sobre el diálogo: sigue en la misma columna pero justo debajo (o encima) de él, si cabe.
+  if (m.bottom + GAP + size.height + GAP <= window.innerHeight) return { above: true, left, bottom: window.innerHeight - (m.bottom + GAP + size.height), maxWidth };
+  if (m.top - GAP - size.height >= GAP) return { above: true, left, bottom: window.innerHeight - (m.top - GAP), maxWidth };
+  return { above: false, left, bottom, maxWidth };
 }
 
 export const ToastStack: React.FC = () => {
@@ -44,15 +68,19 @@ export const ToastStack: React.FC = () => {
   const modal = useTopModal();
   const stackRef = useRef<HTMLDivElement | null>(null);
   const toastCount = toasts.length;
-  // Con un modal abierto la pila nunca se dibuja sobre él: va en la franja libre o, si no cabe, queda detrás.
-  const [slot, setSlot] = useState<ModalSlot>('behind');
-  const inModal = modal !== null && slot !== 'behind';
+  // Con un modal abierto la pila conserva su lugar habitual: sobre el velo si no pisa al diálogo, detrás si lo pisaría.
+  const [placement, setPlacement] = useState<ModalPlacement | null>(null);
+  const inModal = modal !== null && placement !== null && placement.above;
 
   useToastClearance(stackRef, toastCount > 0 && !inModal);
 
   useLayoutEffect(() => {
     if (!modal) return undefined;
-    const measure = () => setSlot(pickSlot(modal, stackRef.current?.offsetHeight || 160));
+    const measure = () => {
+      const el = stackRef.current;
+      const next = placeWithModal(modal, { width: el?.offsetWidth || 480, height: el?.offsetHeight || 160 });
+      setPlacement((prev) => (prev && prev.above === next.above && prev.left === next.left && prev.bottom === next.bottom && prev.maxWidth === next.maxWidth ? prev : next));
+    };
     measure();
     // El diálogo entra con una transición de escala: se vuelve a medir cuando termina.
     const later = window.setTimeout(measure, 320);
@@ -82,7 +110,8 @@ export const ToastStack: React.FC = () => {
   const stack = (
     <div
       className={inModal ? 'kura-toast-stack kura-toast-stack-modal' : 'kura-toast-stack'}
-      data-slot={inModal ? slot : undefined}
+      data-slot={inModal ? 'zone' : undefined}
+      style={inModal && placement ? { left: placement.left, bottom: placement.bottom, maxWidth: placement.maxWidth } : undefined}
       ref={stackRef}
       {...(inModal ? ({ popover: 'manual' } as Record<string, string>) : {})}
     >

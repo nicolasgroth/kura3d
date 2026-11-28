@@ -17,6 +17,7 @@ import type { ToastAction, ToastMessage } from '../store/storeTypes';
 import { useKuraStore } from '../store/useKuraStore';
 import { indexObjects, toastIsSticky } from '../store/toastActionState';
 import { ToastActionButton } from './ToastActionButton';
+import { restoreFocusAfter } from './toastFocus';
 
 /** Tiempo a la vista de un informativo o de éxito antes de pasar solo al histórico. */
 export const TOAST_AUTO_MS = 6000;
@@ -37,6 +38,9 @@ const staysUntilClosed = (toast: ToastMessage) => toast.kind === 'error' || toas
 
 export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss, onExpire = onDismiss }) => {
   const [paused, setPaused] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  // Elemento que tenía el foco antes de entrar al emergente: al cerrarlo o usar su acción el foco vuelve ahí.
+  const returnTo = useRef<HTMLElement | null>(null);
   const remaining = useRef(toast.action || toast.secondaryAction ? TOAST_ACTION_MS : TOAST_AUTO_MS);
   const isError = toast.kind === 'error';
   const objects = useKuraStore((s) => s.objects);
@@ -55,6 +59,13 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss, onExpir
   // «Deshacer» nunca debe revertir otra cosa.
   const actionLive = (a: ToastAction) => !a.applicable || a.applicable();
 
+  /** Ejecuta un cierre o una acción y, si el foco estaba dentro del emergente, evita que caiga a `<body>`. */
+  const leave = (run: () => void) => {
+    const inside = Boolean(rootRef.current?.contains(document.activeElement));
+    run();
+    if (inside) restoreFocusAfter(returnTo.current);
+  };
+
   useEffect(() => {
     if (paused || sticky) return undefined;
     const started = Date.now();
@@ -67,37 +78,42 @@ export const ToastItem: React.FC<Props> = ({ toast, language, onDismiss, onExpir
 
   return (
     <div
+      ref={rootRef}
       className={`kura-toast ${toast.kind}`}
       data-sticky={sticky ? 'true' : undefined}
       role={isError ? 'alert' : 'status'}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
+      onFocus={(e) => {
+        setPaused(true);
+        const from = e.relatedTarget as HTMLElement | null;
+        if (from && !e.currentTarget.contains(from)) returnTo.current = from;
+      }}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false);
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.stopPropagation();
-          onDismiss(toast.id);
+          leave(() => onDismiss(toast.id));
         }
       }}
     >
       <span>{toast.text}</span>
       {toast.action && actionLive(toast.action) && (
-        <ToastActionButton action={toast.action} className="kura-btn kura-btn-sm kura-toast-action" onRun={() => runToastAction(toast.id, toast.action!)} />
+        <ToastActionButton action={toast.action} className="kura-btn kura-btn-sm kura-toast-action" onRun={() => leave(() => runToastAction(toast.id, toast.action!))} />
       )}
       {toast.secondaryAction && actionLive(toast.secondaryAction) && (
         <ToastActionButton
           action={toast.secondaryAction}
           className="kura-btn kura-btn-sm kura-btn-ghost kura-toast-action is-secondary"
-          onRun={() => runToastAction(toast.id, toast.secondaryAction!)}
+          onRun={() => leave(() => runToastAction(toast.id, toast.secondaryAction!))}
         />
       )}
       <button
         type="button"
         className="kura-mini-icon-btn"
-        onClick={() => onDismiss(toast.id)}
+        onClick={() => leave(() => onDismiss(toast.id))}
         aria-label={t(language, 'common.close')}
         title={t(language, 'common.close')}
       >

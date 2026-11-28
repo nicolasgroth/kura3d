@@ -48,9 +48,9 @@ for (const [w, h] of [[1280, 720], [1440, 900]] as const) {
     await expect(page.locator('.kura-toast')).toHaveCount(1);
     await expect(page.getByRole('button', { name: /avisos más|Cerrar todos/ })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^\d+ errores/ })).toBeVisible();
-    // Abajo a la izquierda del visor: no toca el panel derecho, el cubo de vista ni la mitad derecha del visor.
+    // Abajo a la izquierda del visor: no toca el panel derecho, el cubo de vista ni el cuarto derecho del visor (el emergente ajusta su ancho al texto, hasta ~480 px).
     const visor = await caja(page, '.kura-viewport-wrap');
-    expect(rp.x + rp.w).toBeLessThan(visor.x + visor.w / 2);
+    expect(rp.x + rp.w).toBeLessThan(visor.x + visor.w * 0.75);
     expect(rp.y).toBeGreaterThan(visor.y + visor.h * 0.4);
     for (const sel of ['#kura-inspector-panel', '.kura-tool-rail', '.kura-hud-top-stack']) {
       if (await page.locator(sel).count()) {

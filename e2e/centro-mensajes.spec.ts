@@ -70,11 +70,11 @@ for (const [w, h] of [[1024, 768], [1440, 900]] as const) {
         await expect(page.getByRole('dialog')).toHaveCount(1);
         await expect(page.getByRole('dialog', { name: 'Errores' })).toBeVisible();
         // Quitar uno a uno y Vaciar.
-        await page.getByRole('dialog', { name: 'Errores' }).getByRole('button', { name: 'Quitar este mensaje' }).click();
+        await page.getByRole('dialog', { name: 'Errores' }).getByRole('button', { name: /^Quitar: / }).click();
         await expect(page.getByRole('dialog')).toHaveCount(0);
         await expect(icono(page, /error/)).toHaveCount(0);
         await inf.click();
-        await page.getByRole('dialog', { name: 'Información' }).getByRole('button', { name: 'Quitar este mensaje' }).first().click();
+        await page.getByRole('dialog', { name: 'Información' }).getByRole('button', { name: /^Quitar: / }).first().click();
         await expect(icono(page, '2 mensajes informativos')).toBeVisible();
         await page.getByRole('dialog', { name: 'Información' }).getByRole('button', { name: /^Vaciar/ }).click();
         await expect(page.getByTestId('toast-center').getByRole('button', { name: /informativo/ })).toHaveCount(0);

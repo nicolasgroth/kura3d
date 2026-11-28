@@ -16,6 +16,8 @@ import { useKuraStore } from '../store/useKuraStore';
 import { TOAST_BUCKETS, toastBucket, type ToastBucket } from '../store/toastCenter';
 import type { ToastHistoryEntry } from '../store/storeTypes';
 import { ToastCenterPanel } from './ToastCenterPanel';
+import { findTopModal } from './useTopModal';
+import { focusIsLost, focusViewer } from './toastFocus';
 import '../styles/toastCenter.css';
 
 const ICONS = { error: AlertOctagon, warning: AlertTriangle, info: Info } as const;
@@ -33,24 +35,43 @@ export const ToastCenter: React.FC = () => {
     return groups;
   }, [history]);
 
+  // Foco al icono del tipo; si ya no existe (se quedó sin mensajes), al primer icono que quede y, si no hay, al visor.
   const focusTrigger = useCallback((bucket: ToastBucket) => {
-    rootRef.current?.querySelector<HTMLElement>(`[data-bucket="${bucket}"]`)?.focus();
+    const root = rootRef.current;
+    const icon = root?.querySelector<HTMLElement>(`[data-bucket="${bucket}"]`) ?? root?.querySelector<HTMLElement>('.kura-toast-center-btn');
+    if (icon) icon.focus();
+    else focusViewer();
   }, []);
 
-  // El tipo abierto se queda sin mensajes: el panel se cierra y el foco pasa al primer icono que quede.
+  // El tipo abierto se queda sin mensajes: el panel se cierra y el foco pasa al primer icono que quede o al visor.
   useEffect(() => {
     if (open && byBucket[open].length === 0) {
       setOpen(null);
-      const next = TOAST_BUCKETS.find((b) => byBucket[b].length > 0);
-      if (next) requestAnimationFrame(() => focusTrigger(next));
+      requestAnimationFrame(() => {
+        const next = TOAST_BUCKETS.find((b) => byBucket[b].length > 0);
+        if (next) focusTrigger(next);
+        else focusViewer();
+      });
     }
   }, [open, byBucket, focusTrigger]);
+
+  // Red de seguridad: si el elemento con foco dentro del centro desaparece (un icono sin mensajes, una fila quitada
+  // al resolverse su pieza), el foco no queda en `<body>`: pasa al visor.
+  const hadFocus = useRef(false);
+  useEffect(() => {
+    if (hadFocus.current && focusIsLost()) {
+      hadFocus.current = false;
+      focusViewer();
+    }
+  }, [byBucket, open]);
 
   useEffect(() => {
     if (!open) return undefined;
     const bucket = open;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      // Con la paleta de comandos o un diálogo modal encima, el Escape es suyo: el panel no lo consume.
+      if (findTopModal()) return;
       e.stopPropagation();
       setOpen(null);
       focusTrigger(bucket);
@@ -68,10 +89,34 @@ export const ToastCenter: React.FC = () => {
   }, [open, focusTrigger]);
 
   const present = TOAST_BUCKETS.filter((b) => byBucket[b].length > 0);
-  if (present.length === 0) return null;
+  const summary = present.map((b) => t(language, `toastCenter.count.${b}` as TranslationKey, { count: byBucket[b].length })).join(', ');
+  // Región discreta fuera del contenedor (que solo existe con mensajes): los lectores de pantalla anuncian los
+  // contadores cuando cambian, no en cada render. Va montada siempre para que el primer cambio se anuncie.
+  const live = (
+    <span className="sr-only" aria-live="polite" aria-atomic="true" data-testid="toast-center-live">{summary}</span>
+  );
+  if (present.length === 0) return live;
 
   return (
-    <div ref={rootRef} className="kura-toast-center" data-testid="toast-center">
+    <>
+    {live}
+    <div
+      ref={rootRef}
+      className="kura-toast-center"
+      data-testid="toast-center"
+      onFocusCapture={() => {
+        hadFocus.current = true;
+      }}
+      onBlurCapture={(e) => {
+        const target = e.target as Node;
+        const next = e.relatedTarget as Node | null;
+        if (next && rootRef.current?.contains(next)) return;
+        // Un elemento que se retira del documento con el foco no cuenta como que el usuario se fue a otro sitio.
+        requestAnimationFrame(() => {
+          if (target.isConnected) hadFocus.current = false;
+        });
+      }}
+    >
       <div className="kura-toast-center-icons">
         {present.map((bucket) => {
           const Icon = ICONS[bucket];
@@ -103,10 +148,15 @@ export const ToastCenter: React.FC = () => {
           entries={byBucket[open]}
           onClose={() => {
             setOpen(null);
-            focusTrigger(open);
+            // El foco va al icono del tipo; si la acción lo deja sin mensajes, la red de seguridad lo pasa al visor.
+            // Solo si el foco se perdió: una acción que ya llevó el foco a otro control («Ver detalles») lo conserva.
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              if (focusIsLost()) focusTrigger(open);
+            }));
           }}
         />
       )}
     </div>
+    </>
   );
 };

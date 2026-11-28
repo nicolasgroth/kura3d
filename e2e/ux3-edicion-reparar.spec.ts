@@ -35,10 +35,14 @@ test('reparar malla deja un aviso con el resumen y «Ver detalles» lleva a las 
   // Menú del objeto: «Reparar malla» está en el submenú «Malla» (los mismos grupos que el menú «Acciones»).
   await page.getByRole('menuitem', { name: 'Malla', exact: true }).click();
   await page.getByRole('menuitem', { name: /Reparar malla/ }).click();
-  const aviso = page.getByText(/Malla reparada: .*agujero.*triángulos: 11 → 12/);
-  await expect(aviso).toBeVisible({ timeout: 15000 });
+  // El agujero grande cerrado con una tapa llega como advertencia y queda a la vista; el resumen de la reparación
+  // (con «Ver detalles») queda en el histórico de información.
+  await expect(page.locator('.kura-toast.warning')).toContainText(/agujero/, { timeout: 15000 });
   await page.screenshot({ path: `${SHOTS}/8-reparar.png` });
-  await page.getByRole('button', { name: 'Ver detalles' }).first().click();
+  await page.getByRole('button', { name: /mensajes? informativos?$/ }).click();
+  const resumen = page.getByRole('dialog', { name: 'Información' }).locator('li', { hasText: /Malla reparada: .*agujero.*triángulos: 11 → 12/ });
+  await expect(resumen).toBeVisible({ timeout: 15000 });
+  await resumen.getByRole('button', { name: 'Ver detalles' }).click();
   await expect(stats).toBeFocused();
   await expect(stats.locator('.kura-stat-box', { hasText: 'Triángulos' })).toContainText('12');
   expect(errs).toEqual([]);

@@ -19,7 +19,7 @@ function isModal(dialog: HTMLDialogElement): boolean {
   }
 }
 
-function findTopModal(): HTMLDialogElement | null {
+export function findTopModal(): HTMLDialogElement | null {
   const open = Array.from(document.querySelectorAll<HTMLDialogElement>('dialog[open]')).filter(isModal);
   return open.length > 0 ? open[open.length - 1] : null;
 }
