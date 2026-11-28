@@ -16,19 +16,19 @@ import { formatNumber } from '../../utils/plural';
 export const SIMPLIFY_SLOW_TRIANGLES = 1_000_000;
 
 /** Texto visible de una fase de simplificar, o null si la fase no es de simplificar. */
-export function simplifyPhaseLabel(language: LanguageCode, phase: string | null | undefined): string | null {
+export function simplifyPhaseLabel(language: LanguageCode, phase: string | null | undefined, mode?: string): string | null {
   if (!phase || !phase.startsWith('simplify:')) return null;
   const rest = phase.slice('simplify:'.length);
   if (rest === 'verify') return t(language, 'simplify.progress.verify');
   if (rest.startsWith('safe:')) {
     const step = parseSimplifyStep(phase);
-    return step ? simplifyStepLabel(language, step) : null;
+    return step ? simplifyStepLabel(language, step, mode) : null;
   }
   const m = /^(\d{1,4})\/(\d{1,4})$/.exec(rest);
   if (!m) return null;
   const total = Number(m[2]);
   if (total <= 1) return t(language, 'simplify.progress.reduce');
-  return t(language, 'simplify.progress.attempt', { done: formatNumber(language, Number(m[1])), total: formatNumber(language, total) });
+  return t(language, mode === 'tolerance' ? 'simplify.progress.rung' : 'simplify.progress.attempt', { done: formatNumber(language, Number(m[1])), total: formatNumber(language, total) });
 }
 
 export interface SimplifyStep {
@@ -48,10 +48,13 @@ export function parseSimplifyStep(phase: string | null | undefined): SimplifySte
   return { kind: m[1] ? 'safe' : 'attempt', done: Math.min(Number(m[2]), total), total };
 }
 
-/** Texto de un paso («intento 3 de 12», «paso 2 de 8» de la versión segura). */
-export function simplifyStepLabel(language: LanguageCode, step: SimplifyStep): string {
+/**
+ * Texto de un paso («intento 3 de 12» al ajustar al objetivo, «paso 3 de 13» por la escalera de tolerancias, «paso 2 de 8»
+ * de la versión segura). `mode` es el modo de la petición: en «Por tolerancia» los pasos son peldaños, no intentos.
+ */
+export function simplifyStepLabel(language: LanguageCode, step: SimplifyStep, mode?: string): string {
   const params = { done: formatNumber(language, step.done), total: formatNumber(language, step.total) };
-  return t(language, step.kind === 'safe' ? 'simplify.progress.safe' : 'simplify.progress.attempt', params);
+  return t(language, step.kind === 'safe' ? 'simplify.progress.safe' : mode === 'tolerance' ? 'simplify.progress.rung' : 'simplify.progress.attempt', params);
 }
 
 /** Aviso de espera larga para modelos pesados; null si no corresponde. */

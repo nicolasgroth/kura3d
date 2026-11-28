@@ -19,6 +19,7 @@ import { withAddonPosts } from '../../core/operations/addonPostMerge';
 import { OPERATION_DEFAULTS } from '../../engine/operationLimits';
 import { classifySimplifyResult } from '../../core/operations/simplifyOutcome';
 import type { SimplifyRequest } from '../../engine/simplify';
+import { simplifyPct } from '../../i18n/simplifyNumbers';
 import { simplifyBlockedToast, simplifyChecksText, simplifySafeAppliedSentence, simplifyWarningText } from '../../i18n/simplifyWarnings';
 import { isEngineCancelled } from '../../core/operations/engineClient';
 import { sceneSimplifyReport } from './simplifyPreviewSlice';
@@ -170,7 +171,9 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         const undo = undoToastAction(tr('toast.undo'), () => get().past, () => get().undo(), true, true);
         // Con el panel abierto: un solo aviso corto con «Deshacer»; el detalle está en el informe del panel.
         if (inPanel) {
-          get().addToast(tr('simplify.toast.short', { before: counts.before, after: counts.tris }), 'success', undo);
+          // Un solo mensaje por resultado: si se aplicó la versión segura, lo dice (el informe del panel trae el detalle).
+          const safe = report.appliedVariant === 'safe';
+          get().addToast(tr(safe ? 'simplify.toast.shortSafe' : 'simplify.toast.short', { before: counts.before, after: counts.tris }), safe ? 'info' : 'success', undo);
           return true;
         }
         // Menos de 1 % de reducción no se anuncia como éxito: ese aviso reemplaza al de resultado (uno solo, con «Deshacer»).
@@ -180,7 +183,7 @@ export function createGeometrySlice(ctx: StoreContext): Partial<KuraStoreState> 
         }
         // Siempre: triángulos antes -> después y cambio de volumen en % (el aviso de > 2 % sigue aparte).
         const pct = report.volumeChangePct;
-        const delta = new Intl.NumberFormat(lang, { maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(Math.round(pct * 100) / 100);
+        const delta = simplifyPct(lang, pct, true);
         // Avisos de la verificación (género, volumen, desviación, objetivo) en el mismo aviso: deja de ser «éxito».
         const checks = report.warnings.filter((w) => w !== 'no_reduction');
         const { calm, check } = simplifyChecksText(lang, report, checks);

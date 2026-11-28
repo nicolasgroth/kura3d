@@ -1,6 +1,7 @@
 /**
  * @file src/components/inspector/MeshRefinePanel.tsx
  * @description Panel Simplificar / Refinar malla del inspector (Simplificar con modos e informe en `SimplifySection`).
+ * Refinar solo se ejecuta con su botón: Enter en «Arista objetivo» confirma el valor y nada más.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
  * @license AGPL-3.0-or-later
@@ -21,7 +22,9 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
   const { simplifyTolMm, setSimplifyTolMm, refineEdgeMm, setRefineEdgeMm, refineSmooth, setRefineSmooth } = ui;
   const language = useKuraStore((s) => s.language);
   // Campos fuera de rango o no numéricos: se marcan y la operación no se aplica (nada se acota en silencio).
+  // Simplificar y Refinar llevan cada uno los suyos: un campo inválido de uno no bloquea ni desenfoca al otro.
   const invalid = useInvalidFields();
+  const invalidRefine = useInvalidFields();
   const busyOperation = useKuraStore((s) => s.busyOperation);
   const refineSelectedMesh = useKuraStore((s) => s.refineSelectedMesh);
   const runConvexHull = useKuraStore((s) => s.runConvexHull);
@@ -55,7 +58,7 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
         <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
           <PrecisionNumberInput
             strictRange
-            onInvalidChange={invalid.track('f2')}
+            onInvalidChange={invalidRefine.track('f2')}
             style={{ width: 92 }}
             min={0.2}
             max={10}
@@ -69,8 +72,9 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
           <button
             type="button"
             className="kura-btn kura-btn-sm"
-            disabled={isBusy || primary.locked || invalid.blocked}
-            onClick={() => void refineSelectedMesh(primary.id, refineEdgeMm, refineSmooth)}
+            disabled={isBusy || primary.locked}
+            aria-disabled={invalidRefine.blocked || undefined}
+            onClick={() => { if (!invalidRefine.blocked) void refineSelectedMesh(primary.id, refineEdgeMm, refineSmooth); }}
           >
             <Wand2 size={12} />
             <span>{t(language, 'inspector.pro.refineBtn')}</span>

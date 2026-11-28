@@ -37,8 +37,8 @@ describe('SimplifyReportView', () => {
     render(<SimplifyReportView report={NOTICE} language="es" />);
     expect(screen.getByTestId('simplify-notice').textContent).toContain('Se aplicó lo pedido, con aviso');
     const warn = screen.getByTestId('simplify-report-warnings').textContent ?? '';
-    expect(warn).toContain('El volumen cambió -5,4 % (se avisa desde 5 %).');
-    expect(warn).toContain('La superficie se movió hasta 1,7 mm (se avisa desde 1 mm).');
+    expect(warn).toContain('El volumen cambió -5,4 % (se avisa desde 5,0 %).');
+    expect(warn).toContain('La superficie se movió hasta 1,70 mm (se avisa desde 1,00 mm).');
     expect(warn).not.toMatch(/0,5 %|0,1 mm|tope/);
     expect(screen.queryByTestId('simplify-blocked')).toBeNull();
     expect(screen.queryByTestId('simplify-apply-anyway')).toBeNull();
@@ -51,7 +51,7 @@ describe('SimplifyReportView', () => {
       limits: { noticeVolumePct: 5, noticeDeviationMm: 1, destructiveVolumePct: 25, destructiveDeviationMm: 0.75, minSideMm: 3, minTriangles: 72 },
     };
     render(<SimplifyReportView report={plate} language="es" />);
-    expect(screen.getByTestId('simplify-blocked').textContent).toContain('La superficie se mueve 2,19 mm (tope 0,75 mm: un cuarto del lado menor de la pieza, 3 mm).');
+    expect(screen.getByTestId('simplify-blocked').textContent).toContain('La superficie se mueve 2,19 mm (tope 0,75 mm: un cuarto del lado menor de la pieza, 3,00 mm).');
     expect(screen.queryByTestId('simplify-notice')).toBeNull();
   });
 

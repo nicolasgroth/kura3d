@@ -21,11 +21,12 @@ import { undoToastAction } from '../../store/toastActionState';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
+import { restoreFocusAfter } from '../toastFocus';
 import type { useInvalidFields } from '../useInvalidFields';
 import { simplifySignature } from '../../store/slices/simplifyPreviewSlice';
 import { SIMPLIFY_REQUEST_FRESH_MS, suggestHeavyTarget } from './simplifyPanelRequest';
 import { SimplifyOpenMeshNotice } from './SimplifyOpenMeshNotice';
-import { SimplifyGhostControls, SimplifyPreviewProgress } from './SimplifyPreviewExtras';
+import { SimplifyGhostControls, SimplifyWorkProgress } from './SimplifyPreviewExtras';
 import { SimplifyReportView } from './SimplifyReportView';
 import '../../styles/simplifyPanel.css';
 
@@ -72,6 +73,10 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   // Malla abierta al aplicar (en la vista previa el motor deja el error en su sesión).
   const [applyMeshError, setApplyMeshError] = useState<{ detail?: string } | null>(null);
   const launcher = useRef<'preview' | 'run'>('preview');
+  // Reparando desde el aviso de malla abierta: el aviso y su botón siguen en pantalla (con el foco) hasta que termina.
+  const [repairing, setRepairing] = useState(false);
+  const phase = useKuraStore((s) => s.busyProgress?.phase ?? null);
+  const invalidHintId = `${uid}-invalid`;
   const repairObjectMesh = useKuraStore((s) => s.repairObjectMesh);
   const current = primary.stats.triangles;
   const count = targetCount ?? Math.max(R.targetTriangles.min, Math.round(current / 2));
@@ -129,19 +134,17 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   }, [working, hasReport]);
   const previewMeshError = previewSession?.objectId === primary.id && previewSession.status === 'error' && previewSession.errorCode === 'MESH_INVALID'
     ? { detail: previewSession.errorDetail } : null;
-  const meshError = previewMeshError ?? applyMeshError;
+  // La malla abierta se avisa al abrir el panel (`stats.isManifold` ya está calculado: sin costo), no solo al pedir la vista previa.
+  const meshError = previewMeshError ?? applyMeshError ?? (primary.stats.isManifold ? null : {} as { detail?: string });
   // Una malla nueva (reparada) o una pieza distinta dejan atrás el bloqueo de la anterior.
   useEffect(() => setApplyMeshError(null), [primary.id, primary.mesh]);
   const repair = () => {
-    setApplyMeshError(null);
-    clearSimplifyPreview();
-    // El aviso (con su botón) desaparece al limpiar el bloqueo: al terminar la reparación el foco vuelve a «Vista previa».
+    if (repairing || busy) return;
+    setRepairing(true);
+    // Al cambiar la malla, el aviso (con su botón) desaparece solo; si la reparación no la cambia, el aviso sigue con el foco.
     void Promise.resolve(repairObjectMesh(primary.id)).finally(() => {
-      window.setTimeout(() => {
-        const active = document.activeElement;
-        if (active && active !== document.body && active.isConnected && !(active instanceof HTMLButtonElement && active.disabled)) return;
-        rootRef.current?.querySelector<HTMLElement>('[data-testid="simplify-preview"]')?.focus({ preventScroll: true });
-      }, 0);
+      setRepairing(false);
+      restoreFocusAfter(rootRef.current?.querySelector<HTMLElement>('[data-testid="simplify-preview"]') ?? null);
     });
   };
   const undone = Boolean(last?.report.applied && appliedDepth !== null && past.length < appliedDepth);
@@ -201,7 +204,11 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   previewRef.current = runPreview;
   const onEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Enter' || e.defaultPrevented === false || !(e.target instanceof HTMLInputElement)) return;
-    window.setTimeout(() => previewRef.current(), 0);
+    window.setTimeout(() => {
+      previewRef.current();
+      // El campo se desenfocó al confirmar: si la vista previa no arranca (valor inválido, pieza bloqueada), el foco vuelve al botón.
+      restoreFocusAfter(rootRef.current?.querySelector<HTMLElement>('[data-testid="simplify-preview"]') ?? null);
+    }, 0);
   };
 
   return (
@@ -293,7 +300,9 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
           className="kura-btn kura-btn-sm"
           data-testid="simplify-preview"
           title={t(language, 'simplify.preview.btnHint')}
-          disabled={busy || primary.locked || invalid.blocked || previewing}
+          disabled={busy || primary.locked || previewing}
+          aria-disabled={invalid.blocked || undefined}
+          aria-describedby={invalid.blocked ? invalidHintId : undefined}
           onClick={runPreview}
         >
           {t(language, 'simplify.preview.btn')}
@@ -302,29 +311,32 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
           type="button"
           className="kura-btn kura-btn-sm kura-btn-primary kura-simplify-run"
           data-testid="simplify-run"
-          disabled={busy || primary.locked || invalid.blocked}
+          disabled={busy || primary.locked}
+          aria-disabled={invalid.blocked || undefined}
+          aria-describedby={invalid.blocked ? invalidHintId : undefined}
           onClick={run}
         >
           {t(language, 'inspector.pro.simplifyBtn')}
         </button>
       </div>
+      {invalid.blocked && <p id={invalidHintId} className="kura-cut-hint" role="status" data-testid="simplify-invalid-hint">{t(language, 'simplify.invalid.hint')}</p>}
       {previewing && previewSession && (
-        <div className="kura-cut-hint" role="status" data-testid="simplify-preview-computing">
-          <SimplifyPreviewProgress session={previewSession} language={language} />
+        <div className="kura-cut-hint" data-testid="simplify-preview-computing">
+          <SimplifyWorkProgress phase={previewSession.phase} language={language} mode={mode} textKey="simplify.preview.computing" testPrefix="simplify-preview" />
           <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-preview-cancel" onClick={cancelSimplifyPreview}>
             {t(language, 'simplify.preview.cancel')}
           </button>
         </div>
       )}
       {applying && !previewing && (
-        <div className="kura-cut-hint" role="status" data-testid="simplify-applying">
-          <span>{t(language, 'simplify.applying')}</span>
+        <div className="kura-cut-hint" data-testid="simplify-applying">
+          <SimplifyWorkProgress phase={phase} language={language} mode={mode} textKey="simplify.applying" testPrefix="simplify-apply" />
           <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-apply-cancel" onClick={() => useKuraStore.getState().cancelBusyOperation()}>
             {t(language, 'simplify.preview.cancel')}
           </button>
         </div>
       )}
-      {meshError && <SimplifyOpenMeshNotice language={language} detail={meshError.detail} busy={busy} onRepair={repair} />}
+      {meshError && <SimplifyOpenMeshNotice language={language} detail={meshError.detail} busy={busy} repairing={repairing} onRepair={repair} />}
       {previewError && !previewMeshError && <p className="kura-cut-hint" role="alert" data-testid="simplify-preview-error">{previewError}</p>}
 
       {previewReady && previewSession && <SimplifyGhostControls session={previewSession} language={language} />}
@@ -332,7 +344,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
         ? <SimplifyReportView report={previewReady} language={language} preview ghost={ghostShown(previewSession, previewReady)} />
         : last && last.id === primary.id && undone
           ? <p className="kura-cut-hint" role="status" data-testid="simplify-undone">{t(language, 'simplify.report.undone')}</p>
-          : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} onApplied={adopt} onReplacing={() => setAppliedDepth(null)} />}
+          : last && last.id === primary.id && <SimplifyReportView report={last.report} language={language} onUndo={undoStep?.applicable?.() ? undoStep.run : undefined} onApplied={adopt} onReplacing={() => setAppliedDepth(null)} onWorking={setApplying} />}
     </div>
   );
 };

@@ -21,6 +21,7 @@ import {
 import type { LanguageCode } from '../types/kura';
 import { t, type TranslationKey } from './index';
 import { formatLocaleNumber } from './numberLocale';
+import { simplifyMm, simplifyPct } from './simplifyNumbers';
 
 /**
  * Topes de aviso con que se midió el informe: en «Sin pérdida» los de esa verificación; en los otros modos los de
@@ -58,52 +59,56 @@ export function simplifyChecksText(lang: LanguageCode, report: SimplifyReport, c
   };
 }
 
-/** Frase de un aviso. En «Sin pérdida» los límites son los de esa verificación. */
-export function simplifyWarningSentence(lang: LanguageCode, report: SimplifyReport, code: SimplifyWarningCode): string {
+/**
+ * Frase de un aviso. En «Sin pérdida» los límites son los de esa verificación. Con `tense: 'conditional'` (vista previa)
+ * va en condicional («cambiaría el volumen…»): nada se aplicó todavía; el pasado queda para lo ya aplicado.
+ */
+export function simplifyWarningSentence(lang: LanguageCode, report: SimplifyReport, code: SimplifyWarningCode, tense: 'past' | 'conditional' = 'past'): string {
   const limits = noticeLimits(report);
-  const n = (v: number, digits: number) => formatLocaleNumber(lang, v, { maxFrac: digits, grouping: digits === 0 });
+  const n = (v: number) => formatLocaleNumber(lang, v, { maxFrac: 0, grouping: true });
+  const cond = tense === 'conditional';
   switch (code) {
     case 'genus_changed':
       // Agujeros cerrados con una desviación que no se imprime (no fue destructivo): se dice que eran muy finos.
       if (isFineHolesClosure(report)) {
-        return t(lang, 'simplify.warn.fine_holes_closed', {
-          count: report.genusBefore - report.genusAfter, before: report.genusBefore, after: report.genusAfter, mm: n(report.maxDeviationMm, 3),
+        return t(lang, cond ? 'simplify.warn.fine_holes_closed.preview' : 'simplify.warn.fine_holes_closed', {
+          count: report.genusBefore - report.genusAfter, before: report.genusBefore, after: report.genusAfter, mm: simplifyMm(lang, report.maxDeviationMm),
         });
       }
-      return t(lang, 'simplify.warn.genus_changed', { before: report.genusBefore, after: report.genusAfter });
+      return t(lang, cond ? 'simplify.warn.genus_changed.preview' : 'simplify.warn.genus_changed', { before: report.genusBefore, after: report.genusAfter });
     case 'volume_changed':
-      return t(lang, 'simplify.warn.volume_changed', { pct: n(report.volumeChangePct, 3), limit: n(limits.maxVolumePct, 3) });
+      return t(lang, cond ? 'simplify.warn.volume_changed.preview' : 'simplify.warn.volume_changed', { pct: simplifyPct(lang, report.volumeChangePct), limit: simplifyPct(lang, limits.maxVolumePct) });
     case 'deviation_high':
-      return t(lang, 'simplify.warn.deviation_high', { mm: n(report.maxDeviationMm, 3), limit: n(limits.maxDeviationMm, 3) });
+      return t(lang, cond ? 'simplify.warn.deviation_high.preview' : 'simplify.warn.deviation_high', { mm: simplifyMm(lang, report.maxDeviationMm), limit: simplifyMm(lang, limits.maxDeviationMm) });
     case 'target_not_reached':
-      return t(lang, 'simplify.warn.target_not_reached', {
-        target: n(report.target?.triangles ?? 0, 0),
-        after: n(report.trianglesAfter, 0),
+      return t(lang, cond ? 'simplify.warn.target_not_reached.preview' : 'simplify.warn.target_not_reached', {
+        target: n(report.target?.triangles ?? 0),
+        after: n(report.trianglesAfter),
       });
     case 'no_reduction':
-      return t(lang, 'simplify.warn.no_reduction');
+      return t(lang, cond ? 'simplify.warn.no_reduction.preview' : 'simplify.warn.no_reduction');
   }
 }
 
 /** Frase de un motivo de resultado destructivo, con sus números y el tope severo (`report.limits`). */
 export function simplifyDestructiveSentence(lang: LanguageCode, report: SimplifyReport, reason: SimplifyDestructiveReason): string {
-  const n = (v: number, digits: number) => formatLocaleNumber(lang, v, { maxFrac: digits, grouping: digits === 0 });
+  const n = (v: number) => formatLocaleNumber(lang, v, { maxFrac: 0, grouping: true });
   const L = report.limits;
   switch (reason) {
     case 'holes_lost':
       return t(lang, 'simplify.blocked.holes_lost', { before: report.genusBefore, after: report.genusAfter });
     case 'volume_changed':
-      return t(lang, 'simplify.blocked.volume_changed', { pct: n(report.volumeChangePct, 2), limit: n(L?.destructiveVolumePct ?? SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct, 2) });
+      return t(lang, 'simplify.blocked.volume_changed', { pct: simplifyPct(lang, report.volumeChangePct), limit: simplifyPct(lang, L?.destructiveVolumePct ?? SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct) });
     case 'deviation_high':
       return t(lang, 'simplify.blocked.deviation_high', {
-        mm: n(report.maxDeviationMm, 3),
-        limit: n(L?.destructiveDeviationMm ?? report.destructiveLimitMm ?? 0, 3),
-        side: n(L?.minSideMm ?? 0, 2),
+        mm: simplifyMm(lang, report.maxDeviationMm),
+        limit: simplifyMm(lang, L?.destructiveDeviationMm ?? report.destructiveLimitMm ?? 0),
+        side: simplifyMm(lang, L?.minSideMm ?? 0),
       });
     case 'too_few_triangles':
       return t(lang, 'simplify.blocked.too_few_triangles', {
-        tris: n(report.requested?.triangles ?? report.trianglesAfter, 0),
-        min: n(L?.minTriangles ?? simplifyMinTriangles(report.genusAfter), 0),
+        tris: n(report.requested?.triangles ?? report.trianglesAfter),
+        min: n(L?.minTriangles ?? simplifyMinTriangles(report.genusAfter)),
         holes: report.genusAfter,
       });
   }
@@ -129,7 +134,7 @@ export function simplifySafeAppliedSentence(lang: LanguageCode, report: Simplify
 
 /** «No hay una reducción segura para esta pieza…» con la reducción mínima exigida. */
 export function simplifyNoSafeSentence(lang: LanguageCode): string {
-  return t(lang, 'simplify.blocked.noSafe', { pct: formatLocaleNumber(lang, SIMPLIFY_SAFE_MIN_REDUCTION_REL * 100, { maxFrac: 0 }) });
+  return t(lang, 'simplify.blocked.noSafe', { pct: simplifyPct(lang, SIMPLIFY_SAFE_MIN_REDUCTION_REL * 100) });
 }
 
 /** Aviso de Simplificar bloqueado por resultado destructivo (los motivos unidos). */

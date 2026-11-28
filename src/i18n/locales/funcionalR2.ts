@@ -67,22 +67,6 @@ const FUNCIONAL_R2 = {
     hi: 'माँगा गया लागू होगा, चेतावनी के साथ: आकार साफ़ दिखने लायक बदलता है।',
     zh: '将按要求应用，但有提示：形状有明显变化。',
   },
-  'simplify.blocked.aggressive': {
-    es: 'Resultado pedido: {tris} triángulos, volumen {pct} %, desviación {mm} mm.',
-    en: 'Requested result: {tris} triangles, volume {pct} %, deviation {mm} mm.',
-    de: 'Angefordertes Ergebnis: {tris} Dreiecke, Volumen {pct} %, Abweichung {mm} mm.',
-    fr: 'Résultat demandé : {tris} triangles, volume {pct} %, écart {mm} mm.',
-    hi: 'माँगा गया नतीजा: {tris} त्रिकोण, आयतन {pct} %, विचलन {mm} mm।',
-    zh: '请求的结果：{tris} 个三角形，体积 {pct} %，偏差 {mm} mm。',
-  },
-  'simplify.blocked.safe': {
-    es: 'Versión segura: {tris} triángulos, volumen {pct} %, desviación {mm} mm, agujeros {genus}.',
-    en: 'Safe version: {tris} triangles, volume {pct} %, deviation {mm} mm, holes {genus}.',
-    de: 'Sichere Version: {tris} Dreiecke, Volumen {pct} %, Abweichung {mm} mm, Löcher {genus}.',
-    fr: 'Version sûre : {tris} triangles, volume {pct} %, écart {mm} mm, trous {genus}.',
-    hi: 'सुरक्षित संस्करण: {tris} त्रिकोण, आयतन {pct} %, विचलन {mm} mm, छेद {genus}।',
-    zh: '安全版本：{tris} 个三角形，体积 {pct} %，偏差 {mm} mm，孔 {genus}。',
-  },
   'simplify.blocked.noSafe': {
     es: 'No hay una reducción segura para esta pieza: ninguna versión que la conserve baja al menos {pct} % los triángulos.',
     en: 'There is no safe reduction for this part: no version that keeps it removes at least {pct} % of the triangles.',

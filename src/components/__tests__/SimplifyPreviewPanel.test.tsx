@@ -68,7 +68,7 @@ describe('Simplificar: vista previa en el panel', () => {
     const report = await screen.findByTestId('simplify-report');
     expect(calls).toEqual([{ mode: 'target', targetPercent: 50 }]);
     expect(report.textContent).toContain(t('es', 'simplify.preview.title'));
-    expect(screen.getByTestId('simplify-safe-applied-text').textContent).toContain('Al pulsar «Simplificar» se aplicará la versión segura: 476 triángulos. Lo pedido deja 256 y cambia demasiado la forma.');
+    expect(screen.getByTestId('simplify-safe-applied-text').textContent).toContain('Al pulsar «Simplificar» se aplicaría la versión segura: 476 triángulos. Lo pedido dejaría 256 y cambiaría demasiado la forma.');
     expect(screen.queryByTestId('simplify-apply-anyway')).toBeNull();
     expect(screen.queryByTestId('simplify-report-undo')).toBeNull();
   });

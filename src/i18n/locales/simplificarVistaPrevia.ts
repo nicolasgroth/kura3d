@@ -84,12 +84,12 @@ const SIMPLIFICAR_VP = {
     zh: '点击“简化”将应用此结果。',
   },
   'simplify.preview.wouldSafe': {
-    es: 'Al pulsar «Simplificar» se aplicará la versión segura: {safe} triángulos. Lo pedido deja {requested} y cambia demasiado la forma. {reasons}',
-    en: 'Pressing “Simplify” will apply the safe version: {safe} triangles. What you asked for leaves {requested} and changes the shape too much. {reasons}',
-    de: 'Mit „Vereinfachen“ wird die sichere Version angewendet: {safe} Dreiecke. Das Angeforderte lässt {requested} übrig und verändert die Form zu stark. {reasons}',
-    fr: 'En appuyant sur « Simplifier », la version sûre sera appliquée : {safe} triangles. La demande en laisse {requested} et change trop la forme. {reasons}',
-    hi: '«सरल करें» दबाने पर सुरक्षित संस्करण लागू होगा: {safe} त्रिकोण। माँगा गया नतीजा {requested} त्रिकोण छोड़ता है और आकार को बहुत बदलता है। {reasons}',
-    zh: '点击“简化”将应用安全版本：{safe} 个三角形。所请求的结果剩 {requested} 个，形状变化过大。{reasons}',
+    es: 'Al pulsar «Simplificar» se aplicaría la versión segura: {safe} triángulos. Lo pedido dejaría {requested} y cambiaría demasiado la forma. {reasons}',
+    en: 'Pressing “Simplify” would apply the safe version: {safe} triangles. What you asked for would leave {requested} and change the shape too much. {reasons}',
+    de: 'Mit „Vereinfachen“ würde die sichere Version angewendet: {safe} Dreiecke. Das Angeforderte ließe {requested} übrig und würde die Form zu stark verändern. {reasons}',
+    fr: 'En appuyant sur « Simplifier », la version sûre serait appliquée : {safe} triangles. La demande en laisserait {requested} et changerait trop la forme. {reasons}',
+    hi: '«सरल करें» दबाने पर सुरक्षित संस्करण लागू होगा: {safe} त्रिकोण। माँगा गया नतीजा {requested} त्रिकोण छोड़ता और आकार को बहुत बदल देता। {reasons}',
+    zh: '点击“简化”将应用安全版本：{safe} 个三角形。所请求的结果将剩 {requested} 个，形状变化过大。{reasons}',
   },
   'simplify.preview.wouldBlock': {
     es: 'Al pulsar «Simplificar» no se aplicaría nada:',

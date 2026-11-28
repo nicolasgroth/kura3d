@@ -188,3 +188,13 @@
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
+
+/* Botón que no actúa por un valor inválido (`aria-disabled`): sigue en el orden de Tab, pero se ve apagado. */
+.kura-simplify-actions .kura-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kura-simplify-result-block {
+  margin-top: 6px;
+}

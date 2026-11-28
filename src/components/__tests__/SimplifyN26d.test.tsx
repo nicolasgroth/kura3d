@@ -11,7 +11,7 @@
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { uvSphere } from '../../engine/__tests__/smoothFixtures';
 import type { SimplifyReport } from '../../engine/simplify';
 import { buildSceneObject } from '../../core/scene/sceneObjects';
@@ -42,11 +42,22 @@ function mount() {
 }
 
 describe('Simplificar: malla abierta', () => {
-  beforeEach(() => useKuraStore.setState({ toasts: [], simplifyPreview: null }));
+  beforeEach(() => {
+    useKuraStore.setState({ toasts: [], simplifyPreview: null });
+    // jsdom no calcula diseño: todo elemento conectado cuenta como visible (`restoreFocusAfter` lo exige).
+    vi.spyOn(HTMLElement.prototype, 'getClientRects').mockImplementation(function (this: HTMLElement) {
+      return (this.isConnected ? [{}] : []) as unknown as DOMRectList;
+    });
+  });
+  afterEach(() => vi.restoreAllMocks());
 
   it('aviso con «Reparar malla» que repara esa pieza; el término técnico queda plegado', async () => {
     const obj = mount();
-    const repair = vi.fn(async () => null);
+    // La reparación real reemplaza la malla: el aviso desaparece porque la pieza cambia, no porque se oculte al pulsar.
+    const repair = vi.fn(async () => {
+      act(() => useKuraStore.setState((st) => ({ objects: st.objects.map((o) => ({ ...o, mesh: { ...o.mesh }, stats: { ...o.stats, isManifold: true } })) })));
+      return null;
+    });
     act(() => useKuraStore.setState({
       repairObjectMesh: repair as never,
       previewSimplify: async (id, request) => {

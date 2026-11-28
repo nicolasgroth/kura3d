@@ -109,7 +109,7 @@ describe('Simplificar: informe, deshacer y foco', () => {
     render(<SimplifyReportView report={REPORT} language="es" />);
     const text = screen.getByTestId('simplify-report').textContent ?? '';
     expect(text).toContain('Tolerancia pedida: 0,25 mm');
-    expect(text).toContain('Desviación medida: 0,1 mm');
+    expect(text).toContain('Desviación medida: 0,10 mm');
     cleanup();
     render(<SimplifyReportView report={{ ...REPORT, mode: 'target' }} language="es" />);
     expect(screen.getByTestId('simplify-report').textContent).toContain('Tolerancia usada');
