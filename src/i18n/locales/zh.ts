@@ -499,7 +499,7 @@ export const TRANSLATIONS_ZH: Record<TranslationKey, string> = {
   'cmd.badgeLocal': '本地',
   'cmd.badgeAi': 'AI',
   'cmd.cat.primitives': '基本体与生成器',
-  'cmd.cat.operations': 'Manifold 3D 运算',
+  'cmd.cat.operations': '形状运算',
   'cmd.cat.export': '导入与导出',
   'cmd.cat.view': '视图、单位与主题',
   'cmd.cat.settings': '设置、MCP 与 AI',

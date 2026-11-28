@@ -204,6 +204,7 @@ export const CommandPalette: React.FC = () => {
   const actions = useMemo<PaletteActionItem[]>(() => {
     const catPrim = t(language, 'cmd.cat.primitives');
     const catOps = t(language, 'cmd.cat.operations');
+    const catMesh = t(language, 'rediseno.actions.group.mesh');
     const catExp = t(language, 'cmd.cat.export');
     const catView = t(language, 'cmd.cat.view');
     const catSet = t(language, 'cmd.cat.settings');
@@ -435,7 +436,8 @@ export const CommandPalette: React.FC = () => {
       {
         id: 'op-simplify',
         label: actionName(language, 'simplify'),
-        category: catOps,
+        // Mismo grupo que en Acciones › Malla (un nombre que entiende quien imprime).
+        category: catMesh,
         keywords: 'simplificar reducir triangulos malla decimate simplify mesh',
         kind: 'local',
         icon: <Sparkles size={15} />,
@@ -973,6 +975,7 @@ export const CommandPalette: React.FC = () => {
     (sceneBusy &&
     (item.category === t(language, 'cmd.cat.primitives') ||
       item.category === t(language, 'cmd.cat.operations') ||
+      item.category === t(language, 'rediseno.actions.group.mesh') ||
       item.id.startsWith('io-import')));
 
   const executeItem = (item: PaletteActionItem | undefined) => {

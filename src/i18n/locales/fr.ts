@@ -499,7 +499,7 @@ export const TRANSLATIONS_FR: Record<TranslationKey, string> = {
   'cmd.badgeLocal': 'Local',
   'cmd.badgeAi': 'IA',
   'cmd.cat.primitives': 'Primitives & Générateurs',
-  'cmd.cat.operations': 'Opérations 3D Manifold',
+  'cmd.cat.operations': 'Opérations de forme',
   'cmd.cat.export': 'Import & Export',
   'cmd.cat.view': 'Vue, Unités & Thème',
   'cmd.cat.settings': 'Paramètres, MCP & IA',

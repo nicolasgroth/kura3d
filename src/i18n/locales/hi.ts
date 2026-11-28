@@ -499,7 +499,7 @@ export const TRANSLATIONS_HI: Record<TranslationKey, string> = {
   'cmd.badgeLocal': 'लोकल',
   'cmd.badgeAi': 'AI',
   'cmd.cat.primitives': 'मूल आकृतियाँ व जनरेटर',
-  'cmd.cat.operations': 'Manifold 3D संचालन',
+  'cmd.cat.operations': 'आकार संचालन',
   'cmd.cat.export': 'आयात और निर्यात',
   'cmd.cat.view': 'दृश्य, इकाइयाँ और थीम',
   'cmd.cat.settings': 'सेटिंग्स, MCP और AI',
