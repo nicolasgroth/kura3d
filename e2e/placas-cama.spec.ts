@@ -71,7 +71,8 @@ for (const width of [1024, 1280]) {
       await dialogo(page).getByTestId('plate-bed-apply').click();
       const despues = await page.evaluate(() => (window as any).__s.getState().plates[1].origin[0]);
       expect(despues).toBeGreaterThan(antes);
-      await expect(page.getByText(/cambió de lugar con sus piezas/)).toBeVisible();
+      // El aviso informativo va al centro de mensajes (contador), no a un emergente: se comprueba en su histórico.
+      await expect.poll(() => page.evaluate(() => (window as any).__s.getState().toastHistory.some((e: any) => /cambió de lugar con sus piezas/.test(e.text ?? e.message ?? JSON.stringify(e))))).toBe(true);
     });
 
     test('«fuera de volumen» por placa con camas distintas', async ({ page }) => {
