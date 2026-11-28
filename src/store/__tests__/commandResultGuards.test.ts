@@ -24,13 +24,11 @@ const run = (command: string, params: Record<string, unknown>, source: 'mcp' | '
 describe('guardas de resultado del Command Bus', () => {
   beforeEach(() => resetStore());
 
-  it('simplify_mesh que vaciaría la malla devuelve MESH_EMPTY y deja el objeto intacto', async () => {
+  it('simplify_mesh con una tolerancia mayor que la pieza usa la mayor que todavía sirve: nunca la vacía', async () => {
     const box = await addBox(10);
-    const before = byId(box.id)!.mesh;
+    // Los peldaños altos de la escalera colapsan el cubo; cuentan solo los válidos, igual que con una tolerancia menor.
     const res = await run('simplify_mesh', { id: box.id, toleranceMm: 100 });
-    expect(res.ok).toBe(false);
-    expect(res.errorCode).toBe('MESH_EMPTY');
-    expect(byId(box.id)!.mesh).toBe(before);
+    expect(res.errorCode).not.toBe('MESH_EMPTY');
     expect(byId(box.id)!.stats.triangles).toBe(12);
   });
 

@@ -1,14 +1,15 @@
 # Nota de traspaso entre sesiones
 
-Se reescribe al cerrar cada conversación del orquestador (regla 11 de «Control de agentes» en `CLAUDE.md`). Última actualización: 28 de noviembre de 2026, madrugada.
+Se reescribe al cerrar cada conversación del orquestador (regla 11 de «Control de agentes» en `CLAUDE.md`). Última actualización: 28 de noviembre de 2026, mediodía.
 
 ## Estado
 
-- El repositorio está en **`main`**, igual a GitHub. Quedaron fusionados y subidos el centro de mensajes (27-nov) y el lote de usabilidad de mensajes y placas (28-nov, madrugada). Sin agentes, sin servidores, sin worktrees, sin ramas de trabajo.
-- En `main`: `tsc` y build limpios, 4802 pruebas del programa y 220 del servidor MCP en verde.
-- **Centro de mensajes: 87 en usabilidad, cerrado.** **Placas: 83, sigue bajo el mínimo** tras cuatro rondas en dos días (84, 80, 84, 83).
-- Consumo de la noche del 27 y la madrugada del 28: QA 117 k + 171 k; desarrollo 146 k + 226 k + 204 k + 174 k; evaluación 178 k + 177 k + 151 k; más un orquestador de sesión muy larga. Se pasó con holgura el tope de 6 puntos por día, con acuerdo del autor («sigue con todo hoy»). La semana reinicia el 3-dic a las 01:00 UTC.
-- Detalle: `docs/EVALUACIONES.md`, secciones «27-nov-2026 · Noche» y «28-nov-2026 · Madrugada».
+- El repositorio está en **`main`**, igual a GitHub. Sin agentes, sin servidores, sin worktrees, sin ramas de trabajo. `CLAUDE.md` tiene un cambio sin confirmar en la regla 11 que hizo el autor: no tocarlo.
+- En `main`: `tsc` y build limpios, 4812 pruebas del programa y 220 del servidor MCP en verde.
+- Cerrado entre el 27 y el 28: **centro de mensajes (87)**, **imán** (el desfase entre vista previa y hueco) y la monotonía de **Simplificar por tolerancia**.
+- Bajo el mínimo: **placas 83** (en revisión por decisión del autor) y **Simplificar: usabilidad 80, funcional 84**.
+- Consumo del 27 en la noche al 28 a mediodía, solo agentes: cerca de 2,3 millones de tokens en 13 agentes (QA 117 k + 171 k; interfaz 146 k + 226 k + 204 k + 174 k; motor 164 k + 289 k; evaluación 178 k + 177 k + 151 k + 162 k + 180 k), más un orquestador de sesión muy larga. Muy por encima del tope de 6 puntos por día, con acuerdo del autor («sigue con todo hoy», «sigue con la cola»). La semana reinicia el 3-dic a las 01:00 UTC.
+- Detalle: `docs/EVALUACIONES.md`, secciones «27-nov-2026 · Noche», «28-nov-2026 · Madrugada» y «28-nov-2026 · Mañana».
 
 ## Acordado con el autor
 
@@ -33,20 +34,24 @@ Se tomaron la madrugada del 28 para no frenar; todas se pueden revertir:
 - Las placas creadas al convertir un 3MF se numeran seguidas y no heredan el número del laminador.
 - «Repartir» y «Convertir grupos en placas» pasaron a la categoría «Placas» de la paleta.
 - Enter con el foco en un botón ya no entra a un grupo.
+- `cmd.cat.operations` de la paleta pasó de «Operaciones Manifold 3D» a «Operaciones de forma».
+- Simplificar: una tolerancia mayor que la pieza ya no da `MESH_EMPTY`; se usa el mejor peldaño válido (cambia el resultado de `kura_simplify_mesh` en ese caso).
 
 ## Lo que sigue, en orden
 
-1. **Decisión del autor sobre placas (83).** Regla 6: lleva diez rondas bajo el mínimo y cada evaluador nuevo da por corregido lo anterior y descuenta cosas distintas, así que las vueltas sueltas no convergen. Opciones a proponerle: (a) un lote más con lo de la última ronda y una evaluación con dos evaluadores en paralelo sobre la misma versión, para medir cuánto varía la nota; (b) aceptar placas como «en revisión» y seguir con la cola. Lo que restó la última ronda: con «Fuera de volumen» la ficha activa corta su nombre a «Pla…» a 1366 px; el aviso «No cabe en la cama…» queda como columna angosta a 1024 px, tapa la barra de selección y sigue en Armado y Libre; «Solo esta» no encuadra la placa activa tras borrar ni al cambiar de ficha; en fichas compactas el estado es solo icono y su `title` no lo nombra; Tab hace dos paradas por placa; Armado y Libre se ven iguales; convertir en placas no trae «Deshacer» en su mensaje.
-2. **Centro de mensajes, para subir de 87:** un informativo que va directo al histórico no da señal visible; «…imprime una placa a la vez» sigue como información; la advertencia de orientación mezclada no trae «Reparar malla»; el panel no tiene botón de cierre visible; «Vaciar» sin deshacer. Menor de QA abierto: tras Ctrl+Z de «Convertir en placas» el foco cae a `body`.
-3. **Imán** (`qa24-iman:178` y `:721`): la boca del hueco queda a 0,23 y 0,40 mm del punto de la vista previa. Lote de motor; sin causa todavía.
-4. **Simplificar** (82): Por tolerancia no es monótono (motor), texto de la versión segura, categoría en la paleta. Lote de motor chico; reevaluar después.
+1. **Simplificar, usabilidad (80).** Lote de interfaz: tras editar «Triángulos finales», Tab salta a «Arista objetivo» de Refinar y con Enter se ejecuta «Refinar» sin querer; el foco cae a `body` tras «Aplicar de todos modos» y tras «Reparar malla» lanzado desde el panel; el informe de la versión segura mezcla números de lo pedido y de lo aplicado (separar en un bloque «Lo pedido daría…»); avisos en pasado en la vista previa; sin avance real durante el cálculo; la malla abierta se avisa recién al pedir la vista previa; decimales desparejos; el mensaje no dice que se aplicó la versión segura.
+2. **Simplificar, funcional (84, sin reevaluar tras corregir el colapso de la escalera).** Lote de motor chico: «Por cantidad» marca la meta como alcanzada aunque quede muy por debajo y sigue buscando por bisección, que supone una monotonía que Manifold no tiene; por tolerancia se estanca sin avisar (sugerir «Por cantidad»); no se cuentan los cuerpos antes y después. Decisión del autor pendiente: cambiar a meshoptimizer (MIT), monótono y rápido, que evitaría las 13 llamadas pero exige revalidar que el sólido quede cerrado.
+3. **Placas (83), en revisión.** Si el autor la retoma: con «Fuera de volumen» la ficha activa corta su nombre a «Pla…» a 1366 px; el aviso «No cabe en la cama…» queda como columna angosta a 1024 px, tapa la barra de selección y sigue en Armado y Libre; «Solo esta» no encuadra la placa activa tras borrar ni al cambiar de ficha; en fichas compactas el estado es solo icono y su `title` no lo nombra; Tab hace dos paradas por placa; Armado y Libre se ven iguales; convertir en placas no trae «Deshacer» en su mensaje. Las notas de cuatro rondas (84, 80, 84, 83) no convergen con vueltas sueltas: conviene evaluar con dos evaluadores sobre la misma versión.
+4. **Centro de mensajes, para subir de 87:** un informativo que va directo al histórico no da señal visible; «…imprime una placa a la vez» sigue como información; la advertencia de orientación mezclada no trae «Reparar malla»; el panel no tiene botón de cierre visible; «Vaciar» sin deshacer. Menor de QA abierto: tras Ctrl+Z de «Convertir en placas» el foco cae a `body`.
 5. **Patrones** (83 / 90): dos paneles apilados a 1024 px; glifo «✓» en nombres accesibles.
 6. **Asistentes roscados**: tapa roscada (80 / 90) y acople de tubería (82 / 89): estado del ajuste fuera de vista; Enter crea las piezas; `kura_create_pipe_coupling` ignora parámetros desconocidos.
 7. **Dividir**: instrucciones de armado (81 / 86, el foco no vuelve), por las partes de la figura (72 / 80), cortes a mano e inclinados (72 / 84).
 8. Consulta del autor sobre la barra de avance del guardado (`docs/CONSULTAS_PROYECTO.md`).
 9. PR 21 de Playwright (Dependabot): no se toca sin pedido expreso.
 10. Instalador de Windows (ver arriba).
-11. Deuda anotada: 107 rutas absolutas `G:/proyectos` en `e2e/`.
+11. Deuda anotada: 107 rutas absolutas `G:/proyectos` en `e2e/`. El arreglo del imán no se verificó con ratón físico en la app de escritorio ni con escalado de Windows distinto de 100 %.
+
+Patrón que se repite en casi todas las notas bajas: **el foco cae a `body`** cuando desaparece el control que lo tenía. Hay un ayudante para eso (`src/components/toastFocus.ts`: `restoreFocusAfter`, `focusViewer`); un lote transversal de foco rendiría más que corregirlo funcionalidad por funcionalidad.
 
 ## Datos prácticos
 
@@ -62,3 +67,5 @@ Se tomaron la madrugada del 28 para no frenar; todas se pueden revertir:
 - Recorridos inestables conocidos: cualquiera puede fallar al cargar con «`window.__s` no existe» (`qa23-arrastrar-asistentes`, `qa22-ajustes`, `qa24-iman:495`, `ux7-encuadre:51`, también en `main`); pasan al repetirlos. `qa22-ajustes:85` tarda unos 162 s con tope de 180 s.
 - Referencia de costo: QA de un lote de interfaz 117 k en 3 min; correcciones de interfaz acotadas 146 k en 15 min; evaluación de usabilidad de dos funcionalidades 178 k en 7 min; lote de motor en Opus, 2 a 3 puntos de la semana.
 - Un filtro `archivo:línea` de Playwright puede abarcar varias variantes de un caso.
+- Un agente que deja tareas de fondo vuelve a enviar su mismo informe cada vez que una termina: no es información nueva.
+- Un encargo de motor que mide con modelos reales y corre recorridos largos pasa de 60 min: darle tope de 75 o pedirle que no espere la corrida de recorridos.

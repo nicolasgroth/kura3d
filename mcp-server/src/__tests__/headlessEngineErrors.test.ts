@@ -32,14 +32,13 @@ async function session() {
 }
 
 describe('MCP headless: errores del motor con código y causa', () => {
-  it('simplificar hasta vaciar devuelve [MESH_EMPTY] y el objeto conserva sus triángulos', async () => {
+  it('simplificar con una tolerancia mayor que la pieza no la vacía: usa la mayor que todavía sirve', async () => {
     const call = await session();
     const created = await call('kura_create_primitive', { primitiveType: 'box', params: { width: 10, height: 10, depth: 10 } });
     const id = JSON.parse(created.parts.join('')).id as string;
     const res = await call('kura_simplify_mesh', { objectId: id, toleranceMm: 100 });
-    expect(res.isError).toBe(true);
-    expect(res.parts[0]).toMatch(/^\[MESH_EMPTY\]/);
-    expect(JSON.parse(res.parts[1])).toMatchObject({ code: 'MESH_EMPTY', params: { operation: 'simplify_mesh' } });
+    // Los peldaños que colapsan el cubo no cuentan: nunca sale MESH_EMPTY mientras alguno sea válido.
+    expect(res.parts.join('')).not.toMatch(/MESH_EMPTY/);
     const state = JSON.parse((await call('kura_get_scene_state', {})).parts.join(''));
     expect(state.objects[0].stats.triangles).toBe(12);
   });

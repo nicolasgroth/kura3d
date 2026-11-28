@@ -140,9 +140,9 @@ export async function simplifyMeshDetailed(
     } else if (request.mode === 'tolerance') {
       // Escalera fija ≤ lo pedido: el de menos triángulos (monótono en la tolerancia; ver `simplifyLadder`).
       ladder = measureToleranceLadder(original, userTol!, maxScale, opts);
-      // Si el peldaño más alto colapsa la pieza, la tolerancia pedida es mayor que la pieza: `MESH_EMPTY` (abajo).
-      const top = toleranceLadderUpTo(userTol!).at(-1)!;
-      toleranceMm = ladder.some((r) => r.toleranceMm === top) ? ladder[0].toleranceMm : top;
+      // Los peldaños que colapsan la pieza no cuentan: se usa el mejor de los válidos, así una tolerancia mayor que la
+      // pieza da lo mismo que la mayor que todavía sirve. Solo si todos colapsan sale `MESH_EMPTY` (abajo).
+      toleranceMm = ladder.length > 0 ? ladder[0].toleranceMm : toleranceLadderUpTo(userTol!).at(-1)!;
       simplified = original.simplify(toleranceMm / maxScale);
     } else {
       toleranceMm = LOSSLESS_LIMITS.toleranceMm;

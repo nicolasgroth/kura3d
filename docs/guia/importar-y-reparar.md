@@ -45,14 +45,14 @@ Un modelo con muchos triángulos pesa y tarda, sobre todo en un computador con p
 - Pulsa **Ctrl+K**, escribe *Simplificar* y elige **Simplificar…**: el panel se abre con la pieza seleccionada, listo para pedir la vista previa.
 - Si importas un modelo pesado, el aviso trae el botón **Simplificar…**. Desde ahí el panel se abre ya en **Por cantidad**, con una meta sugerida (por ejemplo 500 000 triángulos) y el cursor en ese campo: revisa el número y pulsa **Simplificar**.
 
-El panel se titula **Simplificar o refinar** (para salir, **Volver** arriba a la izquierda o `Esc`) y tiene tres grupos: **Simplificar**, **Refinar malla** y **Envolvente convexa**. Esta guía es del primero. **Enter** en un campo numérico lanza la **Vista previa** (igual que su botón) y no modifica la pieza: para aplicar, pulsa **Simplificar**. En **Por tolerancia**, lo que escribes es el máximo: más tolerancia nunca deja más triángulos que una menor. El informe dice «Tolerancia pedida» (lo que escribiste) y, aparte, «Tolerancia usada» cuando el mejor resultado salió con una menor o se aplicó la versión segura; tras **Aplicar de todos modos** el informe describe lo que quedó aplicado y trae su **Deshacer**; los números grandes se muestran con separador de miles (500.000).
+El panel se titula **Simplificar o refinar** (para salir, **Volver** arriba a la izquierda o `Esc`) y tiene tres grupos: **Simplificar**, **Refinar malla** y **Envolvente convexa**. Esta guía es del primero. **Enter** en un campo numérico lanza la **Vista previa** (igual que su botón) y no modifica la pieza: para aplicar, pulsa **Simplificar**. En **Por tolerancia**, lo que escribes es la tolerancia máxima: más tolerancia nunca deja más triángulos que una menor, y si pasa de lo que la pieza aguanta se usa la mayor que todavía sirve. El informe dice «Tolerancia pedida» (lo que escribiste) y, aparte, «Tolerancia usada» cuando el mejor resultado salió con una menor o se aplicó la versión segura; tras **Aplicar de todos modos** el informe describe lo que quedó aplicado y trae su **Deshacer**; los números grandes se muestran con separador de miles (500.000).
 
 ![Panel Simplificar en el modo Por cantidad, al 50 % de los triángulos](img/importar-y-reparar-06-simplificar-panel.png)
 
 Elige el **Modo de simplificar** y pulsa **Simplificar**:
 
 - **Sin pérdida** (el que viene marcado en un modelo normal): quita solo los triángulos que sobran, como los de las caras planas. Se aplica únicamente si la pieza conserva sus agujeros pasantes, el volumen cambia menos de 0,01 % y la superficie no se mueve más de 0,01 mm. Si no pasa, el objeto queda intacto y el aviso dice por qué. En piezas orgánicas (figuras, escaneos) casi no hay nada que quitar sin perder forma.
-- **Por tolerancia**: cuánto puede moverse la superficie, en mm (por defecto 0,01 mm). A mayor tolerancia, menos triángulos y más pérdida de forma: cilindros con menos lados, letras y redondeos achatados.
+- **Por tolerancia**: cuánto se permite simplificar en cada paso, en mm (por defecto 0,01 mm). No es un tope de cuánto se mueve la superficie: eso lo dice la **Desviación medida** del informe, que puede ser mayor que la tolerancia. A mayor tolerancia, menos triángulos y más pérdida de forma: cilindros con menos lados, letras y redondeos achatados.
 - **Por cantidad**: deja la pieza en un **porcentaje** de sus triángulos o en una cantidad de **triángulos** finales (debajo ves «Ahora: N triángulos»). Kurra Studio busca la tolerancia que llega a ese número y prefiere conservar los agujeros; si no puede llegar (por ejemplo, un cubo no baja de 12), entrega lo que logró y lo avisa.
 
 Mientras trabaja puedes cancelar el cálculo con su botón. Al terminar aparece el **Último resultado**: triángulos antes → después, cambio de volumen, agujeros pasantes antes → después, la **Desviación medida** (lo que realmente se movió la superficie) y la tolerancia: **Tolerancia pedida** si elegiste el modo *Por tolerancia*, o **Tolerancia usada** en los otros modos (la que Kurra Studio encontró para llegar a tu meta). Si pulsas **Deshacer**, el panel dice «Se deshizo la simplificación: la pieza volvió a su estado anterior».
@@ -77,7 +77,7 @@ Kurra Studio mide cuánto cambia la pieza y decide en tres casos, en palabras si
 
 ![Resultado en una placa con tres agujeros: se aplicó la versión segura, con el motivo y el botón «Aplicar de todos modos»](img/importar-y-reparar-08-simplificar-bloqueo.png)
 
-Por eso una malla gruesa se protege más que una densa: una esfera de solo 512 triángulos al 50 % cambia su volumen 5,4 % y recibe la versión segura, mientras que una de 2.048 triángulos baja a la mitad sin problema. Todo se deshace con **Ctrl+Z**.
+Por eso una malla gruesa se protege más que una densa: una esfera de solo 512 triángulos al 50 % cambia su volumen 5,4 % y se aplica con un aviso, mientras que una de 2.048 triángulos baja a la mitad sin problema. Todo se deshace con **Ctrl+Z**.
 
 ## Problemas frecuentes
 

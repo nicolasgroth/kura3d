@@ -95,4 +95,17 @@ describe('Simplificar «Por tolerancia»: monotonía', () => {
     // A tolerancias altas lo pedido aplasta la esfera: se aplica la segura (de la misma escalera).
     expect(variants).toContain('safe');
   }, 180_000);
+  it('una pieza chica: la tolerancia que la vaciaría no da error ni más triángulos que una menor', async () => {
+    const wasm = await initManifoldEngine();
+    const m = wasm.Manifold.sphere(2, 32);
+    const mesh = manifoldToMeshData(m);
+    m.delete();
+    const counts: number[] = [];
+    for (const toleranceMm of [0.5, 2, 5, 50, 100]) {
+      const { mesh: out, report } = await simplifyMeshDetailed(makeObject('chica', mesh), { mode: 'tolerance', toleranceMm, onDestructive: 'force' });
+      if (out) expect(isMeshClosed(out.positions, out.indices)).toBe(true);
+      counts.push(report.applied ? report.trianglesAfter : report.trianglesBefore);
+    }
+    for (let k = 1; k < counts.length; k++) expect(counts[k]).toBeLessThanOrEqual(counts[k - 1]);
+  });
 });
