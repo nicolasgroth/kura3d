@@ -2,7 +2,8 @@
  * @file src/components/viewport/useAddonPlacement.ts
  * @description Interacción común de los agregados que se colocan con clic sobre una cara (imán, torreta): con su
  * panel abierto, el cursor sobre una pieza muestra la vista previa en la cara (punto exacto sobre el triángulo y la
- * normal de la superficie promediada en el radio del agregado, con rotación y escala de la pieza) y un clic sin arrastre coloca. Un arrastre (orbitar) no
+ * normal de la superficie promediada en el radio del agregado, con rotación y escala de la pieza) y un clic sin arrastre coloca
+ * en el punto de la vista previa (el rayo de la presión, no el del `click`, que llega redondeado al píxel). Un arrastre (orbitar) no
  * coloca; el gesto no llega a la pieza, así que tampoco la selecciona ni la mueve.
  * @author Nicolás Groth <ngroth@gmail.com>
  * @organization ISGROTH — Innovación y Soluciones GROTH
@@ -56,10 +57,19 @@ export interface AddonPlacementTarget {
 }
 
 export function addonPlacementHandlers(obj: SceneObject, target: AddonPlacementTarget): AddonPlacementHandlers {
+  // Cara bajo el cursor al presionar. El `click` del navegador trae coordenadas redondeadas al píxel (Chromium:
+  // `pointerdown` en 349,5 y `click` en 349) y su rayo corre el punto medio píxel respecto de la vista previa; se
+  // coloca con el rayo de la presión, el mismo de la vista previa. Vale para un solo clic.
+  let pressed: AddonHover | null = null;
   return {
     onPointerDown: (e) => {
       // La pieza real no recibe el gesto: ni selección ni arrastre para mover mientras se colocan agregados.
-      if (e.button === 0) e.stopPropagation();
+      if (e.button !== 0) {
+        pressed = null;
+        return;
+      }
+      e.stopPropagation();
+      pressed = addonHitFromEvent(obj, e, target.radiusMm?.());
     },
     onPointerMove: (e) => {
       e.stopPropagation();
@@ -67,13 +77,16 @@ export function addonPlacementHandlers(obj: SceneObject, target: AddonPlacementT
       target.setHover(addonHitFromEvent(obj, e, target.radiusMm?.()));
     },
     onPointerOut: () => {
+      pressed = null;
       if (target.hoverHostId() === obj.id) target.setHover(null);
     },
     onClick: (e) => {
       e.stopPropagation();
+      const atPress = pressed;
+      pressed = null;
       if (e.button !== 0 || e.delta > ADDON_CLICK_SLOP_PX) return;
       if (useKuraStore.getState().busyOperation) return;
-      const hit = addonHitFromEvent(obj, e, target.radiusMm?.());
+      const hit = atPress ?? addonHitFromEvent(obj, e, target.radiusMm?.());
       if (hit) void target.place(hit.hostId, hit.point, hit.normal);
     },
   };
