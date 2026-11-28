@@ -245,7 +245,10 @@ export function createUiSlice(ctx: StoreContext): Partial<KuraStoreState> {
       const shown = get().toasts[0];
       const incomingPlain = kind !== 'error' && kind !== 'warning' && actions.length === 0;
       if (shown && incomingPlain && (shown.kind === 'error' || shown.kind === 'warning')) return id;
-      if (shown && incomingPlain && toastIsSticky([shown.action, shown.secondaryAction].filter((a): a is ToastAction => Boolean(a)), indexObjects(get().objects))) return id;
+      // Una advertencia sin acción tampoco desplaza a un emergente con acción vigente no transitoria (p. ej. la oferta
+      // «Convertir en placas» tras importar un 3MF): va al histórico y enciende el icono de advertencias. Un error sí lo desplaza.
+      const incomingNoAction = kind !== 'error' && actions.length === 0;
+      if (shown && incomingNoAction && toastIsSticky([shown.action, shown.secondaryAction].filter((a): a is ToastAction => Boolean(a)), indexObjects(get().objects))) return id;
       set({ toasts: [{ id, text, kind, ...(action ? { action } : {}), ...(secondaryAction ? { secondaryAction } : {}), ...(objectIds ? { objectIds } : {}) }] });
       // El cierre automático de los informativos lo temporiza `ToastItem` (con pausa al pasar el cursor o el foco);
       // errores y advertencias esperan a que el usuario los cierre.

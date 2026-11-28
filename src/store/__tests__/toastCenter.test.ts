@@ -83,16 +83,30 @@ describe('centro de mensajes: store', () => {
       expect(store().toastHistory.map((x) => x.text)).toEqual(['oferta', 'otro', 'listo']);
     });
 
-    it('un error, una advertencia u otro mensaje con acción sí lo desplazan', () => {
+    it('un error, una advertencia con acción u otro mensaje con acción sí lo desplazan', () => {
       store().addToast('oferta', 'info', accion());
       store().addToast('falló', 'error');
       expect(store().toasts.map((x) => x.text)).toEqual(['falló']);
       store().addToast('oferta 2', 'info', accion());
-      store().addToast('aviso', 'warning');
-      expect(store().toasts.map((x) => x.text)).toEqual(['aviso']);
+      store().addToast('aviso con botón', 'warning', { label: 'Reparar malla', run: () => undefined });
+      expect(store().toasts.map((x) => x.text)).toEqual(['aviso con botón']);
       store().addToast('oferta 3', 'info', accion());
       store().addToast('oferta 4', 'info', accion());
       expect(store().toasts.map((x) => x.text)).toEqual(['oferta 4']);
+    });
+
+    it('una advertencia sin acción no lo desplaza: va al histórico y cuenta en el icono de advertencias', () => {
+      store().addToast('oferta', 'info', accion());
+      store().addToast('orientación mezclada', 'warning');
+      expect(store().toasts.map((x) => x.text)).toEqual(['oferta']);
+      expect(store().toastHistory.map((x) => [x.text, x.kind])).toEqual([['oferta', 'info'], ['orientación mezclada', 'warning']]);
+      expect(store().toastHistory.filter((x) => toastBucket(x.kind) === 'warning')).toHaveLength(1);
+    });
+
+    it('con una acción transitoria («Ver detalles») la advertencia sin acción sí lo reemplaza', () => {
+      store().addToast('Malla reparada', 'success', { label: 'Ver detalles', run: () => undefined, transient: true });
+      store().addToast('Se cerró 1 agujero grande', 'warning');
+      expect(store().toasts.map((x) => x.text)).toEqual(['Se cerró 1 agujero grande']);
     });
 
     it('si la acción ya no vale, un informativo sí lo reemplaza', () => {
