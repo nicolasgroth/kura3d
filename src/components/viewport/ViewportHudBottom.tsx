@@ -10,6 +10,7 @@ import React, { useMemo, useRef } from 'react';
 import { AlertTriangle, Boxes } from 'lucide-react';
 import '../../styles/splitUx.css';
 import '../../styles/plateHud.css';
+import '../../styles/bedCardWrap.css';
 import { getLocalizedPrinterName, t } from '../../i18n';
 import { useKuraStore } from '../../store/useKuraStore';
 import { computeSelectionBounds } from '../../utils/selectionBounds';

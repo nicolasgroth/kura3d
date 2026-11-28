@@ -59,3 +59,55 @@ for (const [w, h] of [[1024, 768], [1280, 720]] as const) {
     }
   });
 }
+
+// Pieza fuera del volumen: el rótulo «Cama», el aviso, «Ajustar a la impresora…» y «Repartir en placas…» se leen
+// completos (envuelven a otra línea dentro de la tarjeta) y no solapan con el chip «Tamaño», los iconos ni el Consejo.
+for (const [w, h] of [[1024, 768], [1280, 720]] as const) {
+  test(`con una pieza fuera de volumen el pie se lee completo y no solapa a ${w}x${h}`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await abrir(page);
+    await page.evaluate(async () => {
+      const s = (window as any).__s.getState();
+      const obj = await s.createPrimitive('box', { width: 600, height: 40, depth: 40 }, {});
+      s.setSelection([obj.id]);
+      s.addToast('Advertencia de prueba', 'warning');
+    });
+    const tarjeta = page.locator('.kura-bed-card[data-oob]');
+    await expect(tarjeta).toBeVisible();
+    const visor = (await page.locator('.kura-viewport-wrap').first().boundingBox())!;
+    // Ningún hijo de la tarjeta se recorta: su contenido cabe en su propia caja.
+    const recorte = await tarjeta.evaluate((el) => {
+      const caja = el.getBoundingClientRect();
+      return [...el.querySelectorAll<HTMLElement>('.kura-oob-badge, .kura-oob-fit')].map((c) => {
+        const r = c.getBoundingClientRect();
+        return { nombre: c.textContent, dentro: r.left >= caja.left - 0.5 && r.right <= caja.right + 0.5, completo: c.scrollWidth <= c.clientWidth + 1 };
+      });
+    });
+    expect(recorte.length).toBeGreaterThanOrEqual(3);
+    for (const r of recorte) {
+      expect(r.dentro, `${r.nombre} se sale de la tarjeta`).toBe(true);
+      expect(r.completo, `${r.nombre} está recortado`).toBe(true);
+    }
+    await expect(page.getByTestId('oob-fit')).toHaveText('Ajustar a la impresora…');
+    const cajas: Array<[string, Caja]> = [];
+    for (const [nombre, sel] of [...ELEMENTOS, ['tarjeta Cama', '.kura-bed-card[data-oob]']] as Array<[string, string]>) {
+      const loc = page.locator(sel).first();
+      if (!(await loc.count()) || !(await loc.isVisible())) continue;
+      cajas.push([nombre, (await loc.boundingBox())!]);
+    }
+    for (let i = 0; i < cajas.length; i++) {
+      const [n, c] = cajas[i];
+      if (n !== 'tira de placas') {
+        expect(c.x, `${n} se sale por la izquierda`).toBeGreaterThanOrEqual(visor.x - 0.5);
+        expect(c.x + c.width, `${n} se sale por la derecha`).toBeLessThanOrEqual(visor.x + visor.width + 0.5);
+        expect(c.y + c.height, `${n} se sale por abajo`).toBeLessThanOrEqual(visor.y + visor.height + 0.5);
+      }
+      for (let j = i + 1; j < cajas.length; j++) {
+        const [m] = cajas[j];
+        if ((n === 'rótulo Cama' && m === 'tarjeta Cama') || (n === 'tarjeta Cama' && m === 'rótulo Cama')) continue;
+        expect(solapa(c, cajas[j][1]), `${n} solapa con ${m}`).toBe(false);
+      }
+    }
+    await page.screenshot({ path: `.eval-tmp/dev-placas-1024/pie-oob-${w}.png` });
+  });
+}

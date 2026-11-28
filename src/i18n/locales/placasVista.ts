@@ -13,6 +13,8 @@ type Row = readonly [es: string, en: string, de: string, fr: string, hi: string,
 const PLATES_VIEW_TABLE = {
   // Tira de placas.
   'plates.strip.label': ['Placas de impresión', 'Print plates', 'Druckplatten', 'Plateaux d’impression', 'प्रिंट प्लेटें', '打印板'],
+  'plates.strip.prev': ['Placas anteriores', 'Previous plates', 'Vorherige Platten', 'Plateaux précédents', 'पिछली प्लेटें', '上一批打印板'],
+  'plates.strip.next': ['Placas siguientes', 'Next plates', 'Nächste Platten', 'Plateaux suivants', 'अगली प्लेटें', '下一批打印板'],
   'plates.chip.pieces': ['{count} {count?pieza|piezas}', '{count} {count?part|parts}', '{count} {count?Teil|Teile}', '{count} {count?pièce|pièces}', '{count} {count?हिस्सा|हिस्से}', '{count} 个零件'],
   'plates.chip.label': ['{name}: {pieces}, {status}', '{name}: {pieces}, {status}', '{name}: {pieces}, {status}', '{name} : {pieces}, {status}', '{name}: {pieces}, {status}', '{name}:{pieces},{status}'],
   'plates.chip.tip': [

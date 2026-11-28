@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, CheckCircle2, CircleDashed, Eye, LayoutGrid, Plus, Printer, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, CircleDashed, Eye, LayoutGrid, Plus, Printer, Trash2 } from 'lucide-react';
 import { PlateBedPicker } from './PlateBedPicker';
 import { otherPlateNameTaken } from '../../core/scene/plates';
 import { t } from '../../i18n';
@@ -117,10 +117,17 @@ export const PlateStrip: React.FC = () => {
   const multi = plates.length >= MIN_PLATES_FOR_STRIP && Boolean(active);
   const overflow = useListOverflow(listRef, [multi, view, chips.length, language]);
 
-  // La ficha activa siempre queda a la vista (con muchas placas la lista se desplaza).
+  // La ficha activa siempre queda a la vista (con muchas placas la lista se desplaza). Se repite al cambiar el número
+  // de fichas y al volver a la vista Imprimir (la lista se vuelve a montar).
   useEffect(() => {
     listRef.current?.querySelector<HTMLElement>('[data-active="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-  }, [active?.id, chips.length]);
+  }, [active?.id, chips.length, multi, view]);
+
+  /** Desplaza la lista aproximadamente un ancho visible hacia el lado indicado. */
+  const scrollList = (dir: -1 | 1) => {
+    const el = listRef.current;
+    if (el) el.scrollBy({ left: dir * Math.max(80, el.clientWidth * 0.8), behavior: 'smooth' });
+  };
 
   // Tras crear o borrar una placa el botón usado desaparece o cambia de nombre: el foco va a la ficha activa.
   useEffect(() => {
@@ -200,6 +207,12 @@ export const PlateStrip: React.FC = () => {
       {view === 'free' && <span className="kura-plate-strip-note" data-testid="plate-strip-note">{t(language, 'viewMode.strip.free')}</span>}
       {view === 'print' && multi && active && (
       <>
+      <div className="kura-plate-list-wrap" data-many={chips.length >= 4 ? 'true' : undefined}>
+      {overflow.start && (
+        <button type="button" className="kura-plate-scroll kura-plate-scroll-prev" onClick={() => scrollList(-1)} aria-label={t(language, 'plates.strip.prev')} title={t(language, 'plates.strip.prev')} data-testid="plate-scroll-prev">
+          <ChevronLeft size={14} aria-hidden="true" />
+        </button>
+      )}
       <div className="kura-plate-list" ref={listRef} onKeyDown={moveFocus} data-more-start={overflow.start || undefined} data-more-end={overflow.end || undefined}>
         {chips.map((chip) => {
           const pieces = t(language, 'plates.chip.pieces', { count: chip.count });
@@ -231,7 +244,7 @@ export const PlateStrip: React.FC = () => {
                 >
                   <span className="kura-plate-chip-name">{chip.name}</span>
                   <span className="kura-plate-chip-count">{pieces}</span>
-                  <span className="kura-plate-chip-status" data-status={chip.status}>
+                  <span className="kura-plate-chip-status" data-status={chip.status} title={status}>
                     {STATUS_ICON[chip.status]}
                     <span>{status}</span>
                   </span>
@@ -253,6 +266,12 @@ export const PlateStrip: React.FC = () => {
             </div>
           );
         })}
+      </div>
+      {overflow.end && (
+        <button type="button" className="kura-plate-scroll kura-plate-scroll-next" onClick={() => scrollList(1)} aria-label={t(language, 'plates.strip.next')} title={t(language, 'plates.strip.next')} data-testid="plate-scroll-next">
+          <ChevronRight size={14} aria-hidden="true" />
+        </button>
+      )}
       </div>
       <div className="kura-plate-actions">
         <button

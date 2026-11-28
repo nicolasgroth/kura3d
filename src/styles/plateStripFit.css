@@ -41,3 +41,66 @@
   -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
   mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
 }
+
+/* Contenedor de la lista con sus botones de desplazamiento («anterior» y «siguiente», solo si hay más fichas por ese lado). */
+.kura-plate-list-wrap {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.kura-plate-list-wrap > .kura-plate-list {
+  flex: 1 1 auto;
+  scroll-padding-inline: 36px;
+}
+
+.kura-plate-scroll {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--text-primary);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.kura-plate-scroll-prev {
+  left: 0;
+}
+
+.kura-plate-scroll-next {
+  right: 0;
+}
+
+.kura-plate-scroll:hover {
+  background: var(--bg-hover, rgba(127, 127, 127, 0.12));
+}
+
+.kura-plate-scroll:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
+}
+
+/* Con muchas placas y poco ancho las fichas se compactan: sin la cuenta de piezas ni el texto del estado (queda el
+   icono, que cambia de forma por estado, y el nombre accesible de la ficha lo dice completo) y de ancho acotado. */
+@container (max-width: 700px) {
+  .kura-plate-list-wrap[data-many="true"] .kura-plate-chip-count,
+  .kura-plate-list-wrap[data-many="true"] .kura-plate-chip-status > span {
+    display: none;
+  }
+
+  .kura-plate-list-wrap[data-many="true"] .kura-plate-chip-main {
+    max-width: 130px;
+    gap: 6px;
+    padding-inline: 8px;
+  }
+}

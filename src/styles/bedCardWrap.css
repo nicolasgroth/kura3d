@@ -1,0 +1,31 @@
+/**
+ * @file src/styles/bedCardWrap.css
+ * @description Tarjeta «Cama» del pie del visor con el aviso «Fuera de volumen»: a 1024 px el rótulo, el aviso y los
+ * botones «Ajustar a la impresora…» y «Repartir en placas…» no caben en una línea; en vez de recortarse, la tarjeta
+ * envuelve los botones a una segunda línea dentro de sí misma, sin solaparse con el chip «Tamaño» ni con el Consejo.
+ * @author Nicolás Groth <ngroth@gmail.com>
+ * @organization ISGROTH — Innovación y Soluciones GROTH
+ * @license AGPL-3.0-or-later
+ */
+
+.kura-bed-card[data-oob] {
+  flex-wrap: wrap;
+  row-gap: 4px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.kura-bed-card[data-oob] .kura-oob-badge {
+  white-space: nowrap;
+}
+
+.kura-bed-card[data-oob] .kura-oob-fit {
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+/* El aviso por placa («en Placa 2, Placa 3») puede ser largo: cede con elipsis en vez de empujar. */
+.kura-bed-card[data-oob] .kura-oob-badge {
+  max-width: 100%;
+  min-width: 0;
+}
