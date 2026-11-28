@@ -12,6 +12,7 @@
  */
 
 import React, { useEffect, useId, useRef, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { isEngineError } from '../../engine/engineErrors';
 import { OPERATION_RANGES } from '../../engine/operationLimits';
 import { SIMPLIFY_MODES, type SimplifyMode, type SimplifyReport, type SimplifyRequest } from '../../engine/simplify';
@@ -22,6 +23,7 @@ import { useKuraStore } from '../../store/useKuraStore';
 import type { SceneObject } from '../../types/kura';
 import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { restoreFocusAfter } from '../toastFocus';
+import { keepFocusOnEscape } from './keepFieldFocus';
 import type { useInvalidFields } from '../useInvalidFields';
 import { simplifySignature } from '../../store/slices/simplifyPreviewSlice';
 import { SIMPLIFY_REQUEST_FRESH_MS, suggestHeavyTarget } from './simplifyPanelRequest';
@@ -75,6 +77,8 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const launcher = useRef<'preview' | 'run'>('preview');
   // Reparando desde el aviso de malla abierta: el aviso y su botón siguen en pantalla (con el foco) hasta que termina.
   const [repairing, setRepairing] = useState(false);
+  // «Vista previa cancelada»: confirmación breve en el estado del panel hasta la siguiente acción o cambio de valores.
+  const [cancelNote, setCancelNote] = useState(false);
   const phase = useKuraStore((s) => s.busyProgress?.phase ?? null);
   const invalidHintId = `${uid}-invalid`;
   const repairObjectMesh = useKuraStore((s) => s.repairObjectMesh);
@@ -98,6 +102,24 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     if (focusTick === 0) return;
     rootRef.current?.querySelector<HTMLElement>('.kura-simplify-focus select, .kura-simplify-focus input')?.focus();
   }, [focusTick]);
+
+  // «Por cantidad» con un objetivo mayor que los triángulos actuales: no hay nada que reducir (se marca en el campo).
+  const countTooHigh = mode === 'target' && targetKind === 'count' && count > current;
+  const inputBlocked = invalid.blocked || countTooHigh;
+  // Un valor nuevo (válido o no) o otro modo deja atrás lo anterior: el informe de la vista previa, el último resultado,
+  // «Se deshizo…» y «Vista previa cancelada» ya no describen lo que hay en pantalla.
+  const retire = () => {
+    setLast(null);
+    setUndoStep(null);
+    setAppliedDepth(null);
+    setCancelNote(false);
+  };
+  useEffect(() => {
+    if (!inputBlocked) return;
+    retire();
+    if (useKuraStore.getState().simplifyPreview) clearSimplifyPreview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputBlocked]);
 
   const request = (): SimplifyRequest => {
     if (mode === 'lossless') return { mode };
@@ -152,7 +174,11 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   const wasUndone = useRef(false);
   useEffect(() => {
     if (!undone) {
-      wasUndone.current = false;
+      // Rehacer (Ctrl+Shift+Z) devuelve el paso: «Se deshizo…» no puede quedar pegado.
+      if (wasUndone.current) {
+        wasUndone.current = false;
+        retire();
+      }
       return;
     }
     if (wasUndone.current) return;
@@ -161,17 +187,23 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
     if (active && active !== document.body && active.isConnected && !(active instanceof HTMLButtonElement && active.disabled)) return;
     rootRef.current?.querySelector<HTMLElement>('[data-testid="simplify-preview"]')?.focus({ preventScroll: true });
   }, [undone]);
-  const runPreview = () => {
-    if (busy || primary.locked || invalid.blocked || previewing) return;
+  const runPreview = (): boolean => {
+    if (busy || primary.locked || inputBlocked || previewing) return false;
     launcher.current = 'preview';
     setApplyMeshError(null);
-    setLast(null);
+    retire();
     void previewSimplify(primary.id, request());
+    return true;
+  };
+  const cancelPreview = () => {
+    cancelSimplifyPreview();
+    setCancelNote(true);
   };
 
   const run = () => {
-    if (busy || primary.locked || invalid.blocked) return;
+    if (busy || primary.locked || inputBlocked) return;
     const id = primary.id;
+    setCancelNote(false);
     launcher.current = 'run';
     setUndoStep(null);
     setAppliedDepth(null);
@@ -204,15 +236,15 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
   previewRef.current = runPreview;
   const onEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Enter' || e.defaultPrevented === false || !(e.target instanceof HTMLInputElement)) return;
+    const field = e.target;
     window.setTimeout(() => {
-      previewRef.current();
-      // El campo se desenfocó al confirmar: si la vista previa no arranca (valor inválido, pieza bloqueada), el foco vuelve al botón.
-      restoreFocusAfter(rootRef.current?.querySelector<HTMLElement>('[data-testid="simplify-preview"]') ?? null);
+      // El campo se desenfocó al confirmar: si la vista previa no arranca (valor inválido, pieza bloqueada), el foco se queda en el campo.
+      if (!previewRef.current()) restoreFocusAfter(field);
     }, 0);
   };
 
   return (
-    <div className="kura-simplify-section" ref={rootRef} onKeyDown={onEnter}>
+    <div className="kura-simplify-section" ref={rootRef} onKeyDown={onEnter} onKeyDownCapture={keepFocusOnEscape}>
       <div className={`kura-field-row${mode === 'lossless' ? ' kura-simplify-focus' : ''}`}>
         <label className="kura-field-label" htmlFor={`${uid}-mode`}>{t(language, 'simplify.mode')}</label>
         <select
@@ -220,7 +252,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
           className="kura-select"
           value={mode}
           aria-describedby={`${uid}-help`}
-          onChange={(e) => setMode(e.target.value as SimplifyMode)}
+          onChange={(e) => { retire(); setMode(e.target.value as SimplifyMode); }}
         >
           {SIMPLIFY_MODES.map((m) => <option key={m} value={m}>{t(language, `simplify.mode.${m}`)}</option>)}
         </select>
@@ -239,7 +271,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
             step={0.01}
             precision={3}
             value={toleranceMm}
-            onChange={setToleranceMm}
+            onChange={(v) => { if (v !== toleranceMm) retire(); setToleranceMm(v); }}
             ariaLabel={t(language, 'inspector.pro.simplifyTol')}
           />
         </div>
@@ -249,7 +281,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
         <>
           <div className="kura-field-row">
             <label className="kura-field-label" htmlFor={`${uid}-kind`}>{t(language, 'simplify.target.kind')}</label>
-            <select id={`${uid}-kind`} className="kura-select" value={targetKind} onChange={(e) => setTargetKind(e.target.value as TargetKind)}>
+            <select id={`${uid}-kind`} className="kura-select" value={targetKind} onChange={(e) => { retire(); setTargetKind(e.target.value as TargetKind); }}>
               <option value="percent">{t(language, 'simplify.target.kind.percent')}</option>
               <option value="count">{t(language, 'simplify.target.kind.count')}</option>
             </select>
@@ -270,7 +302,7 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
                 precision={0}
                 suffix="%"
                 value={targetPercent}
-                onChange={setTargetPercent}
+                onChange={(v) => { if (v !== targetPercent) retire(); setTargetPercent(v); }}
                 ariaLabel={t(language, 'simplify.target.percent')}
               />
             ) : (
@@ -285,15 +317,25 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
                 precision={0}
                 grouping
                 value={count}
-                onChange={(v) => setTargetCount(Math.round(v))}
+                onChange={(v) => { if (Math.round(v) !== count) retire(); setTargetCount(Math.round(v)); }}
+                externalInvalid={countTooHigh}
+                describedBy={countTooHigh ? `${uid}-exceeds` : undefined}
                 ariaLabel={t(language, 'simplify.target.count')}
               />
             )}
           </div>
+          {countTooHigh && (
+            <p id={`${uid}-exceeds`} className="kura-simplify-notice" role="alert" data-testid="simplify-target-exceeds">
+              <AlertTriangle size={14} aria-hidden="true" />
+              <span>{t(language, 'simplify.target.exceeds', { target: formatLocaleNumber(language, count, { grouping: true, maxFrac: 0 }), tris: formatLocaleNumber(language, current, { grouping: true, maxFrac: 0 }) })}</span>
+            </p>
+          )}
           <p className="kura-cut-hint">{t(language, 'simplify.current', { tris: formatLocaleNumber(language, current, { grouping: true, maxFrac: 0 }) })}</p>
         </>
       )}
 
+      {/* Barra de acciones fija abajo del panel (CSS `order`: el orden de Tab sigue siendo campos → acciones → informe). */}
+      <div className="kura-simplify-footer">
       <div className="kura-simplify-actions">
         <button
           type="button"
@@ -301,8 +343,8 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
           data-testid="simplify-preview"
           title={t(language, 'simplify.preview.btnHint')}
           disabled={busy || primary.locked || previewing}
-          aria-disabled={invalid.blocked || undefined}
-          aria-describedby={invalid.blocked ? invalidHintId : undefined}
+          aria-disabled={inputBlocked || undefined}
+          aria-describedby={inputBlocked ? invalidHintId : undefined}
           onClick={runPreview}
         >
           {t(language, 'simplify.preview.btn')}
@@ -312,18 +354,18 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
           className="kura-btn kura-btn-sm kura-btn-primary kura-simplify-run"
           data-testid="simplify-run"
           disabled={busy || primary.locked}
-          aria-disabled={invalid.blocked || undefined}
-          aria-describedby={invalid.blocked ? invalidHintId : undefined}
+          aria-disabled={inputBlocked || undefined}
+          aria-describedby={inputBlocked ? invalidHintId : undefined}
           onClick={run}
         >
           {t(language, 'inspector.pro.simplifyBtn')}
         </button>
       </div>
-      {invalid.blocked && <p id={invalidHintId} className="kura-cut-hint" role="status" data-testid="simplify-invalid-hint">{t(language, 'simplify.invalid.hint')}</p>}
+      {inputBlocked && <p id={invalidHintId} className="kura-cut-hint" role="status" data-testid="simplify-invalid-hint">{t(language, 'simplify.invalid.hint')}</p>}
       {previewing && previewSession && (
         <div className="kura-cut-hint" data-testid="simplify-preview-computing">
           <SimplifyWorkProgress phase={previewSession.phase} language={language} mode={mode} textKey="simplify.preview.computing" testPrefix="simplify-preview" />
-          <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-preview-cancel" onClick={cancelSimplifyPreview}>
+          <button type="button" className="kura-btn kura-btn-sm" data-testid="simplify-preview-cancel" onClick={cancelPreview}>
             {t(language, 'simplify.preview.cancel')}
           </button>
         </div>
@@ -336,7 +378,9 @@ export const SimplifySection: React.FC<Props> = ({ primary, toleranceMm, setTole
           </button>
         </div>
       )}
-      {meshError && <SimplifyOpenMeshNotice language={language} detail={meshError.detail} busy={busy} repairing={repairing} onRepair={repair} />}
+      {cancelNote && !previewing && !previewSession && <p className="kura-cut-hint" role="status" data-testid="simplify-preview-cancelled">{t(language, 'simplify.preview.cancelled')}</p>}
+      </div>
+      {meshError && <SimplifyOpenMeshNotice language={language} detail={meshError.detail} busy={busy} repairing={repairing} variant={previewMeshError || applyMeshError ? 'blocked' : 'warn'} onRepair={repair} />}
       {previewError && !previewMeshError && <p className="kura-cut-hint" role="alert" data-testid="simplify-preview-error">{previewError}</p>}
 
       {previewReady && previewSession && <SimplifyGhostControls session={previewSession} language={language} />}

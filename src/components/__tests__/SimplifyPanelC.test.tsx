@@ -48,10 +48,10 @@ describe('Simplificar: Enter lanza la vista previa', () => {
     fireEvent.change(screen.getByLabelText(t('es', 'simplify.target.kind')), { target: { value: 'count' } });
     const field = screen.getByLabelText(t('es', 'simplify.target.count')) as HTMLInputElement;
     field.focus();
-    fireEvent.change(field, { target: { value: '1500' } });
+    fireEvent.change(field, { target: { value: '400' } });
     fireEvent.keyDown(field, { key: 'Enter' });
     await waitFor(() => expect(calls).toHaveLength(1));
-    expect(calls[0]).toEqual({ mode: 'target', targetTriangles: 1500 });
+    expect(calls[0]).toEqual({ mode: 'target', targetTriangles: 400 });
     expect(applied).toHaveLength(0);
   });
 });

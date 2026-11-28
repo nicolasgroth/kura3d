@@ -110,7 +110,7 @@ describe('Simplificar: versión segura aplicada', () => {
     });
     render(<SimplifyReportView report={SAFE_APPLIED} language="es" onUndo={() => useKuraStore.getState().undo()} />);
     expect(screen.getByTestId('simplify-safe-applied-text').textContent)
-      .toContain('Se aplicó la versión segura: 476 triángulos. Lo pedido dejaba 256 y cambiaba demasiado la forma. El volumen cambia -5,4 %');
+      .toContain('Se aplicó la versión segura: 476 triángulos. Lo pedido dejaba 256 y cambiaba demasiado la forma. El volumen cambiaba −5,4 %');
     fireEvent.click(screen.getByTestId('simplify-apply-anyway'));
     await waitFor(() => expect(steps).toEqual(['undo', 'apply']));
     expect(calls).toEqual([{ mode: 'target', targetTriangles: 256, onDestructive: 'force' }]);

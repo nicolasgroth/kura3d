@@ -100,6 +100,8 @@
 /* Lo que se trae a la vista dentro de un grupo (informe, foco de un campo) queda bajo el título fijo, no tapado. */
 .kura-mesh-group :is(.kura-simplify-report, input, select, button) {
   scroll-margin-top: 32px;
+  /* La barra de acciones fija abajo no tapa lo que se trae a la vista. */
+  scroll-margin-bottom: 64px;
 }
 
 /* La acción principal del panel ocupa el resto del ancho y no se confunde con «Vista previa» (secundario). */
@@ -197,4 +199,23 @@
 
 .kura-simplify-result-block {
   margin-top: 6px;
+}
+
+/*
+ * Acciones y estado del panel, fijos al borde de abajo del área visible: tras la vista previa el informe es largo y los
+ * botones no se pierden de vista. `order` los pasa al final sin cambiar el orden de Tab. Fondo opaco; el título fijo de
+ * arriba (`.kura-mesh-group-title`) y este comparten el mismo contenedor, así que no se tapan entre sí.
+ */
+.kura-simplify-footer {
+  order: 99;
+  position: sticky;
+  /* Se descuenta el relleno inferior (10 px) del área desplazable. */
+  bottom: -10px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0 4px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
 }

@@ -83,7 +83,8 @@ describe('Simplificar con modos (panel)', () => {
     const codes = [...screen.getByTestId('simplify-report-warnings').querySelectorAll('li')].map((li) => li.dataset.code);
     expect(codes).toEqual(['genus_changed', 'volume_changed', 'deviation_high']);
     expect(report.textContent).toContain(t('es', 'simplify.warn.genus_changed', { before: 1, after: 0 }));
-    expect(report.getAttribute('role')).toBe('status');
+    // Un solo anuncio por resultado: el aviso emergente lo dice; el informe es una región a la que llega el foco.
+    expect(report.getAttribute('role')).toBe('region');
   });
 
   it('el informe trae «Deshacer» mientras el paso siga siendo el último del historial', async () => {

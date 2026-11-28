@@ -67,6 +67,6 @@ describe('simplificar informa triángulos y volumen', () => {
     const id = get().objects[0].id;
     expect(await get().simplifySelectedMesh(id, 0.2)).toBe(true);
     const toast = get().toasts.find((t) => t.text.startsWith('Simplificado:'));
-    expect(toast?.text).toMatch(/→ [\d.]+ triángulos · volumen [-+]?[\d,]+ %/);
+    expect(toast?.text).toMatch(/→ [\d.]+ triángulos · volumen [-+−]?[\d,]+ %/);
   });
 });

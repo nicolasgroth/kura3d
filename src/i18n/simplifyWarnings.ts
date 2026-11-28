@@ -91,22 +91,23 @@ export function simplifyWarningSentence(lang: LanguageCode, report: SimplifyRepo
 }
 
 /** Frase de un motivo de resultado destructivo, con sus números y el tope severo (`report.limits`). */
-export function simplifyDestructiveSentence(lang: LanguageCode, report: SimplifyReport, reason: SimplifyDestructiveReason): string {
+export function simplifyDestructiveSentence(lang: LanguageCode, report: SimplifyReport, reason: SimplifyDestructiveReason, tense: 'past' | 'conditional' = 'past'): string {
+  const cond = tense === 'conditional';
   const n = (v: number) => formatLocaleNumber(lang, v, { maxFrac: 0, grouping: true });
   const L = report.limits;
   switch (reason) {
     case 'holes_lost':
-      return t(lang, 'simplify.blocked.holes_lost', { before: report.genusBefore, after: report.genusAfter });
+      return t(lang, cond ? 'simplify.blocked.holes_lost.preview' : 'simplify.blocked.holes_lost', { before: report.genusBefore, after: report.genusAfter });
     case 'volume_changed':
-      return t(lang, 'simplify.blocked.volume_changed', { pct: simplifyPct(lang, report.volumeChangePct), limit: simplifyPct(lang, L?.destructiveVolumePct ?? SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct) });
+      return t(lang, cond ? 'simplify.blocked.volume_changed.preview' : 'simplify.blocked.volume_changed', { pct: simplifyPct(lang, report.volumeChangePct), limit: simplifyPct(lang, L?.destructiveVolumePct ?? SIMPLIFY_DESTRUCTIVE_LIMITS.volumePct) });
     case 'deviation_high':
-      return t(lang, 'simplify.blocked.deviation_high', {
+      return t(lang, cond ? 'simplify.blocked.deviation_high.preview' : 'simplify.blocked.deviation_high', {
         mm: simplifyMm(lang, report.maxDeviationMm),
         limit: simplifyMm(lang, L?.destructiveDeviationMm ?? report.destructiveLimitMm ?? 0),
         side: simplifyMm(lang, L?.minSideMm ?? 0),
       });
     case 'too_few_triangles':
-      return t(lang, 'simplify.blocked.too_few_triangles', {
+      return t(lang, cond ? 'simplify.blocked.too_few_triangles.preview' : 'simplify.blocked.too_few_triangles', {
         tris: n(report.requested?.triangles ?? report.trianglesAfter),
         min: n(L?.minTriangles ?? simplifyMinTriangles(report.genusAfter)),
         holes: report.genusAfter,
@@ -118,10 +119,10 @@ export function simplifyDestructiveSentence(lang: LanguageCode, report: Simplify
  * Motivos de lo pedido con sus números. Si se aplicó la segura, las medidas de `report` son las de la segura: los
  * motivos se redactan con las de lo pedido (`requested`).
  */
-export function simplifyDestructiveReasonsText(lang: LanguageCode, report: SimplifyReport): string {
+export function simplifyDestructiveReasonsText(lang: LanguageCode, report: SimplifyReport, tense: 'past' | 'conditional' = 'past'): string {
   const q = report.requested;
   const asked = q ? { ...report, volumeChangePct: q.volumeChangePct, maxDeviationMm: q.maxDeviationMm, genusAfter: q.genusAfter } : report;
-  return (report.destructive ?? []).map((r) => simplifyDestructiveSentence(lang, asked, r)).join(' ');
+  return (report.destructive ?? []).map((r) => simplifyDestructiveSentence(lang, asked, r, tense)).join(' ');
 }
 
 /** «Se aplicó la versión segura: N triángulos en vez de M, porque M cambiaba demasiado la forma: motivos». */
@@ -129,7 +130,7 @@ export function simplifySafeAppliedSentence(lang: LanguageCode, report: Simplify
   const n = (v: number) => formatLocaleNumber(lang, v, { maxFrac: 0, grouping: true });
   const requested = report.requested?.triangles ?? report.trianglesAfter;
   const safe = report.appliedVariant === 'safe' ? report.trianglesAfter : (report.safe?.triangles ?? report.trianglesAfter);
-  return t(lang, key, { safe: n(safe), requested: n(requested), reasons: simplifyDestructiveReasonsText(lang, report) });
+  return t(lang, key, { safe: n(safe), requested: n(requested), reasons: simplifyDestructiveReasonsText(lang, report, key === 'simplify.preview.wouldSafe' ? 'conditional' : 'past') });
 }
 
 /** «No hay una reducción segura para esta pieza…» con la reducción mínima exigida. */

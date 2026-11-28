@@ -16,9 +16,10 @@ import React, { useId } from 'react';
 import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
-import { simplifyMm, simplifyPct } from '../../i18n/simplifyNumbers';
+import { simplifyMm, simplifyVolumeText } from '../../i18n/simplifyNumbers';
 import { simplifyDestructiveSentence, simplifyNoSafeSentence, simplifySafeAppliedSentence } from '../../i18n/simplifyWarnings';
 import type { LanguageCode } from '../../types/kura';
+import { SimplifyDeviationNote } from './SimplifyDeviationNote';
 
 /** Pedido que reproduce el resultado agresivo, ahora permitido. null si el informe no alcanza para rehacerlo. */
 export function forcedRequest(report: SimplifyReport): SimplifyRequest | null {
@@ -38,11 +39,11 @@ export interface ResultLines {
   genusAfter: number;
   deviationMm: number;
   /** `asked`: la tolerancia que se pidió; `used`: la que usó el motor. */
-  tolerance: { kind: 'asked' | 'used'; mm: number };
+  tolerance: { kind: 'asked' | 'used'; mm: number } | null;
 }
 
 /** Bloque del informe: encabezado y los números de un solo resultado (nunca se mezclan dos en la misma lista). */
-export const SimplifyResultBlock: React.FC<{ language: LanguageCode; heading: string; lines: ResultLines; testId?: string }> = ({ language, heading, lines, testId }) => {
+export const SimplifyResultBlock: React.FC<{ language: LanguageCode; heading: string; lines: ResultLines; testId?: string; preview?: boolean }> = ({ language, heading, lines, testId, preview = false }) => {
   const id = useId();
   const n = (v: number) => formatLocaleNumber(language, v, { maxFrac: 0, grouping: true });
   return (
@@ -50,11 +51,12 @@ export const SimplifyResultBlock: React.FC<{ language: LanguageCode; heading: st
       <strong id={id} className="kura-field-label">{heading}</strong>
       <ul className="kura-simplify-report-list">
         <li>{t(language, 'simplify.report.triangles', { before: n(lines.before), after: n(lines.after) })}</li>
-        <li>{t(language, 'simplify.report.volume', { pct: simplifyPct(language, lines.volumePct, true) })}</li>
+        <li>{t(language, 'simplify.report.volume', { pct: simplifyVolumeText(language, lines.volumePct) })}</li>
         <li>{t(language, 'simplify.report.genus', { before: lines.genusBefore, after: lines.genusAfter })}</li>
         <li>{t(language, 'simplify.report.deviation', { mm: simplifyMm(language, lines.deviationMm) })}</li>
-        <li>{t(language, lines.tolerance.kind === 'asked' ? 'simplify.report.toleranceAsked' : 'simplify.report.tolerance', { mm: simplifyMm(language, lines.tolerance.mm) })}</li>
+        {lines.tolerance && <li>{t(language, lines.tolerance.kind === 'asked' ? 'simplify.report.toleranceAsked' : 'simplify.report.tolerance', { mm: simplifyMm(language, lines.tolerance.mm) })}</li>}
       </ul>
+      {lines.tolerance && <SimplifyDeviationNote language={language} deviationMm={lines.deviationMm} tolerance={lines.tolerance} preview={preview} />}
     </section>
   );
 };
@@ -70,7 +72,7 @@ function requestedLines(report: SimplifyReport): ResultLines {
     genusBefore: report.genusBefore,
     genusAfter: q?.genusAfter ?? report.genusAfter,
     deviationMm: q?.maxDeviationMm ?? report.maxDeviationMm,
-    tolerance: report.mode === 'tolerance' ? { kind: 'asked', mm: asked } : { kind: 'used', mm: q?.toleranceMm ?? report.toleranceMm },
+    tolerance: report.mode === 'lossless' ? null : report.mode === 'tolerance' ? { kind: 'asked', mm: asked } : { kind: 'used', mm: q?.toleranceMm ?? report.toleranceMm },
   };
 }
 
@@ -111,8 +113,8 @@ export const SimplifyBlockedChoice: React.FC<Props> = ({ report, language, busy,
             <p className="kura-cut-hint">{t(language, 'simplify.safeApplied.forceHint')}</p>
           </>
         )}
-        <SimplifyResultBlock language={language} testId="simplify-block-applied" heading={t(language, preview ? 'simplify.preview.appliedSafeHeading' : 'simplify.report.appliedSafeHeading')} lines={appliedLines} />
-        {report.requested && <SimplifyResultBlock language={language} testId="simplify-block-requested" heading={t(language, 'simplify.report.requestedHeading')} lines={requestedLines(report)} />}
+        <SimplifyResultBlock language={language} testId="simplify-block-applied" heading={t(language, preview ? 'simplify.preview.appliedSafeHeading' : 'simplify.report.appliedSafeHeading')} lines={appliedLines} preview={preview} />
+        {report.requested && <SimplifyResultBlock preview={preview} language={language} testId="simplify-block-requested" heading={t(language, 'simplify.report.requestedHeading')} lines={requestedLines(report)} />}
       </div>
     );
   }
@@ -132,14 +134,15 @@ export const SimplifyBlockedChoice: React.FC<Props> = ({ report, language, busy,
       )}
       <ul className="kura-simplify-report-warnings">
         {(report.destructive ?? []).map((reason) => (
-          <li key={reason} data-code={reason}>{simplifyDestructiveSentence(language, report, reason)}</li>
+          <li key={reason} data-code={reason}>{simplifyDestructiveSentence(language, report, reason, preview ? 'conditional' : 'past')}</li>
         ))}
       </ul>
-      <SimplifyResultBlock language={language} testId="simplify-blocked-aggressive" heading={t(language, 'simplify.report.requestedHeading')} lines={requestedLines(report)} />
+      <SimplifyResultBlock preview={preview} language={language} testId="simplify-blocked-aggressive" heading={t(language, 'simplify.report.requestedHeading')} lines={requestedLines(report)} />
       {safe
         ? (
           <SimplifyResultBlock
             language={language}
+            preview={preview}
             testId="simplify-blocked-safe"
             heading={t(language, 'simplify.report.safeWouldHeading')}
             lines={{

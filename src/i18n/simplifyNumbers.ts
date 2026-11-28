@@ -9,6 +9,7 @@
  */
 
 import type { LanguageCode } from '../types/kura';
+import { t } from './index';
 import { LOCALE_BY_LANG } from './numberLocale';
 
 /** Decimales de la regla: mm con 2, porcentaje con 1. */
@@ -23,12 +24,14 @@ function format(lang: LanguageCode, value: number, base: number, signed: boolean
   while (value !== 0 && digits < MAX_DECIMALS && Number(Math.abs(value).toFixed(digits)) === 0) digits++;
   const rounded = Number(value.toFixed(digits));
   try {
-    return new Intl.NumberFormat(LOCALE_BY_LANG[lang] ?? 'es-CL', {
+    const text = new Intl.NumberFormat(LOCALE_BY_LANG[lang] ?? 'es-CL', {
       minimumFractionDigits: digits,
       maximumFractionDigits: digits,
       useGrouping: false,
       signDisplay: signed ? 'exceptZero' : 'auto',
     }).format(Object.is(rounded, -0) ? 0 : rounded);
+    // Signo menos tipográfico (U+2212), el mismo en todo el panel.
+    return text.replace(/^-/, '−');
   } catch {
     return String(rounded);
   }
@@ -42,4 +45,23 @@ export function simplifyMm(lang: LanguageCode, mm: number): string {
 /** Porcentaje con 1 decimal («12,5»); sin el signo %. Con `signed`, con «+» o «-» (cambio de volumen). */
 export function simplifyPct(lang: LanguageCode, pct: number, signed = false): string {
   return format(lang, pct, SIMPLIFY_PCT_DECIMALS, signed);
+}
+
+/** Debajo de esto (en %) un cambio de volumen no se muestra con cifras: «menos de 0,1 %». */
+const PCT_TINY = 0.05;
+
+/**
+ * Cambio de volumen para el informe, con su « %»: «−5,4 %», «menos de 0,1 %» si es real pero muy chico y «sin cambio»
+ * si es cero. (Los topes y límites usan `simplifyPct`, que sí necesita los decimales justos.)
+ */
+export function simplifyVolumeText(lang: LanguageCode, pct: number): string {
+  if (!Number.isFinite(pct) || pct === 0) return t(lang, 'simplify.pct.none');
+  if (Math.abs(pct) < PCT_TINY) return t(lang, 'simplify.pct.tiny', { pct: simplifyPctFixed(lang, 0.1) });
+  return `${simplifyPctFixed(lang, pct, true)} %`;
+}
+
+function simplifyPctFixed(lang: LanguageCode, pct: number, signed = false): string {
+  return new Intl.NumberFormat(LOCALE_BY_LANG[lang] ?? 'es-CL', {
+    minimumFractionDigits: SIMPLIFY_PCT_DECIMALS, maximumFractionDigits: SIMPLIFY_PCT_DECIMALS, useGrouping: false, signDisplay: signed ? 'exceptZero' : 'auto',
+  }).format(pct).replace(/^-/, '−');
 }

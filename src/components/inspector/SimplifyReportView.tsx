@@ -15,16 +15,17 @@
 
 import { AlertTriangle } from 'lucide-react';
 import React, { useEffect, useId, useRef, useState } from 'react';
-import type { SimplifyReport, SimplifyRequest } from '../../engine/simplify';
+import { SIMPLIFY_WARN_LIMITS, type SimplifyReport, type SimplifyRequest } from '../../engine/simplify';
 import { t } from '../../i18n';
 import { formatLocaleNumber } from '../../i18n/numberLocale';
-import { simplifyMm, simplifyPct } from '../../i18n/simplifyNumbers';
+import { simplifyMm, simplifyVolumeText } from '../../i18n/simplifyNumbers';
 import { simplifyHasShapeNotice, simplifyWarningSentence } from '../../i18n/simplifyWarnings';
 import { undoToastAction } from '../../store/toastActionState';
 import { useKuraStore } from '../../store/useKuraStore';
 import type { LanguageCode } from '../../types/kura';
 import { restoreFocusAfter } from '../toastFocus';
 import { SimplifyBlockedChoice } from './SimplifyBlockedChoice';
+import { SimplifyDeviationNote } from './SimplifyDeviationNote';
 
 type UndoStep = ReturnType<typeof undoToastAction>;
 
@@ -92,9 +93,14 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
     });
   };
   const n = (v: number) => formatLocaleNumber(language, v, { maxFrac: 0, grouping: true });
-  const pct = simplifyPct(language, report.volumeChangePct, true);
+  const pct = simplifyVolumeText(language, report.volumeChangePct);
   const tense = preview ? 'conditional' : 'past';
-  const warnings = report.warnings;
+  // «Por cantidad»: una línea que dice si se cumplió el objetivo (la advertencia del motor dice lo mismo: no se repite).
+  const targetTris = report.target?.triangles ?? null;
+  const targetLine: 'above' | 'below' | null = report.mode === 'target' && report.applied && report.appliedVariant !== 'safe' && targetTris !== null
+    ? (report.trianglesAfter > targetTris * (1 + SIMPLIFY_WARN_LIMITS.targetSlackRel) ? 'above' : report.trianglesAfter < targetTris * (1 - SIMPLIFY_WARN_LIMITS.targetSlackRel) ? 'below' : null)
+    : null;
+  const warnings = targetLine === 'above' ? report.warnings.filter((w) => w !== 'target_not_reached') : report.warnings;
   const blocked = !report.applied && (report.destructive?.length ?? 0) > 0;
   const safeApplied = report.applied && report.appliedVariant === 'safe';
   // «Por tolerancia»: la pedida es la que escribió el usuario (con la segura aplicada, el informe trae la de la segura
@@ -106,7 +112,7 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
   const onApply = preview || (safeApplied && !undo) ? undefined : apply;
   return (
     // `tabIndex={-1}`: al terminar la vista previa el foco llega aquí (se lee el resultado antes de decidir aplicar).
-    <div className="kura-simplify-report" ref={rootRef} role="status" aria-live="polite" aria-labelledby={titleId} tabIndex={-1} data-testid="simplify-report">
+    <div className="kura-simplify-report" ref={rootRef} role="region" aria-labelledby={titleId} tabIndex={-1} data-testid="simplify-report">
       <strong id={titleId} className="kura-field-label">{t(language, preview ? 'simplify.preview.title' : 'simplify.report.title')}</strong>
       {report.applied && (
         <p className="kura-simplify-summary" data-testid="simplify-report-summary">
@@ -137,12 +143,25 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
               <li>{t(language, 'simplify.report.genus', { before: report.genusBefore, after: report.genusAfter })}</li>
               <li>{t(language, 'simplify.report.deviation', { mm: simplifyMm(language, report.maxDeviationMm) })}</li>
               {report.mode === 'tolerance' && <li>{t(language, 'simplify.report.toleranceAsked', { mm: simplifyMm(language, askedToleranceMm) })}</li>}
-              {(report.mode !== 'tolerance' || usedDiffers) && <li>{t(language, 'simplify.report.tolerance', { mm: simplifyMm(language, report.toleranceMm) })}</li>}
+              {(report.mode === 'target' || (report.mode === 'tolerance' && usedDiffers)) && <li>{t(language, 'simplify.report.tolerance', { mm: simplifyMm(language, report.toleranceMm) })}</li>}
+              {targetLine && targetTris !== null && (
+                <li data-testid="simplify-target-result">
+                  {t(language, `simplify.${preview ? 'preview' : 'report'}.${targetLine === 'above' ? 'targetAbove' : 'targetBelow'}` as 'simplify.report.targetAbove', { after: n(report.trianglesAfter), target: n(targetTris) })}
+                </li>
+              )}
             </>
           )}
         </ul>
       )}
-      {report.applied && <p className="kura-cut-hint">{t(language, 'simplify.report.toleranceHelp')}</p>}
+      {!blocked && !safeApplied && report.applied && report.mode !== 'lossless' && (
+        <SimplifyDeviationNote
+          language={language}
+          deviationMm={report.maxDeviationMm}
+          tolerance={report.mode === 'tolerance' ? { kind: 'asked', mm: askedToleranceMm } : { kind: 'used', mm: report.toleranceMm }}
+          preview={preview}
+        />
+      )}
+      {report.applied && report.mode !== 'lossless' && <p className="kura-cut-hint">{t(language, 'simplify.report.toleranceHelp')}</p>}
       {warnings.length > 0 && (
         <ul className="kura-simplify-report-warnings" data-testid="simplify-report-warnings">
           {warnings.map((code) => (

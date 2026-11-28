@@ -15,6 +15,7 @@ import { PrecisionNumberInput } from '../PrecisionNumberInput';
 import { useInvalidFields } from '../useInvalidFields';
 import { type InspectorSectionProps } from './inspectorTypes';
 import { SIMPLIFY_REQUEST_FRESH_MS } from './simplifyPanelRequest';
+import { keepFocusOnEscape } from './keepFieldFocus';
 import { SimplifySection } from './SimplifySection';
 
 /** Simplificar / refinar malla dentro de Herramientas Maker. */
@@ -51,7 +52,7 @@ export const MeshRefinePanel: React.FC<InspectorSectionProps> = ({ primary, ui }
         <SimplifySection primary={primary} toleranceMm={simplifyTolMm} setToleranceMm={setSimplifyTolMm} invalid={invalid} />
       </div>
 
-      <div role="group" aria-labelledby={`${uid}-refine`} className="kura-mesh-group">
+      <div role="group" aria-labelledby={`${uid}-refine`} className="kura-mesh-group" onKeyDownCapture={keepFocusOnEscape}>
         <h3 id={`${uid}-refine`} className="kura-mesh-group-title">{t(language, 'simplify.section.refine')}</h3>
       <div className="kura-field-row">
         <span className="kura-field-label">{t(language, 'inspector.pro.refineEdge')}</span>

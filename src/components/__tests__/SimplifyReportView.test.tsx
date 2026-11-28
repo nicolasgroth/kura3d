@@ -37,7 +37,7 @@ describe('SimplifyReportView', () => {
     render(<SimplifyReportView report={NOTICE} language="es" />);
     expect(screen.getByTestId('simplify-notice').textContent).toContain('Se aplicó lo pedido, con aviso');
     const warn = screen.getByTestId('simplify-report-warnings').textContent ?? '';
-    expect(warn).toContain('El volumen cambió -5,4 % (se avisa desde 5,0 %).');
+    expect(warn).toContain('El volumen cambió −5,4 % (se avisa desde 5,0 %).');
     expect(warn).toContain('La superficie se movió hasta 1,70 mm (se avisa desde 1,00 mm).');
     expect(warn).not.toMatch(/0,5 %|0,1 mm|tope/);
     expect(screen.queryByTestId('simplify-blocked')).toBeNull();
@@ -51,7 +51,7 @@ describe('SimplifyReportView', () => {
       limits: { noticeVolumePct: 5, noticeDeviationMm: 1, destructiveVolumePct: 25, destructiveDeviationMm: 0.75, minSideMm: 3, minTriangles: 72 },
     };
     render(<SimplifyReportView report={plate} language="es" />);
-    expect(screen.getByTestId('simplify-blocked').textContent).toContain('La superficie se mueve 2,19 mm (tope 0,75 mm: un cuarto del lado menor de la pieza, 3,00 mm).');
+    expect(screen.getByTestId('simplify-blocked').textContent).toContain('La superficie se movía 2,19 mm (tope 0,75 mm: un cuarto del lado menor de la pieza, 3,00 mm).');
     expect(screen.queryByTestId('simplify-notice')).toBeNull();
   });
 
@@ -78,7 +78,7 @@ describe('SimplifyReportView', () => {
       render(<SimplifyReportView report={BLOCKED} language="es" />);
       const text = screen.getByTestId('simplify-blocked').textContent ?? '';
       expect(text).toContain('No se aplicó: el resultado estropearía la pieza.');
-      expect(text).toContain('Se cierran agujeros pasantes (1 → 0)');
+      expect(text).toContain('Se cerraban agujeros pasantes (1 → 0)');
       expect(screen.getByTestId('simplify-blocked-aggressive').textContent).toContain('40');
       expect(screen.getByTestId('simplify-blocked-safe').textContent).toContain('300');
       expect(screen.getByTestId('simplify-apply-safe').textContent).toBe('Aplicar la versión segura (300 triángulos)');
@@ -104,10 +104,11 @@ describe('SimplifyReportView', () => {
     }
   });
 
-  it('aplicado: conserva todas las filas', () => {
+  it('aplicado: conserva las filas (sin tolerancia en Sin pérdida)', () => {
     render(<SimplifyReportView report={{ ...BASE, applied: true, trianglesAfter: 6, warnings: [] }} language="es" />);
     const text = screen.getByTestId('simplify-report').textContent ?? '';
-    expect(text).toContain('Tolerancia usada');
-    expect(text).toContain('Volumen');
+    // «Sin pérdida» no muestra tolerancia (siempre es la mínima, no dice nada al usuario).
+    expect(text).not.toContain('Tolerancia');
+    expect(text).toContain('Volumen')
   });
 });

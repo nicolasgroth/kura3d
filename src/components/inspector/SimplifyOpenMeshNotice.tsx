@@ -1,6 +1,8 @@
 /**
  * @file src/components/inspector/SimplifyOpenMeshNotice.tsx
- * @description Bloqueo de Simplificar cuando la malla no es un sólido cerrado: aviso con el mismo estilo que el de
+ * @description Aviso de Simplificar cuando la malla no es un sólido cerrado. Al abrir el panel es una ADVERTENCIA que deja
+ * seguir (`warn`: al simplificar sin reparar el motor intenta soldar los vértices cercanos y, si no logra cerrarla, no
+ * aplica nada); si el motor ya la rechazó es el bloqueo (`blocked`: repárala antes). Mismo estilo: aviso con el mismo estilo que el de
  * cambio de forma (icono y texto, no solo color), sin el término técnico a la vista (queda en un «Detalle técnico»
  * plegado) y un botón «Reparar malla» que lanza la reparación existente de esa pieza. Mientras repara, el botón sigue
  * en su sitio con el foco (`aria-disabled`, no `disabled`) y un estado «Reparando la malla…» al lado.
@@ -21,14 +23,16 @@ interface Props {
   busy: boolean;
   /** Reparando desde este aviso: el botón no actúa pero conserva el foco, y se dice el estado. */
   repairing?: boolean;
+  /** `warn`: advertencia previa (se puede seguir); `blocked`: el motor rechazó la malla. */
+  variant?: 'warn' | 'blocked';
   onRepair: () => void;
 }
 
-export const SimplifyOpenMeshNotice: React.FC<Props> = ({ language, detail, busy, repairing = false, onRepair }) => (
+export const SimplifyOpenMeshNotice: React.FC<Props> = ({ language, detail, busy, repairing = false, variant = 'blocked', onRepair }) => (
   <div className="kura-simplify-open-mesh" data-testid="simplify-open-mesh">
-    <p className="kura-simplify-notice" role="alert" data-testid="simplify-open-mesh-text">
+    <p className="kura-simplify-notice" role={variant === 'warn' ? 'note' : 'alert'} data-testid="simplify-open-mesh-text">
       <AlertTriangle size={14} aria-hidden="true" />
-      <strong>{t(language, 'simplify.error.meshInvalid')}</strong>
+      <strong>{t(language, variant === 'warn' ? 'simplify.error.meshOpenWarn' : 'simplify.error.meshInvalid')}</strong>
     </p>
     <div className="kura-simplify-blocked-actions">
       <button

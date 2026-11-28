@@ -169,7 +169,7 @@ describe('Simplificar: informe de la versión segura', () => {
     expect(applied.textContent).toContain('Tolerancia usada: 0,25 mm');
     expect(asked.textContent).toContain('Lo pedido daría…');
     expect(asked.textContent).toContain('Triángulos: 1.000 → 256');
-    expect(asked.textContent).toContain('Volumen: -5,4 %');
+    expect(asked.textContent).toContain('Volumen: −5,4 %');
     expect(asked.textContent).toContain('Desviación medida: 1,70 mm');
     expect(asked.textContent).toContain('Tolerancia pedida: 2,00 mm');
     // Ningún número suelto fuera de los dos bloques: la lista genérica no se repite.
@@ -186,12 +186,12 @@ describe('Simplificar: informe de la versión segura', () => {
     const notice = { ...SAFE_APPLIED, appliedVariant: 'requested', requested: undefined, destructive: [], volumeChangePct: -5.4, maxDeviationMm: 1.7, warnings: ['volume_changed', 'deviation_high'] } as SimplifyReport;
     const { unmount } = render(<SimplifyReportView report={notice} language="es" preview />);
     const preview = screen.getByTestId('simplify-report-warnings').textContent ?? '';
-    expect(preview).toContain('El volumen cambiaría -5,4 %');
+    expect(preview).toContain('El volumen cambiaría −5,4 %');
     expect(preview).toContain('La superficie se movería hasta 1,70 mm');
     unmount();
     render(<SimplifyReportView report={notice} language="es" />);
     const applied = screen.getByTestId('simplify-report-warnings').textContent ?? '';
-    expect(applied).toContain('El volumen cambió -5,4 %');
+    expect(applied).toContain('El volumen cambió −5,4 %');
     expect(applied).toContain('La superficie se movió hasta 1,70 mm');
   });
 
@@ -268,8 +268,137 @@ describe('Simplificar: mensaje y números', () => {
     expect(simplifyMm('en', 1.7)).toBe('1.70');
     expect(simplifyMm('es', 0.001)).toBe('0,001');
     expect(simplifyPct('es', 12.345)).toBe('12,3');
-    expect(simplifyPct('es', -5.4, true)).toBe('-5,4');
+    expect(simplifyPct('es', -5.4, true)).toBe('−5,4');
     expect(simplifyPct('es', 0.02, true)).toBe('+0,02');
     expect(simplifyPct('es', 0, true)).toBe('0,0');
+  });
+});
+
+describe('Simplificar: ronda 2', () => {
+  it('malla abierta al abrir: advertencia honesta que deja seguir', () => {
+    mount({ manifold: false });
+    const text = screen.getByTestId('simplify-open-mesh-text').textContent ?? '';
+    expect(text).toBe(t('es', 'simplify.error.meshOpenWarn'));
+    expect(text).toContain('Si simplificas sin reparar');
+    expect(text).not.toContain('repárala antes');
+    expect((screen.getByTestId('simplify-run') as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByTestId('simplify-run').getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('la ayuda de la tolerancia no promete un máximo y el informe advierte si la desviación la supera', () => {
+    expect(t('es', 'simplify.mode.tolerance.help')).not.toMatch(/cuánto puede moverse/i);
+    const rep = { ...SAFE_APPLIED, appliedVariant: 'requested', requested: undefined, destructive: [], askedToleranceMm: 0.1, toleranceMm: 0.02, maxDeviationMm: 1.48, warnings: [] } as SimplifyReport;
+    const { unmount } = render(<SimplifyReportView report={rep} language="es" />);
+    expect(screen.getByTestId('simplify-deviation-over').textContent).toBe('La desviación medida (1,48 mm) supera la tolerancia pedida (0,10 mm).');
+    unmount();
+    render(<SimplifyReportView report={rep} language="es" preview />);
+    expect(screen.getByTestId('simplify-deviation-over').textContent).toContain('superaría la tolerancia pedida');
+  });
+
+  it('en el bloque de la versión segura, la desviación sobre la tolerancia usada también se advierte', () => {
+    const rep = { ...SAFE_APPLIED, maxDeviationMm: 0.9 } as SimplifyReport;
+    render(<SimplifyReportView report={rep} language="es" />);
+    expect(screen.getByTestId('simplify-block-applied').textContent).toContain('supera la tolerancia usada (0,25 mm)');
+  });
+
+  it('Esc en un campo inválido restaura el valor y el foco se queda en el campo', async () => {
+    mount();
+    fireEvent.change(screen.getByLabelText(t('es', 'simplify.mode')), { target: { value: 'target' } });
+    const input = screen.getByLabelText(t('es', 'simplify.target.percent')) as HTMLInputElement;
+    input.focus();
+    fireEvent.change(input, { target: { value: '500' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+    await waitFor(() => expect(document.activeElement).toBe(input));
+    expect(input.value).toBe('50');
+  });
+
+  it('Enter con un valor inválido deja el foco en el campo (no salta a «Vista previa»)', async () => {
+    mount();
+    fireEvent.change(screen.getByLabelText(t('es', 'simplify.mode')), { target: { value: 'target' } });
+    const input = screen.getByLabelText(t('es', 'simplify.target.percent')) as HTMLInputElement;
+    input.focus();
+    fireEvent.change(input, { target: { value: '500' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(document.activeElement).toBe(input));
+  });
+
+  it('«Por cantidad»: un objetivo mayor que los triángulos actuales se marca en el campo y no deja avanzar', () => {
+    const obj = mount();
+    fireEvent.change(screen.getByLabelText(t('es', 'simplify.mode')), { target: { value: 'target' } });
+    fireEvent.change(screen.getByLabelText(t('es', 'simplify.target.kind')), { target: { value: 'count' } });
+    const field = screen.getByLabelText(t('es', 'simplify.target.count')) as HTMLInputElement;
+    const preview = vi.fn(async () => null);
+    useKuraStore.setState({ previewSimplify: preview as never });
+    field.focus();
+    fireEvent.change(field, { target: { value: String(obj.stats.triangles + 100) } });
+    fireEvent.blur(field);
+    const msg = screen.getByTestId('simplify-target-exceeds');
+    expect(msg.textContent).toContain('supera los triángulos actuales');
+    expect(field.getAttribute('aria-describedby')).toContain(msg.id);
+    expect(screen.getByTestId('simplify-preview').getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(screen.getByTestId('simplify-preview'));
+    expect(preview).not.toHaveBeenCalled();
+  });
+
+  it('«Por cantidad»: el informe dice si no se alcanzó el objetivo o si quedó por debajo', () => {
+    const base = { ...SAFE_APPLIED, mode: 'target', appliedVariant: 'requested', requested: undefined, destructive: [], warnings: ['target_not_reached'], trianglesBefore: 100000, trianglesAfter: 47290, target: { triangles: 20000, reached: false, iterations: 8, stoppedBy: 'iterations' } } as SimplifyReport;
+    const { unmount } = render(<SimplifyReportView report={base} language="es" />);
+    expect(screen.getByTestId('simplify-target-result').textContent).toBe('No se alcanzó el objetivo: quedan 47.290 triángulos, pedías 20.000.');
+    // La advertencia del motor dice lo mismo: no se repite.
+    expect(screen.queryByTestId('simplify-report-warnings')).toBeNull();
+    unmount();
+    const below = { ...base, trianglesAfter: 80, warnings: [], target: { triangles: 100, reached: true, iterations: 3, stoppedBy: 'reached' } } as SimplifyReport;
+    render(<SimplifyReportView report={below} language="es" preview />);
+    expect(screen.getByTestId('simplify-target-result').textContent).toBe('Quedarían 80 triángulos, menos que los 100 pedidos.');
+  });
+
+  it('cambiar el modo retira el informe anterior; cancelar deja «Vista previa cancelada»', async () => {
+    mount();
+    const run = vi.fn(async (_id: string, _req: unknown, o: { onReport?: (r: SimplifyReport) => void }) => { o.onReport?.({ ...SAFE_APPLIED, appliedVariant: 'requested', requested: undefined, destructive: [], mode: 'lossless' } as SimplifyReport); return true; });
+    act(() => useKuraStore.setState({ simplifySelectedMesh: run as never }));
+    fireEvent.click(screen.getByTestId('simplify-run'));
+    await screen.findByTestId('simplify-report');
+    fireEvent.change(screen.getByLabelText(t('es', 'simplify.mode')), { target: { value: 'target' } });
+    expect(screen.queryByTestId('simplify-report')).toBeNull();
+    act(() => useKuraStore.setState({
+      previewSimplify: (async (id: string) => {
+        useKuraStore.setState({ simplifyPreview: { objectId: id, status: 'computing', phase: null, signature: 'x', report: null, error: null, comparing: false, edges: true, ghost: 'none', ghostTriangles: 0, variant: 'applied', hasRequested: false } });
+        return null;
+      }) as never,
+    }));
+    fireEvent.click(screen.getByTestId('simplify-preview'));
+    fireEvent.click(await screen.findByTestId('simplify-preview-cancel'));
+    expect(screen.getByTestId('simplify-preview-cancelled').textContent).toBe('Vista previa cancelada.');
+  });
+
+  it('números del informe: volumen muy chico es «menos de 0,1 %», cero es «sin cambio»; sin tolerancia en Sin pérdida', () => {
+    const tiny = { ...SAFE_APPLIED, mode: 'lossless', appliedVariant: 'requested', requested: undefined, destructive: [], warnings: [], volumeChangePct: -0.00001, askedToleranceMm: undefined, toleranceMm: 0.001 } as SimplifyReport;
+    const { unmount } = render(<SimplifyReportView report={tiny} language="es" />);
+    let txt = screen.getByTestId('simplify-report').textContent ?? '';
+    expect(txt).toContain('Volumen: menos de 0,1 %');
+    expect(txt).not.toContain('Tolerancia');
+    unmount();
+    render(<SimplifyReportView report={{ ...tiny, volumeChangePct: 0 }} language="es" />);
+    txt = screen.getByTestId('simplify-report').textContent ?? '';
+    expect(txt).toContain('Volumen: sin cambio');
+  });
+
+  it('bloqueo en la vista previa: todo el bloque en condicional; tras aplicar, en pasado', () => {
+    const blocked = { ...SAFE_APPLIED, applied: false, appliedVariant: 'none', requested: undefined, destructive: ['holes_lost', 'volume_changed'], safe: null, genusAfter: 0, volumeChangePct: -32.9 } as SimplifyReport;
+    const { unmount } = render(<SimplifyReportView report={blocked} language="es" preview />);
+    const p = screen.getByTestId('simplify-blocked').textContent ?? '';
+    expect(p).toContain('Se cerrarían agujeros pasantes');
+    expect(p).toContain('El volumen cambiaría');
+    expect(p).not.toContain('Se cierran');
+    unmount();
+    render(<SimplifyReportView report={blocked} language="es" />);
+    expect(screen.getByTestId('simplify-blocked').textContent).toContain('Se cerraban agujeros pasantes');
+  });
+
+  it('la barra de acciones es una pieza fija (pie) que contiene los botones y el estado', () => {
+    mount();
+    const footer = document.querySelector('.kura-simplify-footer')!;
+    expect(footer.contains(screen.getByTestId('simplify-preview'))).toBe(true);
+    expect(footer.contains(screen.getByTestId('simplify-run'))).toBe(true);
   });
 });
