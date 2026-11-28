@@ -216,8 +216,13 @@ export interface SimplifyReport {
   appliedVariant: SimplifyAppliedVariant;
   /** Solo si lo pedido era destructivo y se aplicó la segura: las medidas de lo pedido. */
   requested?: SimplifyRequestedResult;
-  /** Tolerancia usada en mm de mundo (en «Por cantidad», la hallada por la búsqueda). */
+  /**
+   * Tolerancia usada en mm de mundo (en «Por cantidad», la hallada por la búsqueda; en «Por tolerancia», el peldaño de
+   * la escalera fija ≤ la pedida que dejó menos triángulos, o la de la segura si se aplicó ésa).
+   */
   toleranceMm: number;
+  /** Solo «Por tolerancia»: la tolerancia que se pidió, en mm de mundo. */
+  askedToleranceMm?: number;
   trianglesBefore: number;
   /** Triángulos del resultado calculado (aunque no se aplique). */
   trianglesAfter: number;

@@ -130,34 +130,42 @@ export function isUsefulSafeReduction(triangles: number, before: number, minRel:
 }
 
 /**
+ * Mide el resultado de `tolMm` (mm de mundo) contra la regla destructiva: la alternativa si no es destructivo, null si
+ * lo es o si colapsa la pieza (volumen en unidades locales). Mide primero lo barato (género, volumen) y solo después la
+ * desviación muestreada. Cancelable.
+ */
+export function measureSafeCandidate(input: SafeSearchInput, tolMm: number, opts: SimplifyRunOptions = {}): SimplifySafeAlternative | null {
+  throwIfAborted(opts.signal);
+  const m = input.original.simplify(tolMm / input.maxScale);
+  try {
+    if (m.isEmpty() || m.numTri() === 0 || m.volume() <= 0) return null;
+    const triangles = m.numTri();
+    const volumeAfterMm3 = m.volume();
+    const volumeChangePct = input.volumeBefore > 0 ? (100 * (volumeAfterMm3 - input.volumeBefore)) / input.volumeBefore : 0;
+    const genusAfter = bodyGenus(m);
+    const cheap = { genusBefore: input.genusBefore, genusAfter, volumeChangePct, maxDeviationMm: 0, triangles };
+    if (destructiveReasons(cheap, input.size).length > 0) return null;
+    const dev = sampledDeviation(input.originalMesh, manifoldMesh(m), SIMPLIFY_WARN_LIMITS.maxDeviationSamples, input.originalBvh);
+    const maxDeviationMm = dev.maxMm * input.maxScale;
+    if (destructiveReasons({ ...cheap, maxDeviationMm }, input.size).length > 0) return null;
+    return { toleranceMm: tolMm, triangles, volumeAfterMm3, volumeChangePct, genusAfter, maxDeviationMm };
+  } finally {
+    m.delete();
+  }
+}
+
+/**
  * Busca la tolerancia más alta (menos triángulos: la más cercana a lo pedido) cuyo resultado no es destructivo. null
  * si ni la mínima pasa la regla o si la mejor no reduce al menos `minReductionRel` (no hay reducción segura útil).
- * Cancelable entre llamadas.
+ * Cancelable entre llamadas. «Por cantidad» la usa; «Por tolerancia» elige en su escalera (`findSafeOnLadder`).
  */
 export function findSafeAlternative(input: SafeSearchInput, opts: SimplifyRunOptions = {}): SimplifySafeAlternative | null {
-  const { original, maxScale } = input;
   let best: SimplifySafeAlternative | null = null;
   const evaluate = (tolMm: number): boolean => {
-    throwIfAborted(opts.signal);
-    const m = original.simplify(tolMm / maxScale);
-    try {
-      if (m.isEmpty() || m.numTri() === 0 || m.volume() <= 0) return false;
-      const triangles = m.numTri();
-      const volumeAfterMm3 = m.volume();
-      const volumeChangePct = input.volumeBefore > 0 ? (100 * (volumeAfterMm3 - input.volumeBefore)) / input.volumeBefore : 0;
-      const genusAfter = bodyGenus(m);
-      const cheap = { genusBefore: input.genusBefore, genusAfter, volumeChangePct, maxDeviationMm: 0, triangles };
-      if (destructiveReasons(cheap, input.size).length > 0) return false;
-      const dev = sampledDeviation(input.originalMesh, manifoldMesh(m), SIMPLIFY_WARN_LIMITS.maxDeviationSamples, input.originalBvh);
-      const maxDeviationMm = dev.maxMm * maxScale;
-      if (destructiveReasons({ ...cheap, maxDeviationMm }, input.size).length > 0) return false;
-      if (triangles < input.trianglesBefore && (!best || triangles < best.triangles)) {
-        best = { toleranceMm: tolMm, triangles, volumeAfterMm3, volumeChangePct, genusAfter, maxDeviationMm };
-      }
-      return true;
-    } finally {
-      m.delete();
-    }
+    const found = measureSafeCandidate(input, tolMm, opts);
+    if (!found) return false;
+    if (found.triangles < input.trianglesBefore && (!best || found.triangles < best.triangles)) best = found;
+    return true;
   };
   let lo = input.minTolMm;
   let hi = input.destructiveTolMm;

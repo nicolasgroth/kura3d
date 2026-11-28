@@ -1,7 +1,7 @@
 /**
  * @file src/engine/simplify/simplifyDetailed.ts
  * @description Simplificar con verificación (función pura, corre en el Worker): ejecuta el modo pedido sobre
- * `Manifold.simplify` («Sin pérdida» a 0,001 mm, «Por tolerancia», «Por cantidad» con bisección) y mide el
+ * `Manifold.simplify` («Sin pérdida» a 0,001 mm, «Por tolerancia» con la escalera fija de `simplifyLadder` para que sea monótono, «Por cantidad» con bisección) y mide el
  * resultado contra el original: triángulos, volumen, género y desviación muestreada. Como la tolerancia de Manifold
  * no acota la desviación real, el informe trae avisos tipados y «Sin pérdida» solo entrega la malla si pasa la
  * verificación. La tolerancia es en mm de mundo (dividida por la mayor escala en la malla local).
@@ -17,7 +17,8 @@ import { EngineError, requireOperationRange } from '../engineErrors';
 import { OPERATION_RANGES } from '../operationLimits';
 import { bvhOf, manifoldMesh, sampledDeviation } from './simplifyDeviation';
 import { bodyGenus } from './simplifyGenus';
-import { destructiveReasons, findSafeAlternative, noticeReasons, partLimits, worldPartSize, type PartSize } from './simplifySafety';
+import { destructiveReasons, noticeReasons, partLimits, worldPartSize, type PartSize } from './simplifySafety';
+import { findSafeOnLadder, measureToleranceLadder, toleranceLadderUpTo, type LadderRung } from './simplifyLadder';
 import { searchTargetTolerance, throwIfAborted } from './simplifyTarget';
 import {
   LOSSLESS_LIMITS,
@@ -127,6 +128,7 @@ export async function simplifyMeshDetailed(
     const genusBefore = bodyGenus(original);
     let toleranceMm: number;
     let target: SimplifyTargetInfo | undefined;
+    let ladder: LadderRung[] | undefined;
     if (request.mode === 'target') {
       const wanted = resolveTargetTriangles(request, trianglesBefore);
       const minTol = LOSSLESS_LIMITS.toleranceMm / maxScale;
@@ -135,8 +137,15 @@ export async function simplifyMeshDetailed(
       simplified = found.best;
       toleranceMm = found.toleranceLocal * maxScale;
       target = found.info;
+    } else if (request.mode === 'tolerance') {
+      // Escalera fija ≤ lo pedido: el de menos triángulos (monótono en la tolerancia; ver `simplifyLadder`).
+      ladder = measureToleranceLadder(original, userTol!, maxScale, opts);
+      // Si el peldaño más alto colapsa la pieza, la tolerancia pedida es mayor que la pieza: `MESH_EMPTY` (abajo).
+      const top = toleranceLadderUpTo(userTol!).at(-1)!;
+      toleranceMm = ladder.some((r) => r.toleranceMm === top) ? ladder[0].toleranceMm : top;
+      simplified = original.simplify(toleranceMm / maxScale);
     } else {
-      toleranceMm = request.mode === 'lossless' ? LOSSLESS_LIMITS.toleranceMm : userTol!;
+      toleranceMm = LOSSLESS_LIMITS.toleranceMm;
       opts.onProgress?.('simplify:1/1');
       simplified = original.simplify(toleranceMm / maxScale);
     }
@@ -182,11 +191,15 @@ export async function simplifyMeshDetailed(
     const force = destructive.length > 0 && policy === 'force';
     let safe: SimplifySafeAlternative | null | undefined;
     if (destructive.length > 0 && !force) {
-      // La búsqueda mide en la malla local (volumen local): se pasa a mundo al recibirla.
-      const found = findSafeAlternative({
+      // La búsqueda mide en la malla local (volumen local): se pasa a mundo al recibirla. Se elige en la escalera fija
+      // (la segura no crece con la tolerancia y su `toleranceMm` reproduce lo mismo en «Por tolerancia»); en «Por
+      // cantidad», la escalera hasta la tolerancia hallada (sin informar sus pasos como intentos de ajuste).
+      const input = {
         original, originalMesh: originalMesh(), originalBvh: originalBvh(), trianglesBefore, genusBefore,
         volumeBefore: volumeBeforeMm3 / volumeScale, maxScale, size, minTolMm: R.toleranceMm.min, destructiveTolMm: toleranceMm,
-      }, opts);
+      };
+      const rungs = ladder ?? measureToleranceLadder(original, toleranceMm, maxScale, { signal: opts.signal });
+      const found = findSafeOnLadder(input, rungs, opts);
       safe = found ? { ...found, volumeAfterMm3: found.volumeAfterMm3 * volumeScale } : found;
     }
     const useSafe = destructive.length > 0 && policy === 'safe' && safe != null;
@@ -197,6 +210,7 @@ export async function simplifyMeshDetailed(
       applied,
       appliedVariant: applied ? 'requested' : 'none',
       toleranceMm,
+      ...(request.mode === 'tolerance' ? { askedToleranceMm: userTol! } : {}),
       trianglesBefore,
       trianglesAfter,
       volumeBeforeMm3,

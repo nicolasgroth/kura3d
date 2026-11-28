@@ -239,7 +239,9 @@ describe('Equivalencia headless ↔ src/engine', () => {
     expect(object.stats.triangles).toBeLessThan(trianglesBefore);
 
     const refMesh = engine.normalizeMeshToBed(await engine.createPrimitiveMesh('sphere', { radius: 15, segments: 32 }));
-    const ref = engine.computeMeshStats(await engine.simplifyMesh(refObject('S', refMesh), 0.8));
+    // El MCP usa la simplificación con verificación (escalera monótona de «Por tolerancia»), no `simplifyMesh` crudo.
+    const refRun = await engine.simplifyMeshDetailed(refObject('S', refMesh), { mode: 'tolerance', toleranceMm: 0.8 });
+    const ref = engine.computeMeshStats(refRun.mesh!);
     expect(object.stats.triangles).toBe(ref.triangles);
     expect(object.stats.volumeMm3).toBeCloseTo(ref.volumeMm3, 3);
   });

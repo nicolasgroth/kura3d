@@ -12,5 +12,6 @@ export {
   destructiveReasons, destructiveDeviationMm, findSafeAlternative, isUsefulSafeReduction, noticeDeviationMm, noticeReasons, partLimits,
   worldDiagonalMm, worldPartSize, type PartSize,
 } from './simplifySafety';
+export { SIMPLIFY_TOLERANCE_LADDER_MM, toleranceLadderUpTo, measureToleranceLadder, findSafeOnLadder, type LadderRung } from './simplifyLadder';
 export { simplifyMeshDetailed, resolveTargetTriangles, type SimplifyDetailedResult } from './simplifyDetailed';
 export { sampledDeviation, manifoldMesh, bvhOf, maxDistanceTo, type SampledDeviation } from './simplifyDeviation';

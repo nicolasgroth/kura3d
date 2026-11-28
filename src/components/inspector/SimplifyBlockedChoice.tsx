@@ -21,7 +21,7 @@ import type { LanguageCode } from '../../types/kura';
 /** Pedido que reproduce el resultado agresivo, ahora permitido. null si el informe no alcanza para rehacerlo. */
 export function forcedRequest(report: SimplifyReport): SimplifyRequest | null {
   // Con la segura aplicada, `toleranceMm` es la de la segura: lo pedido está en `requested`.
-  const toleranceMm = report.requested?.toleranceMm ?? report.toleranceMm;
+  const toleranceMm = report.askedToleranceMm ?? report.requested?.toleranceMm ?? report.toleranceMm;
   if (report.mode === 'tolerance') return { mode: 'tolerance', toleranceMm, onDestructive: 'force' };
   if (report.mode === 'target' && report.target) return { mode: 'target', targetTriangles: report.target.triangles, onDestructive: 'force' };
   return null;

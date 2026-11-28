@@ -87,7 +87,8 @@ export const SimplifyReportView: React.FC<Props> = ({ report: given, language, o
   const safeApplied = report.applied && report.appliedVariant === 'safe';
   // «Por tolerancia»: la pedida es la que escribió el usuario (con la segura aplicada, el informe trae la de la segura
   // y la pedida viaja en `requested`); si el motor usó otra, se muestra aparte como «usada».
-  const askedToleranceMm = safeApplied && report.requested ? report.requested.toleranceMm : report.toleranceMm;
+  // El motor trae la pedida en `askedToleranceMm` (y usa un peldaño de su escalera ≤ la pedida).
+  const askedToleranceMm = report.askedToleranceMm ?? (safeApplied && report.requested ? report.requested.toleranceMm : report.toleranceMm);
   const usedDiffers = Math.abs(report.toleranceMm - askedToleranceMm) > 1e-9;
   // Reemplazar la segura exige poder deshacerla (si no, se forzaría sobre la malla ya simplificada).
   const onApply = preview || (safeApplied && !undo) ? undefined : apply;
