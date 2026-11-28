@@ -97,7 +97,7 @@ for (const tema of ['light', 'dark'] as const) {
     expect(await pasos(page)).toBe(p0 + 1);
     const texto = await page.getByTestId('simplify-safe-applied-text').innerText();
     console.log('QA25H aviso placa:', texto.replace(/\s+/g, ' '));
-    expect(texto).toMatch(/Se aplicó la versión segura: \d+ triángulos en vez de \d+/);
+    expect(texto).toMatch(/Se aplicó la versión segura: [\d.]+ triángulos\. Lo pedido dejaba [\d.]+ y cambiaba demasiado la forma\./);
     await expect(page.getByTestId('simplify-apply-anyway')).toBeInViewport({ ratio: 1 });
     await page.screenshot({ path: `${EV}/simp-placa-segura-${tema}.png` });
     expect(await clavesCrudas(page, '.kura-simplify-section')).toEqual([]);

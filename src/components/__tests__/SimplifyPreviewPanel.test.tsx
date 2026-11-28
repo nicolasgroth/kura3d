@@ -68,7 +68,7 @@ describe('Simplificar: vista previa en el panel', () => {
     const report = await screen.findByTestId('simplify-report');
     expect(calls).toEqual([{ mode: 'target', targetPercent: 50 }]);
     expect(report.textContent).toContain(t('es', 'simplify.preview.title'));
-    expect(screen.getByTestId('simplify-safe-applied-text').textContent).toContain('Al pulsar «Simplificar» se aplicaría la versión segura: 476 triángulos en vez de 256');
+    expect(screen.getByTestId('simplify-safe-applied-text').textContent).toContain('Al pulsar «Simplificar» se aplicará la versión segura: 476 triángulos. Lo pedido deja 256 y cambia demasiado la forma.');
     expect(screen.queryByTestId('simplify-apply-anyway')).toBeNull();
     expect(screen.queryByTestId('simplify-report-undo')).toBeNull();
   });
@@ -110,7 +110,7 @@ describe('Simplificar: versión segura aplicada', () => {
     });
     render(<SimplifyReportView report={SAFE_APPLIED} language="es" onUndo={() => useKuraStore.getState().undo()} />);
     expect(screen.getByTestId('simplify-safe-applied-text').textContent)
-      .toContain('Se aplicó la versión segura: 476 triángulos en vez de 256, porque 256 cambiaba demasiado la forma: el volumen cambia -5,4 %');
+      .toContain('Se aplicó la versión segura: 476 triángulos. Lo pedido dejaba 256 y cambiaba demasiado la forma. El volumen cambia -5,4 %');
     fireEvent.click(screen.getByTestId('simplify-apply-anyway'));
     await waitFor(() => expect(steps).toEqual(['undo', 'apply']));
     expect(calls).toEqual([{ mode: 'target', targetTriangles: 256, onDestructive: 'force' }]);

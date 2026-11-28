@@ -51,7 +51,7 @@ describe('SimplifyReportView', () => {
       limits: { noticeVolumePct: 5, noticeDeviationMm: 1, destructiveVolumePct: 25, destructiveDeviationMm: 0.75, minSideMm: 3, minTriangles: 72 },
     };
     render(<SimplifyReportView report={plate} language="es" />);
-    expect(screen.getByTestId('simplify-blocked').textContent).toContain('la superficie se mueve 2,19 mm (tope 0,75 mm: un cuarto del lado menor de la pieza, 3 mm).');
+    expect(screen.getByTestId('simplify-blocked').textContent).toContain('La superficie se mueve 2,19 mm (tope 0,75 mm: un cuarto del lado menor de la pieza, 3 mm).');
     expect(screen.queryByTestId('simplify-notice')).toBeNull();
   });
 
@@ -77,8 +77,8 @@ describe('SimplifyReportView', () => {
     try {
       render(<SimplifyReportView report={BLOCKED} language="es" />);
       const text = screen.getByTestId('simplify-blocked').textContent ?? '';
-      expect(text).toContain('No se aplicó porque');
-      expect(text).toContain('se cierran agujeros pasantes (1 → 0)');
+      expect(text).toContain('No se aplicó: el resultado estropearía la pieza.');
+      expect(text).toContain('Se cierran agujeros pasantes (1 → 0)');
       expect(screen.getByTestId('simplify-blocked-aggressive').textContent).toContain('40');
       expect(screen.getByTestId('simplify-blocked-safe').textContent).toContain('300');
       expect(screen.getByTestId('simplify-apply-safe').textContent).toBe('Aplicar la versión segura (300 triángulos)');
