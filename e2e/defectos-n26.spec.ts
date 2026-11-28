@@ -204,7 +204,7 @@ test('Simplificar por tolerancia: «Aplicar de todos modos» deja el informe del
   const informe1 = (await page.getByTestId('simplify-report').innerText()).replace(/\s+/g, ' ');
   console.log('N26 segura', t0, '->', t1, informe1.slice(0, 300));
   // Defecto 3: «Tolerancia pedida» es lo escrito (5), la usada por la segura va aparte.
-  expect.soft(informe1).toMatch(/Tolerancia pedida: 5 mm/);
+  expect.soft(informe1).toMatch(/Tolerancia pedida: 5,00 mm/);
   expect.soft(informe1).toMatch(/Tolerancia usada: /);
   await page.getByTestId('simplify-apply-anyway').click();
   await libre(page);

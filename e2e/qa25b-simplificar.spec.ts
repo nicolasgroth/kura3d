@@ -55,7 +55,7 @@ test('por cantidad 50 % en esfera: se aplica lo pedido con aviso en un paso, des
     await pct.fill(bad);
     await pct.blur();
     await page.screenshot({ path: `${EV}/simp-pct-invalido-${bad}.png` });
-    const dis = await boton(page).isDisabled();
+    const dis = (await boton(page).getAttribute('aria-disabled')) === 'true' || (await boton(page).isDisabled());
     const val = await pct.inputValue();
     console.log('QA25B inválido', `"${bad}" -> valor="${val}" botónDeshabilitado=${dis}`);
   }
@@ -71,7 +71,7 @@ test('por cantidad 50 % en esfera: se aplica lo pedido con aviso en un paso, des
   expect(Math.abs(t1 / t0 - 0.5)).toBeLessThan(0.15);
   await expect(page.getByTestId('simplify-notice')).toBeVisible();
   await expect(page.getByTestId('simplify-safe-applied')).toHaveCount(0);
-  await expect(page.getByTestId('simplify-report-warnings')).toContainText('se avisa desde 5 %');
+  await expect(page.getByTestId('simplify-report-warnings')).toContainText('se avisa desde 5,0 %');
   expect(await pasos(page)).toBe(p0 + 1);
   const v1 = await volumen(page, s.id);
   expect(Math.abs(v1 - v0) / v0).toBeLessThan(0.1);

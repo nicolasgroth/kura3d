@@ -60,7 +60,7 @@ for (const tema of ['light', 'dark'] as const) {
     await expect(page.getByTestId('simplify-apply-anyway')).toHaveCount(0);
     // Un solo juego de límites: los avisos dicen «se avisa desde», nunca los topes de bloqueo ni los de 0,5 % / 0,1 mm.
     const avisos = await page.getByTestId('simplify-report-warnings').innerText();
-    expect(avisos).toContain('se avisa desde 5 %');
+    expect(avisos).toContain('se avisa desde 5,0 %');
     expect(avisos).not.toMatch(/0,5 %|0,1 mm|tope/);
     await page.screenshot({ path: `${EV}/simp-esfera-aviso-${tema}.png` });
     expect(await clavesCrudas(page, '.kura-simplify-section')).toEqual([]);
